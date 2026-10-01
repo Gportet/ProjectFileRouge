@@ -1,9 +1,13 @@
-#include "TestHelpers.h"
-#include "Maths/Matrix3x3.h"
+#include <gtest/gtest.h>
+#include <array>
+#include <limits>
 #include <numbers>
+#include <stdexcept>
 #include <type_traits>
 
-using namespace Microsoft::VisualStudio::CppUnitTestFramework;
+#include "TestHelpers.h"
+#include "MathLib/Matrix3x3.h"
+
 using namespace TestHelpers;
 
 namespace
@@ -28,8 +32,8 @@ namespace
         matrix(1, 0) = T{99};
         const M& view = matrix;
         Near(T{99}, view(1, 0));
-        Assert::ExpectException<std::out_of_range>([&] { (void)matrix(3, 0); });
-        Assert::ExpectException<std::out_of_range>([&] { (void)view(0, 3); });
+        EXPECT_THROW((void)matrix(3, 0), std::out_of_range);
+        EXPECT_THROW((void)view(0, 3), std::out_of_range);
     }
 
     template <typename T>
@@ -51,7 +55,7 @@ namespace
         const M b = M(std::array<T, 9>{-1, 2, -2, 1, -3, 0, 3, -1, 2});
         const M expected = M(std::array<T, 9>{10, -7, 4, 19, -13, 4, 28, -19, 4});
         MatrixNear(expected, a * b);
-        Assert::IsTrue(a * b != b * a);
+        EXPECT_NE(a * b, b * a);
     }
 
     template <typename T>
@@ -59,7 +63,7 @@ namespace
     {
         using M = Maths::Matrix3x3<T>;
         M matrix = M(std::array<T, 9>{1, 2, 3, 4, 5, 6, 7, 8, 9});
-        Assert::IsTrue(&(matrix *= matrix) == &matrix);
+        EXPECT_EQ(&(matrix *= matrix), &matrix);
         MatrixNear(M(std::array<T, 9>{30, 36, 42, 66, 81, 96, 102, 126, 150}), matrix);
     }
 
@@ -86,23 +90,23 @@ namespace
     {
         using M = Maths::Matrix3x3<T>;
         const M a;
-        for (std::size_t r=0; r<3; ++r)
+        for (std::size_t r = 0; r < 3; ++r)
         {
-            for (std::size_t c=0; c<3; ++c)
+            for (std::size_t c = 0; c < 3; ++c)
             {
                 M b = a;
-                b(r,c) += T{1};
-                Assert::IsTrue(a != b);
+                b(r, c) += T{1};
+                EXPECT_NE(a, b);
             }
         }
-        Assert::IsTrue(a == a);
+        EXPECT_EQ(a, a);
     }
 
     template <typename T>
     void ScaleHasKnownResult()
     {
         using M = Maths::Matrix3x3<T>;
-        const M scale = M::Scale(Maths::Vec3<T>{2,3,4});
+        const M scale = M::Scale(Maths::Vec3<T>{2, 3, 4});
         MatrixNear(M(std::array<T, 9>{2, 0, 0, 0, 3, 0, 0, 0, 4}), scale);
         Near(T{24}, scale.Determinant());
     }
@@ -163,28 +167,28 @@ namespace
     void InverseRejectsSingularAndNonFinite()
     {
         using M = Maths::Matrix3x3<T>;
-        Assert::ExpectException<std::domain_error>([] { (void)M::Zero().Inverse(); });
+        EXPECT_THROW((void)M::Zero().Inverse(), std::domain_error);
         M duplicate;
-        for (std::size_t c=0; c<3; ++c)
+        for (std::size_t c = 0; c < 3; ++c)
         {
-            duplicate(1,c) = duplicate(0,c);
+            duplicate(1, c) = duplicate(0, c);
         }
         Near(T{0}, duplicate.Determinant());
-        Assert::ExpectException<std::domain_error>([&] { (void)duplicate.Inverse(); });
+        EXPECT_THROW((void)duplicate.Inverse(), std::domain_error);
         M invalid;
-        invalid(0,0) = std::numeric_limits<T>::infinity();
-        Assert::ExpectException<std::domain_error>([&] { (void)invalid.Inverse(); });
-        invalid(0,0) = std::numeric_limits<T>::quiet_NaN();
-        Assert::ExpectException<std::domain_error>([&] { (void)invalid.Inverse(); });
+        invalid(0, 0) = std::numeric_limits<T>::infinity();
+        EXPECT_THROW((void)invalid.Inverse(), std::domain_error);
+        invalid(0, 0) = std::numeric_limits<T>::quiet_NaN();
+        EXPECT_THROW((void)invalid.Inverse(), std::domain_error);
     }
 
     template <typename T>
     void InverseValidatesTolerance()
     {
         using M = Maths::Matrix3x3<T>;
-        Assert::ExpectException<std::invalid_argument>([] { (void)M{}.Inverse(T{-1}); });
-        Assert::ExpectException<std::invalid_argument>([] { (void)M{}.Inverse(T{1}); });
-        Assert::ExpectException<std::invalid_argument>([] { (void)M{}.Inverse(std::numeric_limits<T>::quiet_NaN()); });
+        EXPECT_THROW((void)M{}.Inverse(T{-1}), std::invalid_argument);
+        EXPECT_THROW((void)M{}.Inverse(T{1}), std::invalid_argument);
+        EXPECT_THROW((void)M{}.Inverse(std::numeric_limits<T>::quiet_NaN()), std::invalid_argument);
     }
 
     template <typename T>
@@ -192,11 +196,11 @@ namespace
     {
         using M = Maths::Matrix3x3<T>;
         M matrix;
-        matrix(0,0) = T{1};
-        matrix(0,1) = T{1};
-        matrix(1,0) = T{1};
-        matrix(1,1) = T{1} + std::numeric_limits<T>::epsilon();
-        Assert::ExpectException<std::domain_error>([&] { (void)matrix.Inverse(); });
+        matrix(0, 0) = T{1};
+        matrix(0, 1) = T{1};
+        matrix(1, 0) = T{1};
+        matrix(1, 1) = T{1} + std::numeric_limits<T>::epsilon();
+        EXPECT_THROW((void)matrix.Inverse(), std::domain_error);
     }
 
     template <typename T>
@@ -204,200 +208,191 @@ namespace
     {
         using M = Maths::Matrix3x3<T>;
         M matrix;
-        matrix(0,0) = T{0.0001};
-        matrix(1,1) = T{10000};
+        matrix(0, 0) = T{0.0001};
+        matrix(1, 1) = T{10000};
         M expected;
-        expected(0,0) = T{10000};
-        expected(1,1) = T{0.0001};
+        expected(0, 0) = T{10000};
+        expected(1, 1) = T{0.0001};
         MatrixNear(expected, matrix.Inverse());
     }
-
 }
 
-namespace MathStarterTests
+TEST(Matrix3x3Tests, DefaultAndFactoryAreIdentity_float)
 {
-    TEST_CLASS(Matrix3x3Tests)
-    {
-    public:
-        TEST_METHOD(DefaultAndFactoryAreIdentity_float)
-        {
-            DefaultAndFactoryAreIdentity<float>();
-        }
+    DefaultAndFactoryAreIdentity<float>();
+}
 
-        TEST_METHOD(DefaultAndFactoryAreIdentity_double)
-        {
-            DefaultAndFactoryAreIdentity<double>();
-        }
+TEST(Matrix3x3Tests, DefaultAndFactoryAreIdentity_double)
+{
+    DefaultAndFactoryAreIdentity<double>();
+}
 
-        TEST_METHOD(ConstructorAndIndexUseRowMajorOrder_float)
-        {
-            ConstructorAndIndexUseRowMajorOrder<float>();
-        }
+TEST(Matrix3x3Tests, ConstructorAndIndexUseRowMajorOrder_float)
+{
+    ConstructorAndIndexUseRowMajorOrder<float>();
+}
 
-        TEST_METHOD(ConstructorAndIndexUseRowMajorOrder_double)
-        {
-            ConstructorAndIndexUseRowMajorOrder<double>();
-        }
+TEST(Matrix3x3Tests, ConstructorAndIndexUseRowMajorOrder_double)
+{
+    ConstructorAndIndexUseRowMajorOrder<double>();
+}
 
-        TEST_METHOD(ArithmeticHasIndependentExpectedValues_float)
-        {
-            ArithmeticHasIndependentExpectedValues<float>();
-        }
+TEST(Matrix3x3Tests, ArithmeticHasIndependentExpectedValues_float)
+{
+    ArithmeticHasIndependentExpectedValues<float>();
+}
 
-        TEST_METHOD(ArithmeticHasIndependentExpectedValues_double)
-        {
-            ArithmeticHasIndependentExpectedValues<double>();
-        }
+TEST(Matrix3x3Tests, ArithmeticHasIndependentExpectedValues_double)
+{
+    ArithmeticHasIndependentExpectedValues<double>();
+}
 
-        TEST_METHOD(MatrixProductHasIndependentExpectedValues_float)
-        {
-            MatrixProductHasIndependentExpectedValues<float>();
-        }
+TEST(Matrix3x3Tests, MatrixProductHasIndependentExpectedValues_float)
+{
+    MatrixProductHasIndependentExpectedValues<float>();
+}
 
-        TEST_METHOD(MatrixProductHasIndependentExpectedValues_double)
-        {
-            MatrixProductHasIndependentExpectedValues<double>();
-        }
+TEST(Matrix3x3Tests, MatrixProductHasIndependentExpectedValues_double)
+{
+    MatrixProductHasIndependentExpectedValues<double>();
+}
 
-        TEST_METHOD(MultiplyAssignSupportsSelfAliasing_float)
-        {
-            MultiplyAssignSupportsSelfAliasing<float>();
-        }
+TEST(Matrix3x3Tests, MultiplyAssignSupportsSelfAliasing_float)
+{
+    MultiplyAssignSupportsSelfAliasing<float>();
+}
 
-        TEST_METHOD(MultiplyAssignSupportsSelfAliasing_double)
-        {
-            MultiplyAssignSupportsSelfAliasing<double>();
-        }
+TEST(Matrix3x3Tests, MultiplyAssignSupportsSelfAliasing_double)
+{
+    MultiplyAssignSupportsSelfAliasing<double>();
+}
 
-        TEST_METHOD(MatrixVectorUsesColumnVectorConvention_float)
-        {
-            MatrixVectorUsesColumnVectorConvention<float>();
-        }
+TEST(Matrix3x3Tests, MatrixVectorUsesColumnVectorConvention_float)
+{
+    MatrixVectorUsesColumnVectorConvention<float>();
+}
 
-        TEST_METHOD(MatrixVectorUsesColumnVectorConvention_double)
-        {
-            MatrixVectorUsesColumnVectorConvention<double>();
-        }
+TEST(Matrix3x3Tests, MatrixVectorUsesColumnVectorConvention_double)
+{
+    MatrixVectorUsesColumnVectorConvention<double>();
+}
 
-        TEST_METHOD(TransposeMovesEveryElement_float)
-        {
-            TransposeMovesEveryElement<float>();
-        }
+TEST(Matrix3x3Tests, TransposeMovesEveryElement_float)
+{
+    TransposeMovesEveryElement<float>();
+}
 
-        TEST_METHOD(TransposeMovesEveryElement_double)
-        {
-            TransposeMovesEveryElement<double>();
-        }
+TEST(Matrix3x3Tests, TransposeMovesEveryElement_double)
+{
+    TransposeMovesEveryElement<double>();
+}
 
-        TEST_METHOD(EqualityChecksEveryElement_float)
-        {
-            EqualityChecksEveryElement<float>();
-        }
+TEST(Matrix3x3Tests, EqualityChecksEveryElement_float)
+{
+    EqualityChecksEveryElement<float>();
+}
 
-        TEST_METHOD(EqualityChecksEveryElement_double)
-        {
-            EqualityChecksEveryElement<double>();
-        }
+TEST(Matrix3x3Tests, EqualityChecksEveryElement_double)
+{
+    EqualityChecksEveryElement<double>();
+}
 
-        TEST_METHOD(ScaleHasKnownResult_float)
-        {
-            ScaleHasKnownResult<float>();
-        }
+TEST(Matrix3x3Tests, ScaleHasKnownResult_float)
+{
+    ScaleHasKnownResult<float>();
+}
 
-        TEST_METHOD(ScaleHasKnownResult_double)
-        {
-            ScaleHasKnownResult<double>();
-        }
+TEST(Matrix3x3Tests, ScaleHasKnownResult_double)
+{
+    ScaleHasKnownResult<double>();
+}
 
-        TEST_METHOD(RotationXIsRightHanded_float)
-        {
-            RotationXIsRightHanded<float>();
-        }
+TEST(Matrix3x3Tests, RotationXIsRightHanded_float)
+{
+    RotationXIsRightHanded<float>();
+}
 
-        TEST_METHOD(RotationXIsRightHanded_double)
-        {
-            RotationXIsRightHanded<double>();
-        }
+TEST(Matrix3x3Tests, RotationXIsRightHanded_double)
+{
+    RotationXIsRightHanded<double>();
+}
 
-        TEST_METHOD(RotationYIsRightHanded_float)
-        {
-            RotationYIsRightHanded<float>();
-        }
+TEST(Matrix3x3Tests, RotationYIsRightHanded_float)
+{
+    RotationYIsRightHanded<float>();
+}
 
-        TEST_METHOD(RotationYIsRightHanded_double)
-        {
-            RotationYIsRightHanded<double>();
-        }
+TEST(Matrix3x3Tests, RotationYIsRightHanded_double)
+{
+    RotationYIsRightHanded<double>();
+}
 
-        TEST_METHOD(RotationZIsRightHanded_float)
-        {
-            RotationZIsRightHanded<float>();
-        }
+TEST(Matrix3x3Tests, RotationZIsRightHanded_float)
+{
+    RotationZIsRightHanded<float>();
+}
 
-        TEST_METHOD(RotationZIsRightHanded_double)
-        {
-            RotationZIsRightHanded<double>();
-        }
+TEST(Matrix3x3Tests, RotationZIsRightHanded_double)
+{
+    RotationZIsRightHanded<double>();
+}
 
-        TEST_METHOD(InverseUsesPivotingAndKnownExpectedValues_float)
-        {
-            InverseUsesPivotingAndKnownExpectedValues<float>();
-        }
+TEST(Matrix3x3Tests, InverseUsesPivotingAndKnownExpectedValues_float)
+{
+    InverseUsesPivotingAndKnownExpectedValues<float>();
+}
 
-        TEST_METHOD(InverseUsesPivotingAndKnownExpectedValues_double)
-        {
-            InverseUsesPivotingAndKnownExpectedValues<double>();
-        }
+TEST(Matrix3x3Tests, InverseUsesPivotingAndKnownExpectedValues_double)
+{
+    InverseUsesPivotingAndKnownExpectedValues<double>();
+}
 
-        TEST_METHOD(DenseInverseMatchesRationalFixture_float)
-        {
-            DenseInverseMatchesRationalFixture<float>();
-        }
+TEST(Matrix3x3Tests, DenseInverseMatchesRationalFixture_float)
+{
+    DenseInverseMatchesRationalFixture<float>();
+}
 
-        TEST_METHOD(DenseInverseMatchesRationalFixture_double)
-        {
-            DenseInverseMatchesRationalFixture<double>();
-        }
+TEST(Matrix3x3Tests, DenseInverseMatchesRationalFixture_double)
+{
+    DenseInverseMatchesRationalFixture<double>();
+}
 
-        TEST_METHOD(InverseRejectsSingularAndNonFinite_float)
-        {
-            InverseRejectsSingularAndNonFinite<float>();
-        }
+TEST(Matrix3x3Tests, InverseRejectsSingularAndNonFinite_float)
+{
+    InverseRejectsSingularAndNonFinite<float>();
+}
 
-        TEST_METHOD(InverseRejectsSingularAndNonFinite_double)
-        {
-            InverseRejectsSingularAndNonFinite<double>();
-        }
+TEST(Matrix3x3Tests, InverseRejectsSingularAndNonFinite_double)
+{
+    InverseRejectsSingularAndNonFinite<double>();
+}
 
-        TEST_METHOD(InverseValidatesTolerance_float)
-        {
-            InverseValidatesTolerance<float>();
-        }
+TEST(Matrix3x3Tests, InverseValidatesTolerance_float)
+{
+    InverseValidatesTolerance<float>();
+}
 
-        TEST_METHOD(InverseValidatesTolerance_double)
-        {
-            InverseValidatesTolerance<double>();
-        }
+TEST(Matrix3x3Tests, InverseValidatesTolerance_double)
+{
+    InverseValidatesTolerance<double>();
+}
 
-        TEST_METHOD(InverseToleranceCanRejectNearDependentRows_float)
-        {
-            InverseToleranceCanRejectNearDependentRows<float>();
-        }
+TEST(Matrix3x3Tests, InverseToleranceCanRejectNearDependentRows_float)
+{
+    InverseToleranceCanRejectNearDependentRows<float>();
+}
 
-        TEST_METHOD(InverseToleranceCanRejectNearDependentRows_double)
-        {
-            InverseToleranceCanRejectNearDependentRows<double>();
-        }
+TEST(Matrix3x3Tests, InverseToleranceCanRejectNearDependentRows_double)
+{
+    InverseToleranceCanRejectNearDependentRows<double>();
+}
 
-        TEST_METHOD(InverseHandlesDifferentRowScales_float)
-        {
-            InverseHandlesDifferentRowScales<float>();
-        }
+TEST(Matrix3x3Tests, InverseHandlesDifferentRowScales_float)
+{
+    InverseHandlesDifferentRowScales<float>();
+}
 
-        TEST_METHOD(InverseHandlesDifferentRowScales_double)
-        {
-            InverseHandlesDifferentRowScales<double>();
-        }
-
-    };
+TEST(Matrix3x3Tests, InverseHandlesDifferentRowScales_double)
+{
+    InverseHandlesDifferentRowScales<double>();
 }

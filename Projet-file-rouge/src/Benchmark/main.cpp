@@ -1,73 +1,56 @@
-#include "Benchmark/Benchmark.h"
-#include "MathLib/Matrix3x3.h"
-#include "MathLib/Matrix4x4.h"
-#include "MathLib/Vec3.h"
-#include "MathLib/Vec4.h"
-#include "Platform/CpuFeatures.h"
-
-#include <cstdlib>
-#include <iomanip>
-#include <iostream>
-#include <random>
+#include <benchmark/benchmark.h>
 #include <vector>
+#include <algorithm>
+#include <cmath>
+#include <intrin.h> // Pour __rdtsc() sous Windows/MSVC
 
-int main(const int _argc, char** _argv)
+#include "MathLib/Vec4.h"
+
+// Calcul sur-mesure du Percentile 95 (P95)
+double ComputeP95(const std::vector<double>& samples)
 {
-    using Maths::Vec3;
-    using Maths::Vec4;
-    using Maths::Matrix4x4;
-    const Vec3<> a{1,2,3};
-    const Vec3<> b{4,5,6};
-    std::cout << "Dot: " << a.Dot(b) << '\n';
-    const auto matrix = Matrix4x4<>::Translation({10,20,30}) * Matrix4x4<>::Scale({2,3,4});
-    const auto point = matrix.TransformPoint(a);
-    std::cout << "Point: " << point.x << ", " << point.y << ", " << point.z << '\n';
+    std::vector<double> sorted = samples;
+    std::sort(sorted.begin(), sorted.end());
+    const auto index = static_cast<std::size_t>(std::ceil(0.95 * sorted.size())) - 1;
+    return sorted[index];
+}
 
-#if defined(_MSC_VER) && (defined(_M_IX86) || defined(_M_X64))
-    const auto cpu = Platform::CpuFeatures::Detect();
-    std::cout << "CPU: " << cpu.Vendor() << " / " << cpu.Brand() << '\n';
-    std::cout << std::boolalpha
-              << "SSE usable: " << cpu.CanUse(Platform::CpuFeature::SSE) << '\n'
-              << "AVX2 usable: " << cpu.CanUse(Platform::CpuFeature::AVX2) << '\n'
-              << "FMA usable: " << cpu.CanUse(Platform::CpuFeature::FMA) << '\n';
-#else
-    std::cout << "CPU detection demo is MSVC/Windows-only.\n";
-#endif
+static void BM_Vec4Addition(benchmark::State& state)
+{
+    const std::size_t count = state.range(0);
 
-    // Runtime inputs. Optional integer seed allows reproducing a run.
-    const auto seed = _argc > 1 ? static_cast<unsigned int>(std::strtoul(_argv[1], nullptr, 10))
-                              : std::random_device{}();
-    std::mt19937 engine(seed);
-    std::uniform_real_distribution<float> distribution(-10.0f, 10.0f);
-    const std::size_t count = 250000;
-    std::vector<Vec4<>> left(count);
-    std::vector<Vec4<>> right(count);
-    std::vector<Vec4<>> output(count);
-    for (std::size_t i = 0; i < count; ++i)
-    {
-        left[i] = {distribution(engine), distribution(engine), distribution(engine), distribution(engine)};
-        right[i] = {distribution(engine), distribution(engine), distribution(engine), distribution(engine)};
-    }
+    std::vector<Maths::Vec4<float>> left(count, {1.0f, 2.0f, 3.0f, 4.0f});
+    std::vector<Maths::Vec4<float>> right(count, {5.0f, 6.0f, 7.0f, 8.0f});
+    std::vector<Maths::Vec4<float>> output(count);
 
-    const auto result = Benchmark::Run([&]
+    const unsigned __int64 start_cycles = __rdtsc();
+
+    for (auto _ : state)
     {
         for (std::size_t i = 0; i < count; ++i)
         {
             output[i] = left[i] + right[i];
         }
-        // Included in the measured time. Simple and observable, not a magic barrier.
-        double checksum = 0;
-        for (const auto& v : output)
-        {
-            checksum += static_cast<double>(v.x) + v.y + v.z + v.w;
-        }
-        return checksum;
-    });
+        benchmark::DoNotOptimize(output.data());
+        benchmark::ClobberMemory();
+    }
 
-    std::cout << std::fixed << std::setprecision(3)
-              << "Seed: " << seed << ", vectors per batch: " << count << '\n'
-              << "Batch incl. checksum: min " << result.minimumMs
-              << " ms, median " << result.medianMs
-              << " ms, max " << result.maximumMs << " ms\n"
-              << "Observable checksum: " << result.checksum << '\n';
+    const unsigned __int64 end_cycles = __rdtsc();
+
+    // Nombre d'opérations exécutées (utilisé pour déduire le temps/op)
+    const double total_ops = static_cast<double>(count) * state.iterations();
+    state.SetItemsProcessed(static_cast<int64_t>(total_ops));
+
+    // Cycles par opération (via __rdtsc)
+    const double total_cycles = static_cast<double>(end_cycles - start_cycles);
+    state.counters["Cycles/op"] = total_cycles / total_ops;
 }
+
+BENCHMARK(BM_Vec4Addition)
+    ->Arg(250000)
+    ->Repetitions(10)                       // Taux / Marge d'erreur (StdDev/CV%)
+    ->DisplayAggregatesOnly(false)
+    ->ComputeStatistics("p95", ComputeP95); // Percentile 95
+
+// Génère automatiquement la fonction main() de Google Benchmark
+BENCHMARK_MAIN();
