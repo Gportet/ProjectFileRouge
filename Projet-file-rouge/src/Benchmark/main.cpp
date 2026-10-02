@@ -3,10 +3,11 @@
 #include <algorithm>
 #include <cmath>
 #include <intrin.h> // Pour __rdtsc() sous Windows/MSVC
-
+#include <fstream>
 #include "MathLib/Vec4.h"
+#include <iostream>
+#include <filesystem>
 
-// Calcul sur-mesure du Percentile 95 (P95)
 double ComputeP95(const std::vector<double>& samples)
 {
     std::vector<double> sorted = samples;
@@ -52,5 +53,30 @@ BENCHMARK(BM_Vec4Addition)
     ->DisplayAggregatesOnly(false)
     ->ComputeStatistics("p95", ComputeP95); // Percentile 95
 
-// Génère automatiquement la fonction main() de Google Benchmark
-BENCHMARK_MAIN();
+
+#include <benchmark/benchmark.h>
+#include <vector>
+
+int main(int argc, char* argv[])
+{
+    
+    std::cout << "Dossier d'execution : " 
+              << std::filesystem::current_path() << std::endl;
+    std::vector<char*> args(argv, argv + argc);
+    
+    char arg_out[] = "--benchmark_out=results.json";
+    char arg_format[] = "--benchmark_out_format=json";
+    
+    args.push_back(arg_out);
+    args.push_back(arg_format);
+    
+    int new_argc = static_cast<int>(args.size());
+    char** new_argv = args.data();
+
+    ::benchmark::Initialize(&new_argc, new_argv);
+
+    ::benchmark::RunSpecifiedBenchmarks();
+
+    ::benchmark::Shutdown();
+    return 0;
+}
