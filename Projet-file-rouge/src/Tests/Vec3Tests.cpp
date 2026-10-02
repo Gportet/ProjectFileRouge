@@ -1,9 +1,13 @@
-#include "TestHelpers.h"
-#include "Maths/Vec3.h"
+#include <gtest/gtest.h>
+#include <cmath>
+#include <limits>
 #include <numbers>
+#include <stdexcept>
 #include <type_traits>
 
-using namespace Microsoft::VisualStudio::CppUnitTestFramework;
+#include "TestHelpers.h"
+#include "MathLib/Vec3.h"
+
 using namespace TestHelpers;
 
 namespace
@@ -24,7 +28,7 @@ namespace
         V copy = original;
         copy.x = T{99};
         VectorNear(V{1, 2, 3}, original);
-        Assert::IsTrue(copy.x == T{99});
+        EXPECT_EQ(copy.x, T{99});
     }
 
     template <typename T>
@@ -92,7 +96,7 @@ namespace
     {
         using V = Maths::Vec3<T>;
         V a = V{1, 2, 3};
-        Assert::IsTrue(&(a += a) == &a);
+        EXPECT_EQ(&(a += a), &a);
         VectorNear(V{2, 4, 6}, a);
         a -= V{1, 2, 3};
         a *= a;
@@ -109,13 +113,13 @@ namespace
         using V = Maths::Vec3<T>;
         const V original = V{1, 2, 3};
         V actual = original;
-        Assert::ExpectException<std::domain_error>([&] { actual /= T{0}; });
+        EXPECT_THROW(actual /= T{0}, std::domain_error);
         VectorNear(original, actual);
-        Assert::ExpectException<std::domain_error>([&] { actual /= V{0, 1, 1}; });
+        EXPECT_THROW((actual /= V{0, 1, 1}), std::domain_error);
         VectorNear(original, actual);
-        Assert::ExpectException<std::domain_error>([&] { actual /= V{1, 0, 1}; });
+        EXPECT_THROW((actual /= V{1, 0, 1}), std::domain_error);
         VectorNear(original, actual);
-        Assert::ExpectException<std::domain_error>([&] { actual /= V{1, 1, 0}; });
+        EXPECT_THROW((actual /= V{1, 1, 0}), std::domain_error);
         VectorNear(original, actual);
     }
 
@@ -124,19 +128,19 @@ namespace
     {
         using V = Maths::Vec3<T>;
         const V a = V{1, 2, 3};
-        Assert::IsTrue(a == a);
+        EXPECT_EQ(a, a);
         V changedx = a;
         changedx.x += T{1};
-        Assert::IsTrue(changedx != a);
+        EXPECT_NE(changedx, a);
         V changedy = a;
         changedy.y += T{1};
-        Assert::IsTrue(changedy != a);
+        EXPECT_NE(changedy, a);
         V changedz = a;
         changedz.z += T{1};
-        Assert::IsTrue(changedz != a);
+        EXPECT_NE(changedz, a);
         V nan = a;
         nan.x = std::numeric_limits<T>::quiet_NaN();
-        Assert::IsFalse(nan == nan);
+        EXPECT_FALSE(nan == nan);
     }
 
     template <typename T>
@@ -173,12 +177,12 @@ namespace
     void NormalizeRejectsZeroAndNonFinite()
     {
         using V = Maths::Vec3<T>;
-        Assert::ExpectException<std::domain_error>([] { (void)V{}.Normalize(); });
+        EXPECT_THROW((void)V{}.Normalize(), std::domain_error);
         V invalid = V{1, 2, 3};
         invalid.x = std::numeric_limits<T>::infinity();
-        Assert::ExpectException<std::domain_error>([&] { (void)invalid.Normalize(); });
+        EXPECT_THROW((void)invalid.Normalize(), std::domain_error);
         invalid.x = std::numeric_limits<T>::quiet_NaN();
-        Assert::ExpectException<std::domain_error>([&] { (void)invalid.Normalize(); });
+        EXPECT_THROW((void)invalid.Normalize(), std::domain_error);
     }
 
     template <typename T>
@@ -209,7 +213,7 @@ namespace
         Near(std::numbers::pi_v<T> / T{2}, V::UnitX.Angle(V::UnitY));
         Near(std::numbers::pi_v<T>, V::UnitX.Angle(-V::UnitX));
         Near(T{0}, V::UnitX.Angle(V::UnitX));
-        Assert::ExpectException<std::domain_error>([] { (void)V::Zero.Angle(V::UnitX); });
+        EXPECT_THROW((void)V::Zero.Angle(V::UnitX), std::domain_error);
     }
 
     template <typename T>
@@ -230,8 +234,8 @@ namespace
         using V = Maths::Vec3<T>;
         const V a = V{1, -4, 7};
         const V b = V{3, -2, 5};
-        VectorNear(V{1, -4, 5}, V::Min(a,b));
-        VectorNear(V{3, -2, 7}, V::Max(a,b));
+        VectorNear(V{1, -4, 5}, V::Min(a, b));
+        VectorNear(V{3, -2, 7}, V::Max(a, b));
     }
 
     template <typename T>
@@ -256,233 +260,224 @@ namespace
         VectorNear(V{-3, 6, -3}, a.Cross(b));
         VectorNear(V::Zero, a.Cross(a));
     }
-
 }
 
-namespace MathStarterTests
+TEST(Vec3Tests, DefaultConstructorIsZero_float)
 {
-    TEST_CLASS(Vec3Tests)
-    {
-    public:
-        TEST_METHOD(DefaultConstructorIsZero_float)
-        {
-            DefaultConstructorIsZero<float>();
-        }
+    DefaultConstructorIsZero<float>();
+}
 
-        TEST_METHOD(DefaultConstructorIsZero_double)
-        {
-            DefaultConstructorIsZero<double>();
-        }
+TEST(Vec3Tests, DefaultConstructorIsZero_double)
+{
+    DefaultConstructorIsZero<double>();
+}
 
-        TEST_METHOD(ComponentsAndCopyAreIndependent_float)
-        {
-            ComponentsAndCopyAreIndependent<float>();
-        }
+TEST(Vec3Tests, ComponentsAndCopyAreIndependent_float)
+{
+    ComponentsAndCopyAreIndependent<float>();
+}
 
-        TEST_METHOD(ComponentsAndCopyAreIndependent_double)
-        {
-            ComponentsAndCopyAreIndependent<double>();
-        }
+TEST(Vec3Tests, ComponentsAndCopyAreIndependent_double)
+{
+    ComponentsAndCopyAreIndependent<double>();
+}
 
-        TEST_METHOD(ExplicitConversionPreservesValues_float)
-        {
-            ExplicitConversionPreservesValues<float>();
-        }
+TEST(Vec3Tests, ExplicitConversionPreservesValues_float)
+{
+    ExplicitConversionPreservesValues<float>();
+}
 
-        TEST_METHOD(ExplicitConversionPreservesValues_double)
-        {
-            ExplicitConversionPreservesValues<double>();
-        }
+TEST(Vec3Tests, ExplicitConversionPreservesValues_double)
+{
+    ExplicitConversionPreservesValues<double>();
+}
 
-        TEST_METHOD(AdditionHasKnownResult_float)
-        {
-            AdditionHasKnownResult<float>();
-        }
+TEST(Vec3Tests, AdditionHasKnownResult_float)
+{
+    AdditionHasKnownResult<float>();
+}
 
-        TEST_METHOD(AdditionHasKnownResult_double)
-        {
-            AdditionHasKnownResult<double>();
-        }
+TEST(Vec3Tests, AdditionHasKnownResult_double)
+{
+    AdditionHasKnownResult<double>();
+}
 
-        TEST_METHOD(SubtractionHasKnownResult_float)
-        {
-            SubtractionHasKnownResult<float>();
-        }
+TEST(Vec3Tests, SubtractionHasKnownResult_float)
+{
+    SubtractionHasKnownResult<float>();
+}
 
-        TEST_METHOD(SubtractionHasKnownResult_double)
-        {
-            SubtractionHasKnownResult<double>();
-        }
+TEST(Vec3Tests, SubtractionHasKnownResult_double)
+{
+    SubtractionHasKnownResult<double>();
+}
 
-        TEST_METHOD(ComponentProductHasKnownResult_float)
-        {
-            ComponentProductHasKnownResult<float>();
-        }
+TEST(Vec3Tests, ComponentProductHasKnownResult_float)
+{
+    ComponentProductHasKnownResult<float>();
+}
 
-        TEST_METHOD(ComponentProductHasKnownResult_double)
-        {
-            ComponentProductHasKnownResult<double>();
-        }
+TEST(Vec3Tests, ComponentProductHasKnownResult_double)
+{
+    ComponentProductHasKnownResult<double>();
+}
 
-        TEST_METHOD(ComponentDivisionHasKnownResult_float)
-        {
-            ComponentDivisionHasKnownResult<float>();
-        }
+TEST(Vec3Tests, ComponentDivisionHasKnownResult_float)
+{
+    ComponentDivisionHasKnownResult<float>();
+}
 
-        TEST_METHOD(ComponentDivisionHasKnownResult_double)
-        {
-            ComponentDivisionHasKnownResult<double>();
-        }
+TEST(Vec3Tests, ComponentDivisionHasKnownResult_double)
+{
+    ComponentDivisionHasKnownResult<double>();
+}
 
-        TEST_METHOD(ScalarOperationsAndNegation_float)
-        {
-            ScalarOperationsAndNegation<float>();
-        }
+TEST(Vec3Tests, ScalarOperationsAndNegation_float)
+{
+    ScalarOperationsAndNegation<float>();
+}
 
-        TEST_METHOD(ScalarOperationsAndNegation_double)
-        {
-            ScalarOperationsAndNegation<double>();
-        }
+TEST(Vec3Tests, ScalarOperationsAndNegation_double)
+{
+    ScalarOperationsAndNegation<double>();
+}
 
-        TEST_METHOD(CompoundOperatorsReturnSelfAndSupportAliasing_float)
-        {
-            CompoundOperatorsReturnSelfAndSupportAliasing<float>();
-        }
+TEST(Vec3Tests, CompoundOperatorsReturnSelfAndSupportAliasing_float)
+{
+    CompoundOperatorsReturnSelfAndSupportAliasing<float>();
+}
 
-        TEST_METHOD(CompoundOperatorsReturnSelfAndSupportAliasing_double)
-        {
-            CompoundOperatorsReturnSelfAndSupportAliasing<double>();
-        }
+TEST(Vec3Tests, CompoundOperatorsReturnSelfAndSupportAliasing_double)
+{
+    CompoundOperatorsReturnSelfAndSupportAliasing<double>();
+}
 
-        TEST_METHOD(DivisionByZeroThrowsWithoutPartialMutation_float)
-        {
-            DivisionByZeroThrowsWithoutPartialMutation<float>();
-        }
+TEST(Vec3Tests, DivisionByZeroThrowsWithoutPartialMutation_float)
+{
+    DivisionByZeroThrowsWithoutPartialMutation<float>();
+}
 
-        TEST_METHOD(DivisionByZeroThrowsWithoutPartialMutation_double)
-        {
-            DivisionByZeroThrowsWithoutPartialMutation<double>();
-        }
+TEST(Vec3Tests, DivisionByZeroThrowsWithoutPartialMutation_double)
+{
+    DivisionByZeroThrowsWithoutPartialMutation<double>();
+}
 
-        TEST_METHOD(EqualityChecksEveryComponentExactly_float)
-        {
-            EqualityChecksEveryComponentExactly<float>();
-        }
+TEST(Vec3Tests, EqualityChecksEveryComponentExactly_float)
+{
+    EqualityChecksEveryComponentExactly<float>();
+}
 
-        TEST_METHOD(EqualityChecksEveryComponentExactly_double)
-        {
-            EqualityChecksEveryComponentExactly<double>();
-        }
+TEST(Vec3Tests, EqualityChecksEveryComponentExactly_double)
+{
+    EqualityChecksEveryComponentExactly<double>();
+}
 
-        TEST_METHOD(DotHasKnownResult_float)
-        {
-            DotHasKnownResult<float>();
-        }
+TEST(Vec3Tests, DotHasKnownResult_float)
+{
+    DotHasKnownResult<float>();
+}
 
-        TEST_METHOD(DotHasKnownResult_double)
-        {
-            DotHasKnownResult<double>();
-        }
+TEST(Vec3Tests, DotHasKnownResult_double)
+{
+    DotHasKnownResult<double>();
+}
 
-        TEST_METHOD(MagnitudeHasKnownResult_float)
-        {
-            MagnitudeHasKnownResult<float>();
-        }
+TEST(Vec3Tests, MagnitudeHasKnownResult_float)
+{
+    MagnitudeHasKnownResult<float>();
+}
 
-        TEST_METHOD(MagnitudeHasKnownResult_double)
-        {
-            MagnitudeHasKnownResult<double>();
-        }
+TEST(Vec3Tests, MagnitudeHasKnownResult_double)
+{
+    MagnitudeHasKnownResult<double>();
+}
 
-        TEST_METHOD(NormalizeReturnsNewUnitVector_float)
-        {
-            NormalizeReturnsNewUnitVector<float>();
-        }
+TEST(Vec3Tests, NormalizeReturnsNewUnitVector_float)
+{
+    NormalizeReturnsNewUnitVector<float>();
+}
 
-        TEST_METHOD(NormalizeReturnsNewUnitVector_double)
-        {
-            NormalizeReturnsNewUnitVector<double>();
-        }
+TEST(Vec3Tests, NormalizeReturnsNewUnitVector_double)
+{
+    NormalizeReturnsNewUnitVector<double>();
+}
 
-        TEST_METHOD(NormalizeRejectsZeroAndNonFinite_float)
-        {
-            NormalizeRejectsZeroAndNonFinite<float>();
-        }
+TEST(Vec3Tests, NormalizeRejectsZeroAndNonFinite_float)
+{
+    NormalizeRejectsZeroAndNonFinite<float>();
+}
 
-        TEST_METHOD(NormalizeRejectsZeroAndNonFinite_double)
-        {
-            NormalizeRejectsZeroAndNonFinite<double>();
-        }
+TEST(Vec3Tests, NormalizeRejectsZeroAndNonFinite_double)
+{
+    NormalizeRejectsZeroAndNonFinite<double>();
+}
 
-        TEST_METHOD(NormalizeHandlesVeryLargeAndSmallFiniteValues_float)
-        {
-            NormalizeHandlesVeryLargeAndSmallFiniteValues<float>();
-        }
+TEST(Vec3Tests, NormalizeHandlesVeryLargeAndSmallFiniteValues_float)
+{
+    NormalizeHandlesVeryLargeAndSmallFiniteValues<float>();
+}
 
-        TEST_METHOD(NormalizeHandlesVeryLargeAndSmallFiniteValues_double)
-        {
-            NormalizeHandlesVeryLargeAndSmallFiniteValues<double>();
-        }
+TEST(Vec3Tests, NormalizeHandlesVeryLargeAndSmallFiniteValues_double)
+{
+    NormalizeHandlesVeryLargeAndSmallFiniteValues<double>();
+}
 
-        TEST_METHOD(DistanceHasKnownResult_float)
-        {
-            DistanceHasKnownResult<float>();
-        }
+TEST(Vec3Tests, DistanceHasKnownResult_float)
+{
+    DistanceHasKnownResult<float>();
+}
 
-        TEST_METHOD(DistanceHasKnownResult_double)
-        {
-            DistanceHasKnownResult<double>();
-        }
+TEST(Vec3Tests, DistanceHasKnownResult_double)
+{
+    DistanceHasKnownResult<double>();
+}
 
-        TEST_METHOD(AngleUsesRadians_float)
-        {
-            AngleUsesRadians<float>();
-        }
+TEST(Vec3Tests, AngleUsesRadians_float)
+{
+    AngleUsesRadians<float>();
+}
 
-        TEST_METHOD(AngleUsesRadians_double)
-        {
-            AngleUsesRadians<double>();
-        }
+TEST(Vec3Tests, AngleUsesRadians_double)
+{
+    AngleUsesRadians<double>();
+}
 
-        TEST_METHOD(LerpSupportsEndpointsMidpointAndExtrapolation_float)
-        {
-            LerpSupportsEndpointsMidpointAndExtrapolation<float>();
-        }
+TEST(Vec3Tests, LerpSupportsEndpointsMidpointAndExtrapolation_float)
+{
+    LerpSupportsEndpointsMidpointAndExtrapolation<float>();
+}
 
-        TEST_METHOD(LerpSupportsEndpointsMidpointAndExtrapolation_double)
-        {
-            LerpSupportsEndpointsMidpointAndExtrapolation<double>();
-        }
+TEST(Vec3Tests, LerpSupportsEndpointsMidpointAndExtrapolation_double)
+{
+    LerpSupportsEndpointsMidpointAndExtrapolation<double>();
+}
 
-        TEST_METHOD(MinMaxAreComponentWise_float)
-        {
-            MinMaxAreComponentWise<float>();
-        }
+TEST(Vec3Tests, MinMaxAreComponentWise_float)
+{
+    MinMaxAreComponentWise<float>();
+}
 
-        TEST_METHOD(MinMaxAreComponentWise_double)
-        {
-            MinMaxAreComponentWise<double>();
-        }
+TEST(Vec3Tests, MinMaxAreComponentWise_double)
+{
+    MinMaxAreComponentWise<double>();
+}
 
-        TEST_METHOD(NamedConstantsHaveExpectedComponents_float)
-        {
-            NamedConstantsHaveExpectedComponents<float>();
-        }
+TEST(Vec3Tests, NamedConstantsHaveExpectedComponents_float)
+{
+    NamedConstantsHaveExpectedComponents<float>();
+}
 
-        TEST_METHOD(NamedConstantsHaveExpectedComponents_double)
-        {
-            NamedConstantsHaveExpectedComponents<double>();
-        }
+TEST(Vec3Tests, NamedConstantsHaveExpectedComponents_double)
+{
+    NamedConstantsHaveExpectedComponents<double>();
+}
 
-        TEST_METHOD(CrossUsesRightHandedOrientation_float)
-        {
-            CrossUsesRightHandedOrientation<float>();
-        }
+TEST(Vec3Tests, CrossUsesRightHandedOrientation_float)
+{
+    CrossUsesRightHandedOrientation<float>();
+}
 
-        TEST_METHOD(CrossUsesRightHandedOrientation_double)
-        {
-            CrossUsesRightHandedOrientation<double>();
-        }
-
-    };
+TEST(Vec3Tests, CrossUsesRightHandedOrientation_double)
+{
+    CrossUsesRightHandedOrientation<double>();
 }

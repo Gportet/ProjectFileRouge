@@ -1,73 +1,54 @@
-#include "Benchmark/Benchmark.h"
-#include "MathLib/Matrix3x3.h"
-#include "MathLib/Matrix4x4.h"
-#include "MathLib/Vec3.h"
-#include "MathLib/Vec4.h"
-#include "Platform/CpuFeatures.h"
-
-#include <cstdlib>
-#include <iomanip>
-#include <iostream>
-#include <random>
+#include <benchmark/benchmark.h>
 #include <vector>
+#include <algorithm>
+#include <cmath>
+#include <intrin.h>
+#include <iostream>
+#include <filesystem>
+#include "MathLib/Vec4.h"
 
-int main(const int _argc, char** _argv)
+// Calcul personnalisé du Percentile 95
+double ComputeP95(const std::vector<double>& samples)
 {
-    using Maths::Vec3;
-    using Maths::Vec4;
-    using Maths::Matrix4x4;
-    const Vec3<> a{1,2,3};
-    const Vec3<> b{4,5,6};
-    std::cout << "Dot: " << a.Dot(b) << '\n';
-    const auto matrix = Matrix4x4<>::Translation({10,20,30}) * Matrix4x4<>::Scale({2,3,4});
-    const auto point = matrix.TransformPoint(a);
-    std::cout << "Point: " << point.x << ", " << point.y << ", " << point.z << '\n';
+    if (samples.empty()) return 0.0;
+    std::vector<double> sorted = samples;
+    std::sort(sorted.begin(), sorted.end());
+    const auto index = static_cast<std::size_t>(std::ceil(0.95 * static_cast<double>(sorted.size()))) - 1;
+    return sorted[index];
+}
+# pragma region Vect3 
+# pragma endregion Vect3
 
-#if defined(_MSC_VER) && (defined(_M_IX86) || defined(_M_X64))
-    const auto cpu = Platform::CpuFeatures::Detect();
-    std::cout << "CPU: " << cpu.Vendor() << " / " << cpu.Brand() << '\n';
-    std::cout << std::boolalpha
-              << "SSE usable: " << cpu.CanUse(Platform::CpuFeature::SSE) << '\n'
-              << "AVX2 usable: " << cpu.CanUse(Platform::CpuFeature::AVX2) << '\n'
-              << "FMA usable: " << cpu.CanUse(Platform::CpuFeature::FMA) << '\n';
-#else
-    std::cout << "CPU detection demo is MSVC/Windows-only.\n";
-#endif
 
-    // Runtime inputs. Optional integer seed allows reproducing a run.
-    const auto seed = _argc > 1 ? static_cast<unsigned int>(std::strtoul(_argv[1], nullptr, 10))
-                              : std::random_device{}();
-    std::mt19937 engine(seed);
-    std::uniform_real_distribution<float> distribution(-10.0f, 10.0f);
-    const std::size_t count = 250000;
-    std::vector<Vec4<>> left(count);
-    std::vector<Vec4<>> right(count);
-    std::vector<Vec4<>> output(count);
-    for (std::size_t i = 0; i < count; ++i)
-    {
-        left[i] = {distribution(engine), distribution(engine), distribution(engine), distribution(engine)};
-        right[i] = {distribution(engine), distribution(engine), distribution(engine), distribution(engine)};
-    }
+# pragma region Vect4
+# pragma endregion Vect4
 
-    const auto result = Benchmark::Run([&]
-    {
-        for (std::size_t i = 0; i < count; ++i)
-        {
-            output[i] = left[i] + right[i];
-        }
-        // Included in the measured time. Simple and observable, not a magic barrier.
-        double checksum = 0;
-        for (const auto& v : output)
-        {
-            checksum += static_cast<double>(v.x) + v.y + v.z + v.w;
-        }
-        return checksum;
-    });
 
-    std::cout << std::fixed << std::setprecision(3)
-              << "Seed: " << seed << ", vectors per batch: " << count << '\n'
-              << "Batch incl. checksum: min " << result.minimumMs
-              << " ms, median " << result.medianMs
-              << " ms, max " << result.maximumMs << " ms\n"
-              << "Observable checksum: " << result.checksum << '\n';
+# pragma region Matrice3
+# pragma endregion Matrice3
+
+
+# pragma region Matrice4
+# pragma endregion Matrice4
+
+int main(int argc, char* argv[])
+{
+    std::cout << "Dossier d'execution : " << std::filesystem::current_path() << std::endl;
+
+    std::vector<char*> args(argv, argv + argc);
+
+    char arg_out[] = "--benchmark_out=results.json";
+    char arg_format[] = "--benchmark_out_format=json";
+
+    args.push_back(arg_out);
+    args.push_back(arg_format);
+
+    int new_argc = static_cast<int>(args.size());
+    char** new_argv = args.data();
+
+    ::benchmark::Initialize(&new_argc, new_argv);
+    ::benchmark::RunSpecifiedBenchmarks();
+    ::benchmark::Shutdown();
+
+    return 0;
 }
