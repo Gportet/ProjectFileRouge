@@ -148,4 +148,5 @@ target_link_libraries(ViewerApp PRIVATE
         imgui
         implot
         glfw
+        opengl32
 )
