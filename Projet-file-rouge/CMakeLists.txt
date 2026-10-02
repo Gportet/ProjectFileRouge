@@ -18,6 +18,8 @@ add_library(MathLib STATIC
         include/MathLib/Matrix3x3.h
         include/MathLib/Matrix4x4.h
         include/Platform/CpuFeatures.h
+        include/MathLib/MathLib_SIMD/src/Vec3_SIMD.cpp
+        include/MathLib/MathLib_SIMD/include/Vec3_SIMD.h
 )
 
 # Indique à CMake tous les endroits possibles où chercher les .h
