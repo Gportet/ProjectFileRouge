@@ -1,6 +1,8 @@
 ﻿#pragma once
 
 #include <xmmintrin.h>
+#include <cmath>
+#include <stdexcept>
 
 namespace MathsSIMD
 {

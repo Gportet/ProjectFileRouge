@@ -1,8 +1,6 @@
 ﻿#include "MathLib_SIMD/include/Vec3_SIMD.h"
 
-#include <cmath>
-#include <stdexcept>
-#include <immintrin.h>
+
 
 
 namespace MathsSIMD
@@ -277,10 +275,10 @@ namespace MathsSIMD
         const __m128 result1 = _mm_add_ps(squared, y_squared);
         
         // (x² + y²) + z²
-        const __m128 result2 = _mm_add_ps(squared, z_squared);
+        const __m128 result2 = _mm_add_ps(result1, z_squared);
         
         // return first value
-        return _mm_cvtss_f32(result1);
+        return _mm_cvtss_f32(result2);
     }
 
     Vec3 Vec3_SIMD::Normalize() const
@@ -294,11 +292,65 @@ namespace MathsSIMD
         
         if (magnitude == 0.0f)
         {
-            throw std::domain_error("Cannot normalize non-finite components");
+            throw std::domain_error("Cannot divide by zero");
         }
         
         const __m128 vecA = Load(this->data);
+        const __m128 MagnitudeV = _mm_set1_ps(magnitude);
         
+        const __m128 result = _mm_div_ps (vecA, MagnitudeV);
+        
+        return Store(result);
+    }
+
+    float Vec3_SIMD::DistanceSquared(const Vec3_SIMD& rhs) const
+    {
+        const __m128 vecA = Load(this->data);
+        const __m128 vecB = Load(rhs.data);
+        
+        const __m128 diff = _mm_sub_ps (vecA, vecB);
+        const __m128 squaredDiff = _mm_mul_ps (diff, diff);
+        
+        // only y²
+        const __m128 squaredDiff_y = _mm_shuffle_ps(squaredDiff, squaredDiff, _MM_SHUFFLE(1, 1, 1, 1));
+        // only z²
+        const __m128 squaredDiff_z = _mm_shuffle_ps(squaredDiff, squaredDiff, _MM_SHUFFLE(2, 2, 2, 2));
+        
+        // x² + y²
+        const __m128 squaredDiff_withY = _mm_add_ps(squaredDiff, squaredDiff_y);
+        
+        // (x² + y²) + z²
+        const __m128 result = _mm_add_ps(squaredDiff_withY, squaredDiff_z);
+        
+        return _mm_cvtss_f32(result);
+    }
+    
+    float Vec3_SIMD::Distance(const Vec3_SIMD& rhs) const
+    {
+        const __m128 vecA = Load(this->data);
+        const __m128 vecB = Load(rhs.data);
+        
+        const __m128 diff = _mm_sub_ps (vecA, vecB);
+        const __m128 squaredDiff = _mm_mul_ps (diff, diff);
+        
+        // only y²
+        const __m128 squaredDiff_y = _mm_shuffle_ps(squaredDiff, squaredDiff, _MM_SHUFFLE(1, 1, 1, 1));
+        // only z²
+        const __m128 squaredDiff_z = _mm_shuffle_ps(squaredDiff, squaredDiff, _MM_SHUFFLE(2, 2, 2, 2));
+        
+        // x² + y²
+        const __m128 squaredDiff_withY = _mm_add_ps(squaredDiff, squaredDiff_y);
+        
+        // (x² + y²) + z²
+        const __m128 squaredDiff_withZ = _mm_add_ps(squaredDiff_withY, squaredDiff_z);
+        
+        const __m128 result = _mm_sqrt_ps(squaredDiff_withZ);
+        
+        return _mm_cvtss_f32(result);
+    }
+
+    float Vec3_SIMD::Angle(const Vec3_SIMD& rhs) const
+    {
     }
 
 #pragma endregion
