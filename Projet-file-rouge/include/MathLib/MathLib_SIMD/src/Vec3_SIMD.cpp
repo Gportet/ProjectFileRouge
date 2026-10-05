@@ -1,5 +1,7 @@
 ﻿#include "MathLib_SIMD/include/Vec3_SIMD.h"
 
+#include <cmath>
+#include <stdexcept>
 #include <immintrin.h>
 
 
@@ -78,6 +80,13 @@ namespace MathsSIMD
     
     Vec3_SIMD Vec3_SIMD::operator/(const Vec3_SIMD& rhs) const
     {
+        if (rhs.data.x == 0.0f ||
+            rhs.data.y == 0.0f ||
+            rhs.data.z == 0.0f)
+        {
+            throw std::runtime_error("Division by zero");
+        }
+        
         const __m128 vecA = Load(this->data);
         const __m128 vecB = Load(rhs.data);
         
@@ -104,7 +113,7 @@ namespace MathsSIMD
         const __m128 vecA = Load(this->data);
         const __m128 vScalar = _mm_set1_ps(scalar);
         
-        const __m128 result = _mm_mul_ps (vecA, vecA);
+        const __m128 result = _mm_mul_ps (vecA, vScalar);
         const Vec3 vecResult = Store(result);
         
         return Vec3_SIMD(vecResult);
@@ -112,10 +121,15 @@ namespace MathsSIMD
     
     Vec3_SIMD Vec3_SIMD::operator/(float scalar) const
     {
+        if (scalar == 0.0f)
+        {
+            throw std::runtime_error("Division by zero");
+        }
+        
         const __m128 vecA = Load(this->data);
         const __m128 vScalar = _mm_set1_ps(scalar);
         
-        const __m128 result = _mm_div_ps (vecA, vecA);
+        const __m128 result = _mm_div_ps (vecA, vScalar);
         const Vec3 vecResult = Store(result);
         
         return Vec3_SIMD(vecResult);
@@ -170,7 +184,7 @@ namespace MathsSIMD
         __m128 vecA = Load(this->data);
         __m128 vScalar = _mm_set1_ps(scalar);
         
-        vecA = _mm_mul_ps (vecA, vecA);
+        vecA = _mm_mul_ps (vecA, vScalar);
         this->data = Store(vecA);
         
         return *this;
@@ -181,7 +195,7 @@ namespace MathsSIMD
         __m128 vecA = Load(this->data);
         __m128 vScalar = _mm_set1_ps(scalar);
         
-        vecA = _mm_div_ps (vecA, vecA);
+        vecA = _mm_div_ps (vecA, vScalar);
         this->data = Store(vecA);
         
         return *this;
@@ -207,6 +221,85 @@ namespace MathsSIMD
         return _mm_movemask_ps(result) == 0xF;
     }
 
+
+#pragma endregion
+    
+#pragma region MathFormula 
+    float Vec3_SIMD::Dot(const Vec3_SIMD& rhs) const
+    {
+        const __m128 vecA = Load(this->data);
+        const __m128 vecB = Load(rhs.data);
+        
+        const __m128 result = _mm_mul_ps (vecA, vecB);
+        
+        float x = _mm_cvtss_f32(result);
+        float y = _mm_cvtss_f32(_mm_shuffle_ps(result, result, _MM_SHUFFLE(1, 1, 1, 1)));
+        float z = _mm_cvtss_f32(_mm_shuffle_ps(result, result, _MM_SHUFFLE(2, 2, 2, 2)));
+        
+        return x + y + z;
+    }
+
+    Vec3 Vec3_SIMD::Cross(const Vec3_SIMD& rhs) const
+    {
+        const __m128 vecA = Load(this->data);
+        const __m128 vecB = Load(rhs.data);
+        
+        const __m128 vecA_yzx = _mm_shuffle_ps(vecA, vecA, _MM_SHUFFLE(3, 0, 2, 1));
+        const __m128 vecB_zyx = _mm_shuffle_ps(vecB, vecB, _MM_SHUFFLE(3, 0, 1, 2));
+        const __m128 result1 = _mm_mul_ps (vecA_yzx, vecB_zyx);
+        
+        const __m128 vecA_zyx = _mm_shuffle_ps(vecA, vecA, _MM_SHUFFLE(3, 0, 1, 2));
+        const __m128 vecB_yzx = _mm_shuffle_ps(vecB, vecB, _MM_SHUFFLE(3, 0, 2, 1));
+        const __m128 result2 = _mm_mul_ps (vecA_zyx, vecB_yzx);
+        
+        const __m128 resultFinal = _mm_sub_ps(result1, result2);
+        
+        return Store(resultFinal);
+    }
+
+    float Vec3_SIMD::MagnitudeSquared() const
+    {
+        return Dot(*this);
+    }
+    
+    float Vec3_SIMD::Magnitude() const
+    {
+        const __m128 vecA = Load(this->data);
+        
+        const __m128 squared = _mm_mul_ps(vecA, vecA);
+        
+        // only y²
+        const __m128 y_squared = _mm_shuffle_ps(vecA, vecA, _MM_SHUFFLE(1, 1, 1, 1));
+        // only z²
+        const __m128 z_squared = _mm_shuffle_ps(vecA, vecA, _MM_SHUFFLE(2, 2, 2, 2));
+        
+        // x² + y²
+        const __m128 result1 = _mm_add_ps(squared, y_squared);
+        
+        // (x² + y²) + z²
+        const __m128 result2 = _mm_add_ps(squared, z_squared);
+        
+        // return first value
+        return _mm_cvtss_f32(result1);
+    }
+
+    Vec3 Vec3_SIMD::Normalize() const
+    {
+        if (!std::isfinite(data.x) || !std::isfinite(data.y) || !std::isfinite(data.z))
+        {
+            throw std::domain_error("Cannot normalize non-finite components");
+        }
+        
+        const float magnitude = Magnitude();
+        
+        if (magnitude == 0.0f)
+        {
+            throw std::domain_error("Cannot normalize non-finite components");
+        }
+        
+        const __m128 vecA = Load(this->data);
+        
+    }
 
 #pragma endregion
     

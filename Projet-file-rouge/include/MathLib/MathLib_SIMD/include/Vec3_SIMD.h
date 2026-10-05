@@ -50,6 +50,28 @@ namespace MathsSIMD
         bool operator==(const Vec3_SIMD& rhs) const;
         bool operator!=(const Vec3_SIMD& rhs) const;
 #pragma endregion
+        
+#pragma region MathFormula 
+        float Dot (const Vec3_SIMD& rhs) const;
+        Vec3 Cross (const Vec3_SIMD& rhs) const;
+        float MagnitudeSquared() const;
+        float Magnitude() const;
+        
+        Vec3 Normalize () const;
+        float DistanceSquared (const Vec3_SIMD& rhs) const;
+        float Distance (const Vec3_SIMD& rhs) const;
+        float Angle (const Vec3_SIMD& rhs) const;
+        
+        static Vec3_SIMD Lerp(const Vec3_SIMD& a, const Vec3_SIMD& b, float t);
+        static Vec3_SIMD Min(const Vec3_SIMD& a, const Vec3_SIMD& b);
+        static Vec3_SIMD Max(const Vec3_SIMD& a, const Vec3_SIMD& b);
+
+        static const Vec3_SIMD Zero;
+        static const Vec3_SIMD One;
+        static const Vec3_SIMD UnitX;
+        static const Vec3_SIMD UnitY;
+        static const Vec3_SIMD UnitZ;
+#pragma endregion
     
     };
 }

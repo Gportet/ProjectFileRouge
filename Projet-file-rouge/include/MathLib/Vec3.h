@@ -193,7 +193,8 @@ namespace Maths
     {
         return {y * rhs.z - z * rhs.y,
                 z * rhs.x - x * rhs.z,
-                x * rhs.y - y * rhs.x};
+                x * rhs.y - y * rhs.x
+        };
     }
 
     template <std::floating_point T>
