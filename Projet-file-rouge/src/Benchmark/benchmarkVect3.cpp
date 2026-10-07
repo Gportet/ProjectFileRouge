@@ -8,9 +8,23 @@
 #include "MathLib/Vec3.h"
 #include "benchmarkUtils.h"
 
-// basic operators
+#define REGISTER_VEC3_BENCHMARK(func) \
+    BENCHMARK(func) \
+        ->Arg(ITERATIONS) \
+        ->Repetitions(REP) \
+        ->DisplayAggregatesOnly(false) \
+        ->ComputeStatistics("p95", ComputeP95) \
+        ->MinWarmUpTime(0.5)
 
-// + 
+inline void SetCyclesCounter(benchmark::State& state, std::size_t count)
+{
+    state.SetItemsProcessed(static_cast<int64_t>(count) * state.iterations());
+    state.counters["Cycles/op"] = benchmark::Counter(
+        static_cast<double>(state.range(0)), 
+        benchmark::Counter::kIsIterationInvariantRate
+    );
+}
+
 static void BM_Vect3_SUM(benchmark::State& state)
 {
     const std::size_t count = state.range(0);
@@ -37,16 +51,10 @@ static void BM_Vect3_SUM(benchmark::State& state)
         benchmark::ClobberMemory();
     }
 
-    state.SetItemsProcessed(static_cast<int64_t>(count) * state.iterations());
+    SetCyclesCounter(state, count);
 }
-BENCHMARK(BM_Vect3_SUM)
-    ->Arg(ITERATIONS)                             // Taille du jeu de données 
-    ->Repetitions(REP)                         // Calcul de la marge d'erreur (StdDev / CV%)
-    ->DisplayAggregatesOnly(false)      
-    ->ComputeStatistics("p95", ComputeP95)
-    ->MinWarmUpTime(0.5);
+REGISTER_VEC3_BENCHMARK(BM_Vect3_SUM);
 
-// - 
 static void BM_Vect3_SUB(benchmark::State& state)
 {
     const std::size_t count = state.range(0);
@@ -73,16 +81,10 @@ static void BM_Vect3_SUB(benchmark::State& state)
         benchmark::ClobberMemory();
     }
 
-    state.SetItemsProcessed(static_cast<int64_t>(count) * state.iterations());
+    SetCyclesCounter(state, count);
 }
-BENCHMARK(BM_Vect3_SUB)
-    ->Arg(ITERATIONS)                               
-    ->Repetitions(REP)                         
-    ->DisplayAggregatesOnly(false)      
-    ->ComputeStatistics("p95", ComputeP95)
-    ->MinWarmUpTime(0.5);
+REGISTER_VEC3_BENCHMARK(BM_Vect3_SUB);
 
-// * 
 static void BM_Vect3_MUL(benchmark::State& state)
 {
     const std::size_t count = state.range(0);
@@ -109,16 +111,10 @@ static void BM_Vect3_MUL(benchmark::State& state)
         benchmark::ClobberMemory();
     }
 
-    state.SetItemsProcessed(static_cast<int64_t>(count) * state.iterations());
+    SetCyclesCounter(state, count);
 }
-BENCHMARK(BM_Vect3_MUL)
-    ->Arg(ITERATIONS)                               
-    ->Repetitions(REP)                         
-    ->DisplayAggregatesOnly(false)      
-    ->ComputeStatistics("p95", ComputeP95)
-    ->MinWarmUpTime(0.5);
+REGISTER_VEC3_BENCHMARK(BM_Vect3_MUL);
 
-// / 
 static void BM_Vect3_DIV(benchmark::State& state)
 {
     const std::size_t count = state.range(0);
@@ -145,16 +141,10 @@ static void BM_Vect3_DIV(benchmark::State& state)
         benchmark::ClobberMemory();
     }
 
-    state.SetItemsProcessed(static_cast<int64_t>(count) * state.iterations());
+    SetCyclesCounter(state, count);
 }
-BENCHMARK(BM_Vect3_DIV)
-    ->Arg(ITERATIONS)                               
-    ->Repetitions(REP)                         
-    ->DisplayAggregatesOnly(false)      
-    ->ComputeStatistics("p95", ComputeP95)
-    ->MinWarmUpTime(0.5);
+REGISTER_VEC3_BENCHMARK(BM_Vect3_DIV);
 
-// negative 
 static void BM_Vect3_NEG(benchmark::State& state)
 {
     const std::size_t count = state.range(0);
@@ -179,16 +169,10 @@ static void BM_Vect3_NEG(benchmark::State& state)
         benchmark::ClobberMemory();
     }
 
-    state.SetItemsProcessed(static_cast<int64_t>(count) * state.iterations());
+    SetCyclesCounter(state, count);
 }
-BENCHMARK(BM_Vect3_NEG)
-    ->Arg(ITERATIONS)                               
-    ->Repetitions(REP)                         
-    ->DisplayAggregatesOnly(false)      
-    ->ComputeStatistics("p95", ComputeP95)
-    ->MinWarmUpTime(0.5);
+REGISTER_VEC3_BENCHMARK(BM_Vect3_NEG);
 
-// * scalar 
 static void BM_Vect3_MULScalar(benchmark::State& state)
 {
     const std::size_t count = state.range(0);
@@ -215,16 +199,10 @@ static void BM_Vect3_MULScalar(benchmark::State& state)
         benchmark::ClobberMemory();
     }
 
-    state.SetItemsProcessed(static_cast<int64_t>(count) * state.iterations());
+    SetCyclesCounter(state, count);
 }
-BENCHMARK(BM_Vect3_MULScalar)
-    ->Arg(ITERATIONS)                               
-    ->Repetitions(REP)                         
-    ->DisplayAggregatesOnly(false)      
-    ->ComputeStatistics("p95", ComputeP95)
-    ->MinWarmUpTime(0.5);
+REGISTER_VEC3_BENCHMARK(BM_Vect3_MULScalar);
 
-// / Scalar
 static void BM_Vect3_DIVScalar(benchmark::State& state)
 {
     const std::size_t count = state.range(0);
@@ -251,16 +229,10 @@ static void BM_Vect3_DIVScalar(benchmark::State& state)
         benchmark::ClobberMemory();
     }
 
-    state.SetItemsProcessed(static_cast<int64_t>(count) * state.iterations());
+    SetCyclesCounter(state, count);
 }
-BENCHMARK(BM_Vect3_DIVScalar)
-    ->Arg(ITERATIONS)                               
-    ->Repetitions(REP)                         
-    ->DisplayAggregatesOnly(false)      
-    ->ComputeStatistics("p95", ComputeP95)
-    ->MinWarmUpTime(0.5);
+REGISTER_VEC3_BENCHMARK(BM_Vect3_DIVScalar);
 
-// += 
 static void BM_Vect3_ADDAssign(benchmark::State& state)
 {
     const std::size_t count = state.range(0);
@@ -292,16 +264,10 @@ static void BM_Vect3_ADDAssign(benchmark::State& state)
         benchmark::ClobberMemory();
     }
 
-    state.SetItemsProcessed(static_cast<int64_t>(count) * state.iterations());
+    SetCyclesCounter(state, count);
 }
-BENCHMARK(BM_Vect3_ADDAssign)
-    ->Arg(ITERATIONS)                             
-    ->Repetitions(REP)                        
-    ->DisplayAggregatesOnly(false)      
-    ->ComputeStatistics("p95", ComputeP95)
-    ->MinWarmUpTime(0.5);
+REGISTER_VEC3_BENCHMARK(BM_Vect3_ADDAssign);
 
-// -=
 static void BM_Vect3_SUBAssign(benchmark::State& state)
 {
     const std::size_t count = state.range(0);
@@ -333,16 +299,10 @@ static void BM_Vect3_SUBAssign(benchmark::State& state)
         benchmark::ClobberMemory();
     }
 
-    state.SetItemsProcessed(static_cast<int64_t>(count) * state.iterations());
+    SetCyclesCounter(state, count);
 }
-BENCHMARK(BM_Vect3_SUBAssign)
-    ->Arg(ITERATIONS)                             
-    ->Repetitions(REP)                        
-    ->DisplayAggregatesOnly(false)      
-    ->ComputeStatistics("p95", ComputeP95)
-    ->MinWarmUpTime(0.5);
+REGISTER_VEC3_BENCHMARK(BM_Vect3_SUBAssign);
 
-// *=
 static void BM_Vect3_MULAssign(benchmark::State& state)
 {
     const std::size_t count = state.range(0);
@@ -374,16 +334,10 @@ static void BM_Vect3_MULAssign(benchmark::State& state)
         benchmark::ClobberMemory();
     }
 
-    state.SetItemsProcessed(static_cast<int64_t>(count) * state.iterations());
+    SetCyclesCounter(state, count);
 }
-BENCHMARK(BM_Vect3_MULAssign)
-    ->Arg(ITERATIONS)                             
-    ->Repetitions(REP)                        
-    ->DisplayAggregatesOnly(false)      
-    ->ComputeStatistics("p95", ComputeP95)
-    ->MinWarmUpTime(0.5);
+REGISTER_VEC3_BENCHMARK(BM_Vect3_MULAssign);
 
-// /=
 static void BM_Vect3_DIVAssign(benchmark::State& state)
 {
     const std::size_t count = state.range(0);
@@ -415,16 +369,10 @@ static void BM_Vect3_DIVAssign(benchmark::State& state)
         benchmark::ClobberMemory();
     }
 
-    state.SetItemsProcessed(static_cast<int64_t>(count) * state.iterations());
+    SetCyclesCounter(state, count);
 }
-BENCHMARK(BM_Vect3_DIVAssign)
-    ->Arg(ITERATIONS)                               
-    ->Repetitions(REP)                         
-    ->DisplayAggregatesOnly(false)      
-    ->ComputeStatistics("p95", ComputeP95)
-    ->MinWarmUpTime(0.5);
+REGISTER_VEC3_BENCHMARK(BM_Vect3_DIVAssign);
 
-// *= scalar
 static void BM_Vect3_MulScalarAssign(benchmark::State& state)
 {
     const std::size_t count = state.range(0);
@@ -456,16 +404,10 @@ static void BM_Vect3_MulScalarAssign(benchmark::State& state)
         benchmark::ClobberMemory();
     }
 
-    state.SetItemsProcessed(static_cast<int64_t>(count) * state.iterations());
+    SetCyclesCounter(state, count);
 }
-BENCHMARK(BM_Vect3_MulScalarAssign)
-    ->Arg(ITERATIONS)                               
-    ->Repetitions(REP)                         
-    ->DisplayAggregatesOnly(false)      
-    ->ComputeStatistics("p95", ComputeP95)
-    ->MinWarmUpTime(0.5);
+REGISTER_VEC3_BENCHMARK(BM_Vect3_MulScalarAssign);
 
-// /= scalar
 static void BM_Vect3_DIVScalarAssign(benchmark::State& state)
 {
     const std::size_t count = state.range(0);
@@ -497,16 +439,10 @@ static void BM_Vect3_DIVScalarAssign(benchmark::State& state)
         benchmark::ClobberMemory();
     }
 
-    state.SetItemsProcessed(static_cast<int64_t>(count) * state.iterations());
+    SetCyclesCounter(state, count);
 }
-BENCHMARK(BM_Vect3_DIVScalarAssign)
-    ->Arg(ITERATIONS)                               
-    ->Repetitions(REP)                         
-    ->DisplayAggregatesOnly(false)      
-    ->ComputeStatistics("p95", ComputeP95)
-    ->MinWarmUpTime(0.5);
+REGISTER_VEC3_BENCHMARK(BM_Vect3_DIVScalarAssign);
 
-// ==
 static void BM_Vect3_Equal(benchmark::State& state)
 {
     const std::size_t count = state.range(0);
@@ -532,16 +468,10 @@ static void BM_Vect3_Equal(benchmark::State& state)
         benchmark::ClobberMemory();
     }
 
-    state.SetItemsProcessed(static_cast<int64_t>(count) * state.iterations());
+    SetCyclesCounter(state, count);
 }
-BENCHMARK(BM_Vect3_Equal)
-    ->Arg(ITERATIONS)                             
-    ->Repetitions(REP)                        
-    ->DisplayAggregatesOnly(false)      
-    ->ComputeStatistics("p95", ComputeP95)
-    ->MinWarmUpTime(0.5);
+REGISTER_VEC3_BENCHMARK(BM_Vect3_Equal);
 
-// !=
 static void BM_Vect3_NotEqual(benchmark::State& state)
 {
     const std::size_t count = state.range(0);
@@ -567,16 +497,10 @@ static void BM_Vect3_NotEqual(benchmark::State& state)
         benchmark::ClobberMemory();
     }
 
-    state.SetItemsProcessed(static_cast<int64_t>(count) * state.iterations());
+    SetCyclesCounter(state, count);
 }
-BENCHMARK(BM_Vect3_NotEqual)
-    ->Arg(ITERATIONS)                             
-    ->Repetitions(REP)                        
-    ->DisplayAggregatesOnly(false)      
-    ->ComputeStatistics("p95", ComputeP95)
-    ->MinWarmUpTime(0.5);
+REGISTER_VEC3_BENCHMARK(BM_Vect3_NotEqual);
 
-// Dot
 static void BM_Vect3_Dot(benchmark::State& state)
 {
     const std::size_t count = state.range(0);
@@ -603,16 +527,10 @@ static void BM_Vect3_Dot(benchmark::State& state)
         benchmark::ClobberMemory();
     }
 
-    state.SetItemsProcessed(static_cast<int64_t>(count) * state.iterations());
+    SetCyclesCounter(state, count);
 }
-BENCHMARK(BM_Vect3_Dot)
-    ->Arg(ITERATIONS)                             
-    ->Repetitions(REP)                        
-    ->DisplayAggregatesOnly(false)      
-    ->ComputeStatistics("p95", ComputeP95)
-    ->MinWarmUpTime(0.5);
+REGISTER_VEC3_BENCHMARK(BM_Vect3_Dot);
 
-// Cross
 static void BM_Vect3_Cross(benchmark::State& state)
 {
     const std::size_t count = state.range(0);
@@ -639,16 +557,10 @@ static void BM_Vect3_Cross(benchmark::State& state)
         benchmark::ClobberMemory();
     }
 
-    state.SetItemsProcessed(static_cast<int64_t>(count) * state.iterations());
+    SetCyclesCounter(state, count);
 }
-BENCHMARK(BM_Vect3_Cross)
-    ->Arg(ITERATIONS)                             
-    ->Repetitions(REP)                        
-    ->DisplayAggregatesOnly(false)      
-    ->ComputeStatistics("p95", ComputeP95)
-    ->MinWarmUpTime(0.5);
+REGISTER_VEC3_BENCHMARK(BM_Vect3_Cross);
 
-// MagnitudeSquared
 static void BM_Vect3_MagnitudeSquared(benchmark::State& state)
 {
     const std::size_t count = state.range(0);
@@ -673,16 +585,10 @@ static void BM_Vect3_MagnitudeSquared(benchmark::State& state)
         benchmark::ClobberMemory();
     }
 
-    state.SetItemsProcessed(static_cast<int64_t>(count) * state.iterations());
+    SetCyclesCounter(state, count);
 }
-BENCHMARK(BM_Vect3_MagnitudeSquared)
-    ->Arg(ITERATIONS)                             
-    ->Repetitions(REP)                        
-    ->DisplayAggregatesOnly(false)      
-    ->ComputeStatistics("p95", ComputeP95)
-    ->MinWarmUpTime(0.5);
+REGISTER_VEC3_BENCHMARK(BM_Vect3_MagnitudeSquared);
 
-// Magnitude
 static void BM_Vect3_Magnitude(benchmark::State& state)
 {
     const std::size_t count = state.range(0);
@@ -707,16 +613,10 @@ static void BM_Vect3_Magnitude(benchmark::State& state)
         benchmark::ClobberMemory();
     }
 
-    state.SetItemsProcessed(static_cast<int64_t>(count) * state.iterations());
+    SetCyclesCounter(state, count);
 }
-BENCHMARK(BM_Vect3_Magnitude)
-    ->Arg(ITERATIONS)                             
-    ->Repetitions(REP)                        
-    ->DisplayAggregatesOnly(false)      
-    ->ComputeStatistics("p95", ComputeP95)
-    ->MinWarmUpTime(0.5);
+REGISTER_VEC3_BENCHMARK(BM_Vect3_Magnitude);
 
-// Normalize
 static void BM_Vect3_Normalize(benchmark::State& state)
 {
     const std::size_t count = state.range(0);
@@ -741,16 +641,10 @@ static void BM_Vect3_Normalize(benchmark::State& state)
         benchmark::ClobberMemory();
     }
 
-    state.SetItemsProcessed(static_cast<int64_t>(count) * state.iterations());
+    SetCyclesCounter(state, count);
 }
-BENCHMARK(BM_Vect3_Normalize)
-    ->Arg(ITERATIONS)                             
-    ->Repetitions(REP)                        
-    ->DisplayAggregatesOnly(false)      
-    ->ComputeStatistics("p95", ComputeP95)
-    ->MinWarmUpTime(0.5);
+REGISTER_VEC3_BENCHMARK(BM_Vect3_Normalize);
 
-// DistanceSquared
 static void BM_Vect3_DistanceSquared(benchmark::State& state)
 {
     const std::size_t count = state.range(0);
@@ -777,16 +671,10 @@ static void BM_Vect3_DistanceSquared(benchmark::State& state)
         benchmark::ClobberMemory();
     }
 
-    state.SetItemsProcessed(static_cast<int64_t>(count) * state.iterations());
+    SetCyclesCounter(state, count);
 }
-BENCHMARK(BM_Vect3_DistanceSquared)
-    ->Arg(ITERATIONS)                             
-    ->Repetitions(REP)                        
-    ->DisplayAggregatesOnly(false)      
-    ->ComputeStatistics("p95", ComputeP95)
-    ->MinWarmUpTime(0.5);
+REGISTER_VEC3_BENCHMARK(BM_Vect3_DistanceSquared);
 
-// Distance
 static void BM_Vect3_Distance(benchmark::State& state)
 {
     const std::size_t count = state.range(0);
@@ -813,16 +701,10 @@ static void BM_Vect3_Distance(benchmark::State& state)
         benchmark::ClobberMemory();
     }
 
-    state.SetItemsProcessed(static_cast<int64_t>(count) * state.iterations());
+    SetCyclesCounter(state, count);
 }
-BENCHMARK(BM_Vect3_Distance)
-    ->Arg(ITERATIONS)                             
-    ->Repetitions(REP)                        
-    ->DisplayAggregatesOnly(false)      
-    ->ComputeStatistics("p95", ComputeP95)
-    ->MinWarmUpTime(0.5);
+REGISTER_VEC3_BENCHMARK(BM_Vect3_Distance);
 
-// Angle
 static void BM_Vect3_Angle(benchmark::State& state)
 {
     const std::size_t count = state.range(0);
@@ -849,16 +731,10 @@ static void BM_Vect3_Angle(benchmark::State& state)
         benchmark::ClobberMemory();
     }
 
-    state.SetItemsProcessed(static_cast<int64_t>(count) * state.iterations());
+    SetCyclesCounter(state, count);
 }
-BENCHMARK(BM_Vect3_Angle)
-    ->Arg(ITERATIONS)                             
-    ->Repetitions(REP)                        
-    ->DisplayAggregatesOnly(false)      
-    ->ComputeStatistics("p95", ComputeP95)
-    ->MinWarmUpTime(0.5);
+REGISTER_VEC3_BENCHMARK(BM_Vect3_Angle);
 
-// Lerp
 static void BM_Vect3_Lerp(benchmark::State& state)
 {
     const std::size_t count = state.range(0);
@@ -888,16 +764,10 @@ static void BM_Vect3_Lerp(benchmark::State& state)
         benchmark::ClobberMemory();
     }
 
-    state.SetItemsProcessed(static_cast<int64_t>(count) * state.iterations());
+    SetCyclesCounter(state, count);
 }
-BENCHMARK(BM_Vect3_Lerp)
-    ->Arg(ITERATIONS)                             
-    ->Repetitions(REP)                        
-    ->DisplayAggregatesOnly(false)      
-    ->ComputeStatistics("p95", ComputeP95)
-    ->MinWarmUpTime(0.5);
+REGISTER_VEC3_BENCHMARK(BM_Vect3_Lerp);
 
-// Min
 static void BM_Vect3_Min(benchmark::State& state)
 {
     const std::size_t count = state.range(0);
@@ -924,16 +794,10 @@ static void BM_Vect3_Min(benchmark::State& state)
         benchmark::ClobberMemory();
     }
 
-    state.SetItemsProcessed(static_cast<int64_t>(count) * state.iterations());
+    SetCyclesCounter(state, count);
 }
-BENCHMARK(BM_Vect3_Min)
-    ->Arg(ITERATIONS)                             
-    ->Repetitions(REP)                        
-    ->DisplayAggregatesOnly(false)      
-    ->ComputeStatistics("p95", ComputeP95)
-    ->MinWarmUpTime(0.5);
+REGISTER_VEC3_BENCHMARK(BM_Vect3_Min);
 
-// Max
 static void BM_Vect3_Max(benchmark::State& state)
 {
     const std::size_t count = state.range(0);
@@ -960,11 +824,6 @@ static void BM_Vect3_Max(benchmark::State& state)
         benchmark::ClobberMemory();
     }
 
-    state.SetItemsProcessed(static_cast<int64_t>(count) * state.iterations());
+    SetCyclesCounter(state, count);
 }
-BENCHMARK(BM_Vect3_Max)
-    ->Arg(ITERATIONS)                             
-    ->Repetitions(REP)                        
-    ->DisplayAggregatesOnly(false)      
-    ->ComputeStatistics("p95", ComputeP95)
-    ->MinWarmUpTime(0.5);
+REGISTER_VEC3_BENCHMARK(BM_Vect3_Max);

@@ -96,7 +96,10 @@ FetchContent_MakeAvailable(googletest)
 # Application Benchmark
 add_executable(BenchmarkApp src/Benchmark/main.cpp
         include/benchmarkUtils.h
-        src/Benchmark/benchmarkVect3.cpp)
+        src/Benchmark/benchmarkVect3.cpp
+        src/Benchmark/benchmarkMatrix3x3.cpp
+        src/Benchmark/benchmarkMatrix4x4.cpp
+        src/Benchmark/benchmarkVect4.cpp)
 target_link_libraries(BenchmarkApp PRIVATE MathLib benchmark::benchmark)
 
 # Tests unitaires

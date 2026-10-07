@@ -1,8 +1,6 @@
 ﻿#pragma once
 #include <vector>
 #include <algorithm>
-#include <cmath>
-#include <cstdint>
 
 inline constexpr std::int64_t ITERATIONS = 10;
 inline constexpr std::int64_t REP = 10;
