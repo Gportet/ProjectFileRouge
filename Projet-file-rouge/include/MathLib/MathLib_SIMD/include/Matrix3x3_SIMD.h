@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "MathLib_SIMD/include/Vec3_SIMD.h"
+#include <array>
 
 namespace MathsSIMD
 {
@@ -10,6 +11,7 @@ namespace MathsSIMD
 
         Matrix3x3_SIMD(); // Identity.
         explicit Matrix3x3_SIMD(const std::array<float, 9>& elements);
+        Matrix3x3_SIMD(__m128 row0, __m128 row1, __m128 row2);
 
         static Matrix3x3_SIMD Identity();
         static Matrix3x3_SIMD Zero();

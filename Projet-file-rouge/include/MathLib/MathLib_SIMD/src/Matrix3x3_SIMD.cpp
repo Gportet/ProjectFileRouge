@@ -52,7 +52,10 @@ namespace MathsSIMD
 
         return result;
     }
-    
+
+    Matrix3x3_SIMD::Matrix3x3_SIMD(__m128 row0,__m128 row1,__m128 row2): rows{row0, row1, row2}
+    {
+    }
     
 #pragma region Operators
     float& Matrix3x3_SIMD::operator()(std::size_t row, std::size_t column)
@@ -124,6 +127,8 @@ namespace MathsSIMD
 
     Vec3_SIMD Matrix3x3_SIMD::operator*(const Vec3_SIMD& rhs) const
     {
+        const __m128 vecRhs = rhs.Load(rhs.data);
+        
         return {
             rows[0] * rhs,
             rows[1] * rhs,
@@ -133,6 +138,7 @@ namespace MathsSIMD
 
     Matrix3x3_SIMD Matrix3x3_SIMD::operator*(float scalar) const
     {
+        
         return {
             rows[0] * scalar,
             rows[1] * scalar,

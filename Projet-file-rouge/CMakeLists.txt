@@ -94,7 +94,8 @@ set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
 # Application Benchmark
-add_executable(BenchmarkApp src/Benchmark/main.cpp)
+add_executable(BenchmarkApp src/Benchmark/main.cpp
+        include/MathLib/MathLib_SIMD/src/Matrix3x3_SIMD.cpp)
 target_link_libraries(BenchmarkApp PRIVATE MathLib benchmark::benchmark)
 
 # Tests unitaires
@@ -110,6 +111,7 @@ add_executable(UnitTests
         src/Tests/Vec3Tests.cpp
         src/Tests/Vec4Tests.cpp
         src/Tests/TestHelpers.h
+        include/MathLib/MathLib_SIMD/src/Matrix3x3_SIMD.cpp
 )
 target_include_directories(UnitTests PRIVATE src/Tests)
 target_link_libraries(UnitTests PRIVATE MathLib gtest_main)
@@ -137,6 +139,7 @@ add_executable(ViewerApp
         ${imgui_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp
         include/Viewer/BenchmarkResult.h
         include/Viewer/BenchmarkParser.h
+        include/MathLib/MathLib_SIMD/src/Matrix3x3_SIMD.cpp
 )
 
 target_include_directories(ViewerApp PRIVATE
