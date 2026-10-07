@@ -94,7 +94,9 @@ set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
 # Application Benchmark
-add_executable(BenchmarkApp src/Benchmark/main.cpp)
+add_executable(BenchmarkApp src/Benchmark/main.cpp
+        include/benchmarkUtils.h
+        src/Benchmark/benchmarkVect3.cpp)
 target_link_libraries(BenchmarkApp PRIVATE MathLib benchmark::benchmark)
 
 # Tests unitaires
