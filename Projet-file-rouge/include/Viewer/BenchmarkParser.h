@@ -3,30 +3,29 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include <cstdint>
 
-struct BenchmarkMetrics {
-    double realTime = 0.0;       
-    double cpuTime = 0.0;       
-    double cyclesPerOp = 0.0;    
-    double itemsPerSecond = 0.0;  
-    long long iterations = 0;     
+struct Metrics {
+    double realTime = 0.0;
+    double cpuTime = 0.0;
+    double cyclesPerOp = 0.0;
+    double itemsPerSecond = 0.0;
+    int64_t iterations = 0;
 };
 
 struct BenchmarkDataGroup {
-    std::string functionName;    
-    bool selected = true;        
+    std::string functionName;
+    std::string category;
+    bool selected = true;
     
-    // Métriques agrégées p95
-    BenchmarkMetrics p95Metrics;
-    
-    // Marge d'erreur (écart-type / stddev)
-    double stdDevCpuTime = 0.0;
-    double stdDevCycles = 0.0;
-
-    // Historique des itérations pour le tracé graphique
     std::vector<double> iterationCycles;
     std::vector<double> iterationCpuTimes;
+    
+    Metrics p95Metrics;
+    double stdDevCpuTime = 0.0;
+    double stdDevCycles = 0.0;
 };
 
-// Charge et regroupe les résultats par nom de fonction
-std::unordered_map<std::string, BenchmarkDataGroup> LoadBenchmarkDataGroups(const std::string& filepath);
+using BenchmarkCategories = std::unordered_map<std::string, std::unordered_map<std::string, BenchmarkDataGroup>>;
+
+BenchmarkCategories LoadBenchmarkDataGroups(const std::string& filepath);

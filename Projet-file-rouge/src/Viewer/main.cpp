@@ -1,6 +1,7 @@
 ﻿#include <iostream>
 #include <vector>
 #include <unordered_map>
+#include <algorithm>
 
 #include <GLFW/glfw3.h>
 #include "imgui.h"
@@ -12,7 +13,7 @@
 
 int main() {
     if (!glfwInit()) {
-        std::cerr << "Erreur : Échec de l'initialisation de GLFW." << std::endl;
+        std::cerr << "Erreur GLFW" << std::endl;
         return -1;
     }
 
@@ -34,7 +35,6 @@ int main() {
     ImPlot::CreateContext();
 
     ImGuiIO& io = ImGui::GetIO();
-    (void)io;
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
     ImGui::StyleColorsDark();
@@ -42,7 +42,11 @@ int main() {
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 330 core");
 
-    auto benchmarkGroups = LoadBenchmarkDataGroups("results.json");
+    auto benchmarkCategories = LoadBenchmarkDataGroups("results.json");
+
+    const std::vector<std::string> categoryOrder = {
+        "Vect3", "Vec3", "Vect4", "Vec4", "Matrix3x3", "Matrix4x4"
+    };
 
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
@@ -57,80 +61,110 @@ int main() {
 
         ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport());
 
-        // --- Panneau 1 : Filtres de sélection ---
         ImGui::Begin("Selection des Fonctions");
-        ImGui::Text("Cochez les fonctions a afficher :");
-        ImGui::Separator();
-
-        for (auto& [name, group] : benchmarkGroups) {
-            ImGui::Checkbox(name.c_str(), &group.selected);
-        }
-        ImGui::End();
-
-        // --- Panneau 2 : Dashboard Métriques & Graphiques ---
-        ImGui::Begin("Analyse de Performance");
-
-        // Tableau récapitulatif des métriques p95
-        if (ImGui::BeginTable("MetricsTable", 6, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg)) {
-            ImGui::TableSetupColumn("Fonction");
-            ImGui::TableSetupColumn("Cycles/op (p95)");
-            ImGui::TableSetupColumn("Marge Erreur (Cycles)");
-            ImGui::TableSetupColumn("Vitesse (Ops/s)");
-            ImGui::TableSetupColumn("Temps CPU p95 (ns)");
-            ImGui::TableSetupColumn("Iterations");
-            ImGui::TableHeadersRow();
-
-            for (const auto& [name, group] : benchmarkGroups) {
-                if (!group.selected) continue;
-
-                ImGui::TableNextRow();
-                ImGui::TableSetColumnIndex(0);
-                ImGui::Text("%s", group.functionName.c_str());
-
-                ImGui::TableSetColumnIndex(1);
-                ImGui::Text("%.3f", group.p95Metrics.cyclesPerOp);
-
-                ImGui::TableSetColumnIndex(2);
-                ImGui::Text("+/- %.3f", group.stdDevCycles);
-
-                ImGui::TableSetColumnIndex(3);
-                ImGui::Text("%.2e", group.p95Metrics.itemsPerSecond);
-
-                ImGui::TableSetColumnIndex(4);
-                ImGui::Text("%.2f", group.p95Metrics.cpuTime);
-
-                ImGui::TableSetColumnIndex(5);
-                ImGui::Text("%lld", group.p95Metrics.iterations);
-            }
-            ImGui::EndTable();
-        }
-
-        ImGui::Spacing();
-        ImGui::Separator();
-        ImGui::Spacing();
-
-        // Graphique ImPlot des itérations
-        if (ImPlot::BeginPlot("Cycles par Operation (Iteratif)", ImVec2(-1.0f, 400.0f))) {
-            ImPlot::SetupAxes("Index Iteration", "Cycles / Op");
-
-            for (const auto& [name, group] : benchmarkGroups) {
-                if (!group.selected || group.iterationCycles.empty()) continue;
-
-                std::vector<double> xData(group.iterationCycles.size());
-                for (size_t i = 0; i < xData.size(); ++i) {
-                    xData[i] = static_cast<double>(i);
+        for (const auto& catName : categoryOrder) {
+            auto it = benchmarkCategories.find(catName);
+            if (it != benchmarkCategories.end()) {
+                if (ImGui::TreeNode(it->first.c_str())) {
+                    for (auto& [name, group] : it->second) {
+                        ImGui::Checkbox(name.c_str(), &group.selected);
+                    }
+                    ImGui::TreePop();
                 }
-
-                ImPlot::PlotLine(group.functionName.c_str(), xData.data(), group.iterationCycles.data(), static_cast<int>(xData.size()));
-                ImPlot::PlotScatter((group.functionName + " (points)").c_str(), xData.data(), group.iterationCycles.data(), static_cast<int>(xData.size()));
             }
-
-            ImPlot::EndPlot();
         }
-
+        for (auto& [categoryName, benchmarkGroups] : benchmarkCategories) {
+            if (std::find(categoryOrder.begin(), categoryOrder.end(), categoryName) == categoryOrder.end()) {
+                if (ImGui::TreeNode(categoryName.c_str())) {
+                    for (auto& [name, group] : benchmarkGroups) {
+                        ImGui::Checkbox(name.c_str(), &group.selected);
+                    }
+                    ImGui::TreePop();
+                }
+            }
+        }
         ImGui::End();
 
-        // Rendu OpenGL
+        ImGui::Begin("Analyse de Performance");
+        if (ImGui::BeginTabBar("CategoryTabBar", ImGuiTabBarFlags_None)) {
+            
+            auto renderTab = [](const std::string& categoryName, auto& benchmarkGroups) {
+                if (ImGui::BeginTabItem(categoryName.c_str())) {
+                    if (ImGui::BeginTable("MetricsTable", 6, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_Resizable)) {
+                        ImGui::TableSetupColumn("Fonction");
+                        ImGui::TableSetupColumn("Cycles/op (p95)");
+                        ImGui::TableSetupColumn("Marge Erreur");
+                        ImGui::TableSetupColumn("Vitesse (Ops/s)");
+                        ImGui::TableSetupColumn("Temps CPU p95 (ns)");
+                        ImGui::TableSetupColumn("Iterations");
+                        ImGui::TableHeadersRow();
+
+                        for (const auto& [name, group] : benchmarkGroups) {
+                            if (!group.selected) continue;
+
+                            ImGui::TableNextRow();
+                            ImGui::TableSetColumnIndex(0);
+                            ImGui::Text("%s", group.functionName.c_str());
+
+                            ImGui::TableSetColumnIndex(1);
+                            ImGui::Text("%.3f", group.p95Metrics.cyclesPerOp);
+
+                            ImGui::TableSetColumnIndex(2);
+                            ImGui::Text("+/- %.3f", group.stdDevCycles);
+
+                            ImGui::TableSetColumnIndex(3);
+                            ImGui::Text("%.2e", group.p95Metrics.itemsPerSecond);
+
+                            ImGui::TableSetColumnIndex(4);
+                            ImGui::Text("%.2f", group.p95Metrics.cpuTime);
+
+                            ImGui::TableSetColumnIndex(5);
+                            ImGui::Text("%lld", static_cast<long long>(group.p95Metrics.iterations));
+                        }
+                        ImGui::EndTable();
+                    }
+
+                    ImGui::Spacing();
+                    ImGui::Separator();
+                    ImGui::Spacing();
+
+                    if (ImPlot::BeginPlot("Cycles par Operation", ImVec2(-1.0f, 400.0f))) {
+                        ImPlot::SetupAxes("Index Iteration", "Cycles / Op");
+
+                        for (const auto& [name, group] : benchmarkGroups) {
+                            if (!group.selected || group.iterationCycles.empty()) continue;
+
+                            std::vector<double> xData(group.iterationCycles.size());
+                            for (size_t i = 0; i < xData.size(); ++i) {
+                                xData[i] = static_cast<double>(i);
+                            }
+
+                            ImPlot::PlotLine(group.functionName.c_str(), xData.data(), group.iterationCycles.data(), static_cast<int>(xData.size()));
+                        }
+
+                        ImPlot::EndPlot();
+                    }
+
+                    ImGui::EndTabItem();
+                }
+            };
+
+            for (const auto& catName : categoryOrder) {
+                auto it = benchmarkCategories.find(catName);
+                if (it != benchmarkCategories.end()) {
+                    renderTab(it->first, it->second);
+                }
+            }
+            for (auto& [categoryName, benchmarkGroups] : benchmarkCategories) {
+                if (std::find(categoryOrder.begin(), categoryOrder.end(), categoryName) == categoryOrder.end()) {
+                    renderTab(categoryName, benchmarkGroups);
+                }
+            }
+
+            ImGui::EndTabBar();
+        }
+        ImGui::End();
+
         ImGui::Render();
         glViewport(0, 0, display_w, display_h);
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
