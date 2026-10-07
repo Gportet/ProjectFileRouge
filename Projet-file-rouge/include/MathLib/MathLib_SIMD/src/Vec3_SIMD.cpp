@@ -275,10 +275,10 @@ namespace MathsSIMD
         const __m128 result1 = _mm_add_ps(squared, y_squared);
         
         // (x² + y²) + z²
-        const __m128 result2 = _mm_add_ps(result1, z_squared);
+        const __m128 finalResult = _mm_add_ps(result1, z_squared);
         
         // return first value
-        return _mm_cvtss_f32(result2);
+        return _mm_cvtss_f32(finalResult);
     }
 
     Vec3 Vec3_SIMD::Normalize() const

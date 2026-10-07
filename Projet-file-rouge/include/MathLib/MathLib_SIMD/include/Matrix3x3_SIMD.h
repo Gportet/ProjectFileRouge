@@ -6,7 +6,7 @@ namespace MathsSIMD
     class Matrix3x3_SIMD
     {
     public:
-        float values[3][3];
+        __m128 rows[3];
 
         Matrix3x3_SIMD(); // Identity.
         explicit Matrix3x3_SIMD(const std::array<float, 9>& elements);
@@ -14,6 +14,7 @@ namespace MathsSIMD
         static Matrix3x3_SIMD Identity();
         static Matrix3x3_SIMD Zero();
 
+#pragma region Operators
         float& operator()(std::size_t row, std::size_t column);
         const float& operator()(std::size_t row, std::size_t column) const;
 
@@ -22,14 +23,14 @@ namespace MathsSIMD
         Matrix3x3_SIMD operator*(const Matrix3x3_SIMD& rhs) const;
 
         Vec3_SIMD operator*(const Vec3_SIMD& rhs) const;
-
         Matrix3x3_SIMD operator*(float scalar) const;
-
+        
         Matrix3x3_SIMD& operator*=(const Matrix3x3_SIMD& rhs);
 
         bool operator==(const Matrix3x3_SIMD& rhs) const;
         bool operator!=(const Matrix3x3_SIMD& rhs) const;
 
+#pragma endregion
         Matrix3x3_SIMD Transpose() const;
         float Determinant() const;
 
