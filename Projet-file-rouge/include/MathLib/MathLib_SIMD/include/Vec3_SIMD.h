@@ -17,7 +17,7 @@ namespace MathsSIMD
         Vec3 data;
         
         Vec3_SIMD();
-        Vec3_SIMD(float x, float y, float z);
+        Vec3_SIMD(float x, float y, float z) noexcept;
         explicit Vec3_SIMD(const Vec3& vec);
         
 

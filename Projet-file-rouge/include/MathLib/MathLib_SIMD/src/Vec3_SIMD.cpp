@@ -11,7 +11,7 @@ namespace MathsSIMD
         
     }
     
-    Vec3_SIMD::Vec3_SIMD(float x, float y, float z) : data { x, y, z }
+    Vec3_SIMD::Vec3_SIMD(float x, float y, float z) noexcept : data { x, y, z } 
     {
         
     }
@@ -216,7 +216,7 @@ namespace MathsSIMD
         
         const __m128 result = _mm_cmpneq_ps(vecA, vecB);
         
-        return _mm_movemask_ps(result) == 0xF;
+        return _mm_movemask_ps(result) != 0xF;
     }
 
 
@@ -351,7 +351,75 @@ namespace MathsSIMD
 
     float Vec3_SIMD::Angle(const Vec3_SIMD& rhs) const
     {
+        const Vec3 normalizedA = Normalize();
+        const Vec3 normalizedB = rhs.Normalize();
+        
+        Vec3_SIMD vecA (normalizedA);
+        Vec3_SIMD vecB (normalizedB);
+        
+        const float cosine = vecA.Dot(vecB);
+        
+        if (!std::isfinite(cosine))
+        {
+            throw std::domain_error("Cannot calculate angle with non-finite cosine");
+        }
+
+        if (cosine < -1.0f || cosine > 1.0f)
+        {
+            throw std::domain_error("Cosine must be in the range [-1, 1]");
+        }
+        
+        return static_cast<float>(std::acos(cosine));
     }
+
+    Vec3_SIMD Vec3_SIMD::Lerp(const Vec3_SIMD& a, const Vec3_SIMD& b, float t)
+    {
+        const __m128 vecA = a.Load(a.data);
+        const __m128 vecB = b.Load(b.data);
+        
+        
+        const __m128 scalar = _mm_set1_ps(t);
+        const __m128 oneMinusT = _mm_sub_ps(_mm_set1_ps(1.0f), scalar);
+        
+        const __m128 resultA = _mm_mul_ps (vecA, oneMinusT);
+        const __m128 resultB = _mm_mul_ps (vecB, scalar);
+        
+        const __m128 result = _mm_add_ps (resultA, resultB);
+        
+        return Vec3_SIMD(a.Store(result));
+    }
+
+    Vec3_SIMD Vec3_SIMD::Min(const Vec3_SIMD& a, const Vec3_SIMD& b)
+    {
+        const __m128 vecA = a.Load(a.data);
+        const __m128 vecB = b.Load(b.data);
+        
+        const __m128 minVec = _mm_min_ps(vecA, vecB);
+        return Vec3_SIMD(a.Store(minVec));
+    }
+
+    Vec3_SIMD Vec3_SIMD::Max(const Vec3_SIMD& a, const Vec3_SIMD& b)
+    {
+        const __m128 vecA = a.Load(a.data);
+        const __m128 vecB = b.Load(b.data);
+        
+        const __m128 maxVec = _mm_max_ps(vecA, vecB);
+        return Vec3_SIMD(a.Store(maxVec)); 
+    }
+
+    const Vec3_SIMD Vec3_SIMD::Zero{0,0,0};
+    
+    
+    const Vec3_SIMD Vec3_SIMD::One{1, 1, 1};
+    
+    
+    const Vec3_SIMD Vec3_SIMD::UnitX{1, 0, 0};
+    
+    
+    const Vec3_SIMD Vec3_SIMD::UnitY{0, 1, 0};
+    
+    
+    const Vec3_SIMD Vec3_SIMD::UnitZ{0, 0, 1};
 
 #pragma endregion
     
