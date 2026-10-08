@@ -232,7 +232,7 @@ namespace MathsSIMD
         return x + y + z;
     }
 
-    Vec3 Vec3_SIMD::Cross(const Vec3_SIMD& rhs) const
+    Vec3_SIMD Vec3_SIMD::Cross(const Vec3_SIMD& rhs) const
     {
         const __m128 vecA = Load(this->data);
         const __m128 vecB = Load(rhs.data);
@@ -247,7 +247,7 @@ namespace MathsSIMD
         
         const __m128 resultFinal = _mm_sub_ps(result1, result2);
         
-        return Store(resultFinal);
+        return Vec3_SIMD(Store(resultFinal));
     }
 
     float Vec3_SIMD::MagnitudeSquared() const
@@ -276,7 +276,7 @@ namespace MathsSIMD
         return _mm_cvtss_f32(finalResult);
     }
 
-    Vec3 Vec3_SIMD::Normalize() const
+    Vec3_SIMD Vec3_SIMD::Normalize() const
     {
         if (!std::isfinite(data.x) || !std::isfinite(data.y) || !std::isfinite(data.z))
         {
@@ -295,7 +295,7 @@ namespace MathsSIMD
         
         const __m128 result = _mm_div_ps (vecA, MagnitudeV);
         
-        return Store(result);
+        return Vec3_SIMD(Store(result));
     }
 
     float Vec3_SIMD::DistanceSquared(const Vec3_SIMD& rhs) const
@@ -346,8 +346,8 @@ namespace MathsSIMD
 
     float Vec3_SIMD::Angle(const Vec3_SIMD& rhs) const
     {
-        const Vec3 normalizedA = Normalize();
-        const Vec3 normalizedB = rhs.Normalize();
+        const Vec3_SIMD normalizedA = Normalize();
+        const Vec3_SIMD normalizedB = rhs.Normalize();
         
         Vec3_SIMD vecA (normalizedA);
         Vec3_SIMD vecB (normalizedB);

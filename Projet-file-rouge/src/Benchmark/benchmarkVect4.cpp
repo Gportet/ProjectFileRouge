@@ -5,8 +5,8 @@
 #include <filesystem>
 #include <random>
 #include <cstdint>
-#include "MathLib/Vec4.h"
 #include "benchmarkUtils.h"
+#include "MathLib_SIMD/include/Vec4_SIMD.h"
 
 #define REGISTER_VEC4_BENCHMARK(func) \
     BENCHMARK(func) \
@@ -32,14 +32,29 @@ static void BM_Vect4_SUM(benchmark::State& state)
     std::mt19937 rng(42);
     std::uniform_real_distribution<float> dist(-100.0f, 100.0f);
     
-    std::vector<Maths::Vec4<float>> v1(count);
-    std::vector<Maths::Vec4<float>> v2(count);
-    std::vector<Maths::Vec4<float>> output(count);
+    std::vector<MathsSIMD::Vec4_SIMD> v1(count);
+    std::vector<MathsSIMD::Vec4_SIMD> v2(count);
+    std::vector<MathsSIMD::Vec4_SIMD> output(count);
     
     for (std::size_t i = 0; i < count; ++i)
     {
-        v1[i] = {dist(rng), dist(rng), dist(rng), dist(rng)};
-        v2[i] = {dist(rng), dist(rng), dist(rng), dist(rng)};
+        v1[i] = MathsSIMD::Vec4_SIMD(
+            _mm_setr_ps(
+                dist(rng),
+                dist(rng),
+                dist(rng),
+                dist(rng)
+            )
+        );
+
+        v2[i] = MathsSIMD::Vec4_SIMD(
+            _mm_setr_ps(
+                dist(rng),
+                dist(rng),
+                dist(rng),
+                dist(rng)
+            )
+        );
     }
 
     for (auto _ : state)
@@ -63,14 +78,29 @@ static void BM_Vect4_SUB(benchmark::State& state)
     std::mt19937 rng(42);
     std::uniform_real_distribution<float> dist(-100.0f, 100.0f);
     
-    std::vector<Maths::Vec4<float>> v1(count);
-    std::vector<Maths::Vec4<float>> v2(count);
-    std::vector<Maths::Vec4<float>> output(count);
+    std::vector<MathsSIMD::Vec4_SIMD> v1(count);
+    std::vector<MathsSIMD::Vec4_SIMD> v2(count);
+    std::vector<MathsSIMD::Vec4_SIMD> output(count);
     
     for (std::size_t i = 0; i < count; ++i)
     {
-        v1[i] = {dist(rng), dist(rng), dist(rng), dist(rng)};
-        v2[i] = {dist(rng), dist(rng), dist(rng), dist(rng)};
+        v1[i] = MathsSIMD::Vec4_SIMD(
+            _mm_setr_ps(
+                dist(rng),
+                dist(rng),
+                dist(rng),
+                dist(rng)
+            )
+        );
+
+        v2[i] = MathsSIMD::Vec4_SIMD(
+            _mm_setr_ps(
+                dist(rng),
+                dist(rng),
+                dist(rng),
+                dist(rng)
+            )
+        );
     }
 
     for (auto _ : state)
@@ -94,14 +124,29 @@ static void BM_Vect4_MUL(benchmark::State& state)
     std::mt19937 rng(42);
     std::uniform_real_distribution<float> dist(-100.0f, 100.0f);
     
-    std::vector<Maths::Vec4<float>> v1(count);
-    std::vector<Maths::Vec4<float>> v2(count);
-    std::vector<Maths::Vec4<float>> output(count);
+    std::vector<MathsSIMD::Vec4_SIMD> v1(count);
+    std::vector<MathsSIMD::Vec4_SIMD> v2(count);
+    std::vector<MathsSIMD::Vec4_SIMD> output(count);
     
     for (std::size_t i = 0; i < count; ++i)
     {
-        v1[i] = {dist(rng), dist(rng), dist(rng), dist(rng)};
-        v2[i] = {dist(rng), dist(rng), dist(rng), dist(rng)};
+        v1[i] = MathsSIMD::Vec4_SIMD(
+            _mm_setr_ps(
+                dist(rng),
+                dist(rng),
+                dist(rng),
+                dist(rng)
+            )
+        );
+
+        v2[i] = MathsSIMD::Vec4_SIMD(
+            _mm_setr_ps(
+                dist(rng),
+                dist(rng),
+                dist(rng),
+                dist(rng)
+            )
+        );
     }
 
     for (auto _ : state)
@@ -125,15 +170,30 @@ static void BM_Vect4_DIV(benchmark::State& state)
     std::mt19937 rng(42);
     std::uniform_real_distribution<float> dist(-100.0f, 100.0f);
     
-    std::vector<Maths::Vec4<float>> v1(count);
-    std::vector<Maths::Vec4<float>> v2(count);
-    std::vector<Maths::Vec4<float>> output(count);
+    std::vector<MathsSIMD::Vec4_SIMD> v1(count);
+    std::vector<MathsSIMD::Vec4_SIMD> v2(count);
+    std::vector<MathsSIMD::Vec4_SIMD> output(count);
     
     for (std::size_t i = 0; i < count; ++i)
     {
-        v1[i] = {dist(rng), dist(rng), dist(rng), dist(rng)};
+        v1[i] = MathsSIMD::Vec4_SIMD(
+            _mm_setr_ps(
+                dist(rng),
+                dist(rng),
+                dist(rng),
+                dist(rng)
+            )
+        );
+
         // Evite la division par zero
-        v2[i] = {dist(rng) + 0.1f, dist(rng) + 0.1f, dist(rng) + 0.1f, dist(rng) + 0.1f};
+        v2[i] = MathsSIMD::Vec4_SIMD(
+            _mm_setr_ps(
+                dist(rng) + 0.1f,
+                dist(rng) + 0.1f,
+                dist(rng) + 0.1f,
+                dist(rng) + 0.1f
+            )
+        );
     }
 
     for (auto _ : state)
@@ -157,12 +217,19 @@ static void BM_Vect4_NEG(benchmark::State& state)
     std::mt19937 rng(42);
     std::uniform_real_distribution<float> dist(-100.0f, 100.0f);
     
-    std::vector<Maths::Vec4<float>> v1(count);
-    std::vector<Maths::Vec4<float>> output(count);
+    std::vector<MathsSIMD::Vec4_SIMD> v1(count);
+    std::vector<MathsSIMD::Vec4_SIMD> output(count);
     
     for (std::size_t i = 0; i < count; ++i)
     {
-        v1[i] = {dist(rng), dist(rng), dist(rng), dist(rng)};
+        v1[i] = MathsSIMD::Vec4_SIMD(
+            _mm_setr_ps(
+                dist(rng),
+                dist(rng),
+                dist(rng),
+                dist(rng)
+            )
+        );
     }
 
     for (auto _ : state)
@@ -186,13 +253,20 @@ static void BM_Vect4_MULScalar(benchmark::State& state)
     std::mt19937 rng(42);
     std::uniform_real_distribution<float> dist(-100.0f, 100.0f);
     
-    std::vector<Maths::Vec4<float>> v1(count);
+    std::vector<MathsSIMD::Vec4_SIMD> v1(count);
     std::vector<float> scalars(count);
-    std::vector<Maths::Vec4<float>> output(count);
+    std::vector<MathsSIMD::Vec4_SIMD> output(count);
     
     for (std::size_t i = 0; i < count; ++i)
     {
-        v1[i] = {dist(rng), dist(rng), dist(rng), dist(rng)};
+        v1[i] = MathsSIMD::Vec4_SIMD(
+            _mm_setr_ps(
+                dist(rng),
+                dist(rng),
+                dist(rng),
+                dist(rng)
+            )
+        );
         scalars[i] = dist(rng);
     }
 
@@ -217,13 +291,20 @@ static void BM_Vect4_DIVScalar(benchmark::State& state)
     std::mt19937 rng(42);
     std::uniform_real_distribution<float> dist(-100.0f, 100.0f);
     
-    std::vector<Maths::Vec4<float>> v1(count);
+    std::vector<MathsSIMD::Vec4_SIMD> v1(count);
     std::vector<float> scalars(count);
-    std::vector<Maths::Vec4<float>> output(count);
+    std::vector<MathsSIMD::Vec4_SIMD> output(count);
     
     for (std::size_t i = 0; i < count; ++i)
     {
-        v1[i] = {dist(rng), dist(rng), dist(rng), dist(rng)};
+        v1[i] = MathsSIMD::Vec4_SIMD(
+            _mm_setr_ps(
+                dist(rng),
+                dist(rng),
+                dist(rng),
+                dist(rng)
+            )
+        );
         scalars[i] = dist(rng) + 0.1f;
     }
 
@@ -248,14 +329,29 @@ static void BM_Vect4_ADDAssign(benchmark::State& state)
     std::mt19937 rng(42);
     std::uniform_real_distribution<float> dist(-100.0f, 100.0f);
     
-    std::vector<Maths::Vec4<float>> v1(count);
-    std::vector<Maths::Vec4<float>> v1_original(count);
-    std::vector<Maths::Vec4<float>> v2(count);
+    std::vector<MathsSIMD::Vec4_SIMD> v1(count);
+    std::vector<MathsSIMD::Vec4_SIMD> v1_original(count);
+    std::vector<MathsSIMD::Vec4_SIMD> v2(count);
     
     for (std::size_t i = 0; i < count; ++i)
     {
-        v1[i] = {dist(rng), dist(rng), dist(rng), dist(rng)};
-        v2[i] = {dist(rng), dist(rng), dist(rng), dist(rng)};
+        v1[i] = MathsSIMD::Vec4_SIMD(
+            _mm_setr_ps(
+                dist(rng),
+                dist(rng),
+                dist(rng),
+                dist(rng)
+            )
+        );
+
+        v2[i] = MathsSIMD::Vec4_SIMD(
+            _mm_setr_ps(
+                dist(rng),
+                dist(rng),
+                dist(rng),
+                dist(rng)
+            )
+        );
     }
     v1_original = v1;
 
@@ -284,14 +380,29 @@ static void BM_Vect4_SUBAssign(benchmark::State& state)
     std::mt19937 rng(42);
     std::uniform_real_distribution<float> dist(-100.0f, 100.0f);
     
-    std::vector<Maths::Vec4<float>> v1(count);
-    std::vector<Maths::Vec4<float>> v2(count);
-    std::vector<Maths::Vec4<float>> v1_original(count);
+    std::vector<MathsSIMD::Vec4_SIMD> v1(count);
+    std::vector<MathsSIMD::Vec4_SIMD> v2(count);
+    std::vector<MathsSIMD::Vec4_SIMD> v1_original(count);
     
     for (std::size_t i = 0; i < count; ++i)
     {
-        v1[i] = {dist(rng), dist(rng), dist(rng), dist(rng)};
-        v2[i] = {dist(rng), dist(rng), dist(rng), dist(rng)};
+        v1[i] = MathsSIMD::Vec4_SIMD(
+            _mm_setr_ps(
+                dist(rng),
+                dist(rng),
+                dist(rng),
+                dist(rng)
+            )
+        );
+
+        v2[i] = MathsSIMD::Vec4_SIMD(
+            _mm_setr_ps(
+                dist(rng),
+                dist(rng),
+                dist(rng),
+                dist(rng)
+            )
+        );
     }
     v1_original = v1;
     
@@ -320,14 +431,29 @@ static void BM_Vect4_MULAssign(benchmark::State& state)
     std::mt19937 rng(42);
     std::uniform_real_distribution<float> dist(-100.0f, 100.0f);
     
-    std::vector<Maths::Vec4<float>> v1(count);
-    std::vector<Maths::Vec4<float>> v2(count);
-    std::vector<Maths::Vec4<float>> v1_original(count);
+    std::vector<MathsSIMD::Vec4_SIMD> v1(count);
+    std::vector<MathsSIMD::Vec4_SIMD> v2(count);
+    std::vector<MathsSIMD::Vec4_SIMD> v1_original(count);
     
     for (std::size_t i = 0; i < count; ++i)
     {
-        v1[i] = {dist(rng), dist(rng), dist(rng), dist(rng)};
-        v2[i] = {dist(rng), dist(rng), dist(rng), dist(rng)};
+        v1[i] = MathsSIMD::Vec4_SIMD(
+            _mm_setr_ps(
+                dist(rng),
+                dist(rng),
+                dist(rng),
+                dist(rng)
+            )
+        );
+
+        v2[i] = MathsSIMD::Vec4_SIMD(
+            _mm_setr_ps(
+                dist(rng),
+                dist(rng),
+                dist(rng),
+                dist(rng)
+            )
+        );
     }
     v1_original = v1;
 
@@ -356,14 +482,29 @@ static void BM_Vect4_DIVAssign(benchmark::State& state)
     std::mt19937 rng(42);
     std::uniform_real_distribution<float> dist(-100.0f, 100.0f);
     
-    std::vector<Maths::Vec4<float>> v1(count);
-    std::vector<Maths::Vec4<float>> v1_original(count);
-    std::vector<Maths::Vec4<float>> v2(count);
+    std::vector<MathsSIMD::Vec4_SIMD> v1(count);
+    std::vector<MathsSIMD::Vec4_SIMD> v1_original(count);
+    std::vector<MathsSIMD::Vec4_SIMD> v2(count);
     
     for (std::size_t i = 0; i < count; ++i)
     {
-        v1[i] = {dist(rng), dist(rng), dist(rng), dist(rng)};
-        v2[i] = {dist(rng) + 0.1f, dist(rng) + 0.1f, dist(rng) + 0.1f, dist(rng) + 0.1f};
+        v1[i] = MathsSIMD::Vec4_SIMD(
+            _mm_setr_ps(
+                dist(rng),
+                dist(rng),
+                dist(rng),
+                dist(rng)
+            )
+        );
+
+        v2[i] = MathsSIMD::Vec4_SIMD(
+            _mm_setr_ps(
+                dist(rng) + 0.1f,
+                dist(rng) + 0.1f,
+                dist(rng) + 0.1f,
+                dist(rng) + 0.1f
+            )
+        );
     }
     v1_original = v1;
 
@@ -392,13 +533,20 @@ static void BM_Vect4_MulScalarAssign(benchmark::State& state)
     std::mt19937 rng(42);
     std::uniform_real_distribution<float> dist(-100.0f, 100.0f);
     
-    std::vector<Maths::Vec4<float>> v1(count);
-    std::vector<Maths::Vec4<float>> v1_original(count);
+    std::vector<MathsSIMD::Vec4_SIMD> v1(count);
+    std::vector<MathsSIMD::Vec4_SIMD> v1_original(count);
     std::vector<float> scalars(count);
     
     for (std::size_t i = 0; i < count; ++i)
     {
-        v1[i] = {dist(rng), dist(rng), dist(rng), dist(rng)};
+        v1[i] = MathsSIMD::Vec4_SIMD(
+            _mm_setr_ps(
+                dist(rng),
+                dist(rng),
+                dist(rng),
+                dist(rng)
+            )
+        );
         scalars[i] = dist(rng);
     }
     v1_original = v1;
@@ -428,13 +576,20 @@ static void BM_Vect4_DIVScalarAssign(benchmark::State& state)
     std::mt19937 rng(42);
     std::uniform_real_distribution<float> dist(-100.0f, 100.0f);
     
-    std::vector<Maths::Vec4<float>> v1(count);
-    std::vector<Maths::Vec4<float>> v1_original(count);
+    std::vector<MathsSIMD::Vec4_SIMD> v1(count);
+    std::vector<MathsSIMD::Vec4_SIMD> v1_original(count);
     std::vector<float> scalars(count);
     
     for (std::size_t i = 0; i < count; ++i)
     {
-        v1[i] = {dist(rng), dist(rng), dist(rng), dist(rng)};
+        v1[i] = MathsSIMD::Vec4_SIMD(
+            _mm_setr_ps(
+                dist(rng),
+                dist(rng),
+                dist(rng),
+                dist(rng)
+            )
+        );
         scalars[i] = dist(rng) + 0.1f;
     }
     v1_original = v1;
@@ -464,13 +619,28 @@ static void BM_Vect4_Equal(benchmark::State& state)
     std::mt19937 rng(42);
     std::uniform_real_distribution<float> dist(-100.0f, 100.0f);
     
-    std::vector<Maths::Vec4<float>> v1(count);
-    std::vector<Maths::Vec4<float>> v2(count);
+    std::vector<MathsSIMD::Vec4_SIMD> v1(count);
+    std::vector<MathsSIMD::Vec4_SIMD> v2(count);
     
     for (std::size_t i = 0; i < count; ++i)
     {
-        v1[i] = {dist(rng), dist(rng), dist(rng), dist(rng)};
-        v2[i] = {dist(rng), dist(rng), dist(rng), dist(rng)};
+        v1[i] = MathsSIMD::Vec4_SIMD(
+            _mm_setr_ps(
+                dist(rng),
+                dist(rng),
+                dist(rng),
+                dist(rng)
+            )
+        );
+        
+        v2[i] = MathsSIMD::Vec4_SIMD(
+    _mm_setr_ps(
+        dist(rng),
+        dist(rng),
+        dist(rng),
+        dist(rng)
+    )
+);
     }
 
     for (auto _ : state)
@@ -494,13 +664,28 @@ static void BM_Vect4_NotEqual(benchmark::State& state)
     std::mt19937 rng(42);
     std::uniform_real_distribution<float> dist(-100.0f, 100.0f);
     
-    std::vector<Maths::Vec4<float>> v1(count);
-    std::vector<Maths::Vec4<float>> v2(count);
+    std::vector<MathsSIMD::Vec4_SIMD> v1(count);
+    std::vector<MathsSIMD::Vec4_SIMD> v2(count);
     
     for (std::size_t i = 0; i < count; ++i)
     {
-        v1[i] = {dist(rng), dist(rng), dist(rng), dist(rng)};
-        v2[i] = {dist(rng), dist(rng), dist(rng), dist(rng)};
+        v1[i] = MathsSIMD::Vec4_SIMD(
+            _mm_setr_ps(
+                dist(rng),
+                dist(rng),
+                dist(rng),
+                dist(rng)
+            )
+        );
+
+        v2[i] = MathsSIMD::Vec4_SIMD(
+            _mm_setr_ps(
+                dist(rng),
+                dist(rng),
+                dist(rng),
+                dist(rng)
+            )
+        );
     }
 
     for (auto _ : state)
@@ -524,14 +709,29 @@ static void BM_Vect4_Dot(benchmark::State& state)
     std::mt19937 rng(42);
     std::uniform_real_distribution<float> dist(-100.0f, 100.0f);
     
-    std::vector<Maths::Vec4<float>> v1(count);
-    std::vector<Maths::Vec4<float>> v2(count);
+    std::vector<MathsSIMD::Vec4_SIMD> v1(count);
+    std::vector<MathsSIMD::Vec4_SIMD> v2(count);
     std::vector<float> output(count);
     
     for (std::size_t i = 0; i < count; ++i)
     {
-        v1[i] = {dist(rng), dist(rng), dist(rng), dist(rng)};
-        v2[i] = {dist(rng), dist(rng), dist(rng), dist(rng)};
+        v1[i] = MathsSIMD::Vec4_SIMD(
+            _mm_setr_ps(
+                dist(rng),
+                dist(rng),
+                dist(rng),
+                dist(rng)
+            )
+        );
+
+        v2[i] = MathsSIMD::Vec4_SIMD(
+            _mm_setr_ps(
+                dist(rng),
+                dist(rng),
+                dist(rng),
+                dist(rng)
+            )
+        );
     }
 
     for (auto _ : state)
@@ -555,12 +755,19 @@ static void BM_Vect4_MagnitudeSquared(benchmark::State& state)
     std::mt19937 rng(42);
     std::uniform_real_distribution<float> dist(-100.0f, 100.0f);
     
-    std::vector<Maths::Vec4<float>> v1(count);
+    std::vector<MathsSIMD::Vec4_SIMD> v1(count);
     std::vector<float> output(count);
     
     for (std::size_t i = 0; i < count; ++i)
     {
-        v1[i] = {dist(rng), dist(rng), dist(rng), dist(rng)};
+        v1[i] = MathsSIMD::Vec4_SIMD(
+            _mm_setr_ps(
+                dist(rng),
+                dist(rng),
+                dist(rng),
+                dist(rng)
+            )
+        );
     }
 
     for (auto _ : state)
@@ -584,12 +791,19 @@ static void BM_Vect4_Magnitude(benchmark::State& state)
     std::mt19937 rng(42);
     std::uniform_real_distribution<float> dist(-100.0f, 100.0f);
     
-    std::vector<Maths::Vec4<float>> v1(count);
+    std::vector<MathsSIMD::Vec4_SIMD> v1(count);
     std::vector<float> output(count);
     
     for (std::size_t i = 0; i < count; ++i)
     {
-        v1[i] = {dist(rng), dist(rng), dist(rng), dist(rng)};
+        v1[i] = MathsSIMD::Vec4_SIMD(
+            _mm_setr_ps(
+                dist(rng),
+                dist(rng),
+                dist(rng),
+                dist(rng)
+            )
+        );
     }
 
     for (auto _ : state)
@@ -613,12 +827,19 @@ static void BM_Vect4_Normalize(benchmark::State& state)
     std::mt19937 rng(42);
     std::uniform_real_distribution<float> dist(-100.0f, 100.0f);
     
-    std::vector<Maths::Vec4<float>> v1(count);
-    std::vector<Maths::Vec4<float>> output(count);
+    std::vector<MathsSIMD::Vec4_SIMD> v1(count);
+    std::vector<MathsSIMD::Vec4_SIMD> output(count);
     
     for (std::size_t i = 0; i < count; ++i)
     {
-        v1[i] = {dist(rng) + 0.1f, dist(rng) + 0.1f, dist(rng) + 0.1f, dist(rng) + 0.1f};
+        v1[i] = MathsSIMD::Vec4_SIMD(
+            _mm_setr_ps(
+                dist(rng) + 0.1f,
+                dist(rng) + 0.1f,
+                dist(rng) + 0.1f,
+                dist(rng) + 0.1f
+            )
+        );
     }
 
     for (auto _ : state)
@@ -642,14 +863,29 @@ static void BM_Vect4_DistanceSquared(benchmark::State& state)
     std::mt19937 rng(42);
     std::uniform_real_distribution<float> dist(-100.0f, 100.0f);
     
-    std::vector<Maths::Vec4<float>> v1(count);
-    std::vector<Maths::Vec4<float>> v2(count);
+    std::vector<MathsSIMD::Vec4_SIMD> v1(count);
+    std::vector<MathsSIMD::Vec4_SIMD> v2(count);
     std::vector<float> output(count);
     
     for (std::size_t i = 0; i < count; ++i)
     {
-        v1[i] = {dist(rng), dist(rng), dist(rng), dist(rng)};
-        v2[i] = {dist(rng), dist(rng), dist(rng), dist(rng)};
+        v1[i] = MathsSIMD::Vec4_SIMD(
+            _mm_setr_ps(
+                dist(rng),
+                dist(rng),
+                dist(rng),
+                dist(rng)
+            )
+        );
+
+        v2[i] = MathsSIMD::Vec4_SIMD(
+            _mm_setr_ps(
+                dist(rng),
+                dist(rng),
+                dist(rng),
+                dist(rng)
+            )
+        );
     }
 
     for (auto _ : state)
@@ -673,14 +909,29 @@ static void BM_Vect4_Distance(benchmark::State& state)
     std::mt19937 rng(42);
     std::uniform_real_distribution<float> dist(-100.0f, 100.0f);
     
-    std::vector<Maths::Vec4<float>> v1(count);
-    std::vector<Maths::Vec4<float>> v2(count);
+    std::vector<MathsSIMD::Vec4_SIMD> v1(count);
+    std::vector<MathsSIMD::Vec4_SIMD> v2(count);
     std::vector<float> output(count);
     
     for (std::size_t i = 0; i < count; ++i)
     {
-        v1[i] = {dist(rng), dist(rng), dist(rng), dist(rng)};
-        v2[i] = {dist(rng), dist(rng), dist(rng), dist(rng)};
+        v1[i] = MathsSIMD::Vec4_SIMD(
+            _mm_setr_ps(
+                dist(rng),
+                dist(rng),
+                dist(rng),
+                dist(rng)
+            )
+        );
+
+        v2[i] = MathsSIMD::Vec4_SIMD(
+            _mm_setr_ps(
+                dist(rng),
+                dist(rng),
+                dist(rng),
+                dist(rng)
+            )
+        );
     }
 
     for (auto _ : state)
@@ -704,14 +955,29 @@ static void BM_Vect4_Angle(benchmark::State& state)
     std::mt19937 rng(42);
     std::uniform_real_distribution<float> dist(-100.0f, 100.0f);
     
-    std::vector<Maths::Vec4<float>> v1(count);
-    std::vector<Maths::Vec4<float>> v2(count);
+    std::vector<MathsSIMD::Vec4_SIMD> v1(count);
+    std::vector<MathsSIMD::Vec4_SIMD> v2(count);
     std::vector<float> output(count);
     
     for (std::size_t i = 0; i < count; ++i)
     {
-        v1[i] = {dist(rng) + 0.1f, dist(rng) + 0.1f, dist(rng) + 0.1f, dist(rng) + 0.1f};
-        v2[i] = {dist(rng) + 0.1f, dist(rng) + 0.1f, dist(rng) + 0.1f, dist(rng) + 0.1f};
+        v1[i] = MathsSIMD::Vec4_SIMD(
+            _mm_setr_ps(
+                dist(rng) + 0.1f,
+                dist(rng) + 0.1f,
+                dist(rng) + 0.1f,
+                dist(rng) + 0.1f
+            )
+        );
+
+        v2[i] = MathsSIMD::Vec4_SIMD(
+            _mm_setr_ps(
+                dist(rng) + 0.1f,
+                dist(rng) + 0.1f,
+                dist(rng) + 0.1f,
+                dist(rng) + 0.1f
+            )
+        );
     }
 
     for (auto _ : state)
@@ -736,15 +1002,30 @@ static void BM_Vect4_Lerp(benchmark::State& state)
     std::uniform_real_distribution<float> dist(-100.0f, 100.0f);
     std::uniform_real_distribution<float> dist_t(0.0f, 1.0f);
     
-    std::vector<Maths::Vec4<float>> v1(count);
-    std::vector<Maths::Vec4<float>> v2(count);
+    std::vector<MathsSIMD::Vec4_SIMD> v1(count);
+    std::vector<MathsSIMD::Vec4_SIMD> v2(count);
     std::vector<float> t_factors(count);
-    std::vector<Maths::Vec4<float>> output(count);
+    std::vector<MathsSIMD::Vec4_SIMD> output(count);
     
     for (std::size_t i = 0; i < count; ++i)
     {
-        v1[i] = {dist(rng), dist(rng), dist(rng), dist(rng)};
-        v2[i] = {dist(rng), dist(rng), dist(rng), dist(rng)};
+        v1[i] = MathsSIMD::Vec4_SIMD(
+            _mm_setr_ps(
+                dist(rng),
+                dist(rng),
+                dist(rng),
+                dist(rng)
+            )
+        );
+
+        v2[i] = MathsSIMD::Vec4_SIMD(
+            _mm_setr_ps(
+                dist(rng),
+                dist(rng),
+                dist(rng),
+                dist(rng)
+            )
+        );
         t_factors[i] = dist_t(rng);
     }
 
@@ -752,7 +1033,7 @@ static void BM_Vect4_Lerp(benchmark::State& state)
     {
         for (std::size_t i = 0; i < count; ++i)
         {
-            output[i] = Maths::Vec4<float>::Lerp(v1[i], v2[i], t_factors[i]);
+            output[i] = MathsSIMD::Vec4_SIMD::Lerp(v1[i], v2[i], t_factors[i]);
             benchmark::DoNotOptimize(output[i]);
         }
         benchmark::ClobberMemory();
@@ -769,21 +1050,36 @@ static void BM_Vect4_Min(benchmark::State& state)
     std::mt19937 rng(42);
     std::uniform_real_distribution<float> dist(-100.0f, 100.0f);
     
-    std::vector<Maths::Vec4<float>> v1(count);
-    std::vector<Maths::Vec4<float>> v2(count);
-    std::vector<Maths::Vec4<float>> output(count);
+    std::vector<MathsSIMD::Vec4_SIMD> v1(count);
+    std::vector<MathsSIMD::Vec4_SIMD> v2(count);
+    std::vector<MathsSIMD::Vec4_SIMD> output(count);
     
     for (std::size_t i = 0; i < count; ++i)
     {
-        v1[i] = {dist(rng), dist(rng), dist(rng), dist(rng)};
-        v2[i] = {dist(rng), dist(rng), dist(rng), dist(rng)};
+        v1[i] = MathsSIMD::Vec4_SIMD(
+            _mm_setr_ps(
+                dist(rng),
+                dist(rng),
+                dist(rng),
+                dist(rng)
+            )
+        );
+
+        v2[i] = MathsSIMD::Vec4_SIMD(
+            _mm_setr_ps(
+                dist(rng),
+                dist(rng),
+                dist(rng),
+                dist(rng)
+            )
+        );
     }
 
     for (auto _ : state)
     {
         for (std::size_t i = 0; i < count; ++i)
         {
-            output[i] = Maths::Vec4<float>::Min(v1[i], v2[i]);
+            output[i] = MathsSIMD::Vec4_SIMD::Min(v1[i], v2[i]);
             benchmark::DoNotOptimize(output[i]);
         }
         benchmark::ClobberMemory();
@@ -800,21 +1096,36 @@ static void BM_Vect4_Max(benchmark::State& state)
     std::mt19937 rng(42);
     std::uniform_real_distribution<float> dist(-100.0f, 100.0f);
     
-    std::vector<Maths::Vec4<float>> v1(count);
-    std::vector<Maths::Vec4<float>> v2(count);
-    std::vector<Maths::Vec4<float>> output(count);
+    std::vector<MathsSIMD::Vec4_SIMD> v1(count);
+    std::vector<MathsSIMD::Vec4_SIMD> v2(count);
+    std::vector<MathsSIMD::Vec4_SIMD> output(count);
     
     for (std::size_t i = 0; i < count; ++i)
     {
-        v1[i] = {dist(rng), dist(rng), dist(rng), dist(rng)};
-        v2[i] = {dist(rng), dist(rng), dist(rng), dist(rng)};
+        v1[i] = MathsSIMD::Vec4_SIMD(
+            _mm_setr_ps(
+                dist(rng),
+                dist(rng),
+                dist(rng),
+                dist(rng)
+            )
+        );
+
+        v2[i] = MathsSIMD::Vec4_SIMD(
+            _mm_setr_ps(
+                dist(rng),
+                dist(rng),
+                dist(rng),
+                dist(rng)
+            )
+        );
     }
 
     for (auto _ : state)
     {
         for (std::size_t i = 0; i < count; ++i)
         {
-            output[i] = Maths::Vec4<float>::Max(v1[i], v2[i]);
+            output[i] = MathsSIMD::Vec4_SIMD::Max(v1[i], v2[i]);
             benchmark::DoNotOptimize(output[i]);
         }
         benchmark::ClobberMemory();

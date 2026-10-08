@@ -428,14 +428,15 @@ Matrix4x4_SIMD Matrix4x4_SIMD::Inverse(float relativeTolerance) const
 }
 
 
-    Matrix4x4_SIMD Matrix4x4_SIMD::Scale(const Vec4_SIMD& scale)
+    Matrix4x4_SIMD Matrix4x4_SIMD::Scale(const Vec3_SIMD& scale)
     {
-        const __m128 scaleRegister = scale.data;
+        const __m128 scaleRegister = scale.Load(scale.data);
 
         const __m128 row1 = _mm_shuffle_ps(scaleRegister, scaleRegister, _MM_SHUFFLE(3, 3, 3, 0));
         const __m128 row2 = _mm_shuffle_ps(scaleRegister, scaleRegister, _MM_SHUFFLE(3, 3, 1, 3));
         const __m128 row3 = _mm_shuffle_ps(scaleRegister, scaleRegister, _MM_SHUFFLE(3, 2, 3, 3));
-        const __m128 row4 = _mm_shuffle_ps(scaleRegister, scaleRegister, _MM_SHUFFLE(3, 3, 3, 3));
+        const __m128 row4 = _mm_setr_ps(0.0f, 0.0f, 0.0f, 1.0f); 
+
 
         return {
             row1,

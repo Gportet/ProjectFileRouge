@@ -47,7 +47,7 @@ namespace MathsSIMD
             float relativeTolerance = 64.0f * std::numeric_limits<float>::epsilon()
         ) const;
 
-        static Matrix4x4_SIMD Scale(const Vec4_SIMD& scale);
+        static Matrix4x4_SIMD Scale(const Vec3_SIMD& scale);
 
         static Matrix4x4_SIMD RotationX(float radians);
         static Matrix4x4_SIMD RotationY(float radians);
