@@ -1,8 +1,5 @@
 ﻿#include "MathLib_SIMD/include/Vec3_SIMD.h"
 
-
-
-
 namespace MathsSIMD
 {
 #pragma region Initialize
@@ -205,7 +202,6 @@ namespace MathsSIMD
         const __m128 vecB = Load(rhs.data);
         
         const __m128 result = _mm_cmpeq_ps(vecA, vecB);
-        
         return _mm_movemask_ps(result) == 0xF;
     }
     
@@ -215,7 +211,6 @@ namespace MathsSIMD
         const __m128 vecB = Load(rhs.data);
         
         const __m128 result = _mm_cmpneq_ps(vecA, vecB);
-        
         return _mm_movemask_ps(result) != 0xF;
     }
 
