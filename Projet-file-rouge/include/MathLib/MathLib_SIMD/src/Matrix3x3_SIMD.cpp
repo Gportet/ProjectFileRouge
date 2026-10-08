@@ -129,20 +129,39 @@ namespace MathsSIMD
     {
         const __m128 vecRhs = rhs.Load(rhs.data);
         
-        return {
-            rows[0] * rhs,
-            rows[1] * rhs,
-            rows[2] * rhs
-        };
+        const __m128 rowOneResult = _mm_mul_ps(rows[0], vecRhs);
+        const __m128 rowTwoResult = _mm_mul_ps(rows[1], vecRhs);
+        const __m128 rowThreeResult = _mm_mul_ps(rows[2], vecRhs);
+        
+        const __m128 row1XYResult = _mm_hadd_ps(rowOneResult, rowOneResult);
+        const __m128 row1FinalResult = _mm_hadd_ps(row1XYResult, row1XYResult);
+        
+        const __m128 row2XYResult = _mm_hadd_ps(rowTwoResult, rowTwoResult);
+        const __m128 row2FinalResult = _mm_hadd_ps(row2XYResult, row2XYResult);
+        
+        const __m128 row3XYResult = _mm_hadd_ps(rowThreeResult, rowThreeResult);
+        const __m128 row3FinalResult = _mm_hadd_ps(row3XYResult, row3XYResult);
+        
+        const float x = _mm_cvtss_f32(row1FinalResult);
+        const float y = _mm_cvtss_f32(row2FinalResult);
+        const float z = _mm_cvtss_f32(row3FinalResult);
+
+        return Vec3_SIMD(x, y, z);
+        
     }
 
     Matrix3x3_SIMD Matrix3x3_SIMD::operator*(float scalar) const
     {
+        const __m128 scalarSIMD = _mm_set1_ps(scalar);
+        
+        const __m128 rowOneResult = _mm_mul_ps(rows[0], scalarSIMD);
+        const __m128 rowTwoResult = _mm_mul_ps(rows[1], scalarSIMD);
+        const __m128 rowThreeResult = _mm_mul_ps(rows[2], scalarSIMD);
         
         return {
-            rows[0] * scalar,
-            rows[1] * scalar,
-            rows[2] * scalar
+            rowOneResult,
+            rowTwoResult,
+            rowThreeResult
         };
     }
 

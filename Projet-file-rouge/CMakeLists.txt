@@ -95,7 +95,8 @@ FetchContent_MakeAvailable(googletest)
 
 # Application Benchmark
 add_executable(BenchmarkApp src/Benchmark/main.cpp
-        include/MathLib/MathLib_SIMD/src/Matrix3x3_SIMD.cpp)
+        include/MathLib/MathLib_SIMD/src/Matrix3x3_SIMD.cpp
+        include/MathLib/MathLib_SIMD/include/Matrix3x3_SIMD.h)
 target_link_libraries(BenchmarkApp PRIVATE MathLib benchmark::benchmark)
 
 # Tests unitaires
