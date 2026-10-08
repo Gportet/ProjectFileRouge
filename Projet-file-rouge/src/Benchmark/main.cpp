@@ -1,35 +1,13 @@
 #include <benchmark/benchmark.h>
 #include <vector>
-#include <algorithm>
-#include <cmath>
-#include <intrin.h>
 #include <iostream>
 #include <filesystem>
-#include "MathLib/Vec4.h"
+#if defined(_MSC_VER)
+    #include <intrin.h>
+#elif defined(__GNUC__) || defined(__clang__)
+    #include <x86intrin.h>
+#endif
 
-// Calcul personnalisé du Percentile 95
-double ComputeP95(const std::vector<double>& samples)
-{
-    if (samples.empty()) return 0.0;
-    std::vector<double> sorted = samples;
-    std::sort(sorted.begin(), sorted.end());
-    const auto index = static_cast<std::size_t>(std::ceil(0.95 * static_cast<double>(sorted.size()))) - 1;
-    return sorted[index];
-}
-# pragma region Vect3 
-# pragma endregion Vect3
-
-
-# pragma region Vect4
-# pragma endregion Vect4
-
-
-# pragma region Matrice3
-# pragma endregion Matrice3
-
-
-# pragma region Matrice4
-# pragma endregion Matrice4
 
 int main(int argc, char* argv[])
 {
