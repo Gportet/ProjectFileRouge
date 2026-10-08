@@ -104,7 +104,9 @@ add_executable(BenchmarkApp src/Benchmark/main.cpp
         src/Benchmark/benchmarkMatrix4x4.cpp
         src/Benchmark/benchmarkVect4.cpp
         include/MathLib/MathLib_SIMD/include/Vec4_SIMD.h
-        include/MathLib/MathLib_SIMD/src/Vec4_SIMD.cpp)
+        include/MathLib/MathLib_SIMD/src/Vec4_SIMD.cpp
+        include/MathLib/MathLib_SIMD/include/Matrix4x4_SIMD.h
+        include/MathLib/MathLib_SIMD/src/Matrix4x4_SIMD.cpp)
 target_link_libraries(BenchmarkApp PRIVATE MathLib benchmark::benchmark)
 
 # Tests unitaires

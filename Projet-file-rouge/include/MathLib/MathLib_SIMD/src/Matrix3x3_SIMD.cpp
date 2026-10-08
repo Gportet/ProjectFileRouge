@@ -260,68 +260,68 @@ namespace MathsSIMD
 
     Matrix3x3_SIMD Matrix3x3_SIMD::Inverse(float relativeTolerance) const
     {
-        const __m128 row0 = rows[0];
-        const __m128 row1 = rows[1];
-        const __m128 row2 = rows[2];
+        const float a = (*this)(0, 0);
+        const float b = (*this)(0, 1);
+        const float c = (*this)(0, 2);
 
-        const __m128 shuffleOne =_mm_shuffle_ps(row1, row1, _MM_SHUFFLE(3, 0, 0, 1)); // [E D D 0]
-        const __m128 shuffleTwo =_mm_shuffle_ps(row2, row2, _MM_SHUFFLE(3, 1, 2, 2)); // [I I H 0]
-        const __m128 shuffleThree =_mm_shuffle_ps(row1, row1, _MM_SHUFFLE(3, 1, 2, 2)); // [F F E 0]
-        const __m128 shuffleFour =_mm_shuffle_ps(row2, row2, _MM_SHUFFLE(3, 0, 0, 1)); // [H G G 0]
-        const __m128 shuffleFive =_mm_shuffle_ps(row0, row0, _MM_SHUFFLE(3, 0, 0, 1)); // [B A A 0]
-        const __m128 shuffleSix =_mm_shuffle_ps(row2, row2, _MM_SHUFFLE(3, 1, 2, 2)); // [I I H 0]
-        const __m128 shuffleSeven =_mm_shuffle_ps(row0, row0, _MM_SHUFFLE(3, 1, 2, 2)); // [C C B 0]
-        const __m128 shuffleEight =_mm_shuffle_ps(row2, row2, _MM_SHUFFLE(3, 0, 0, 1)); // [H G G 0]
+        const float d = (*this)(1, 0);
+        const float e = (*this)(1, 1);
+        const float f = (*this)(1, 2);
 
-        const __m128 shuffleNine =_mm_shuffle_ps(row0, row0, _MM_SHUFFLE(3, 0, 0, 1)); // [B A A 0]
-        const __m128 shuffleTen =_mm_shuffle_ps(row1, row1, _MM_SHUFFLE(3, 1, 2, 2)); // [F F E 0]
-        const __m128 shuffleEleven =_mm_shuffle_ps(row0, row0, _MM_SHUFFLE(3, 1, 2, 2)); // [C C B 0]
-        const __m128 shuffleTwelve =_mm_shuffle_ps(row1, row1, _MM_SHUFFLE(3, 0, 0, 1)); // [E D D 0]
+        const float g = (*this)(2, 0);
+        const float h = (*this)(2, 1);
+        const float i = (*this)(2, 2);
 
-        const __m128 firstProducts =_mm_mul_ps(shuffleOne, shuffleTwo);
-        const __m128 secondProducts =_mm_mul_ps(shuffleThree, shuffleFour);
-        const __m128 firstCofactors =_mm_sub_ps(firstProducts, secondProducts);
-        const __m128 thirdProducts =_mm_mul_ps(shuffleFive, shuffleSix);
-        const __m128 fourthProducts =_mm_mul_ps(shuffleSeven, shuffleEight);
-        const __m128 secondCofactors =_mm_sub_ps(thirdProducts, fourthProducts);
-        const __m128 fifthProducts =_mm_mul_ps(shuffleNine, shuffleTen);
-        const __m128 sixthProducts =_mm_mul_ps(shuffleEleven, shuffleTwelve);
-        const __m128 thirdCofactors =_mm_sub_ps(fifthProducts, sixthProducts);
-        const __m128 signs =_mm_setr_ps(1.0f, -1.0f, 1.0f, 1.0f);
-        const __m128 cofactors0 =_mm_mul_ps(firstCofactors, signs);
-        const __m128 cofactors1 =_mm_mul_ps(secondCofactors, signs);
-        const __m128 cofactors2 =_mm_mul_ps(thirdCofactors, signs);
-        const __m128 determinantProducts =_mm_mul_ps(row0, cofactors0);
-        const __m128 determinantHorizontal1 =_mm_hadd_ps(determinantProducts, determinantProducts);
-        const __m128 determinantHorizontal2 =_mm_hadd_ps(determinantHorizontal1, determinantHorizontal1);
-        const float determinant =_mm_cvtss_f32(determinantHorizontal2);
+        const float cofactor00 = e * i - f * h;
+        const float cofactor01 = c * h - b * i;
+        const float cofactor02 = b * f - c * e;
+
+        const float cofactor10 = f * g - d * i;
+        const float cofactor11 = a * i - c * g;
+        const float cofactor12 = c * d - a * f;
+
+        const float cofactor20 = d * h - e * g;
+        const float cofactor21 = b * g - a * h;
+        const float cofactor22 = a * e - b * d;
+
+        const float determinant =
+            a * cofactor00 +
+            b * cofactor10 +
+            c * cofactor20;
 
         if (std::abs(determinant) <= relativeTolerance)
         {
             throw std::runtime_error("Matrix is not invertible.");
         }
 
-        const __m128 cofactors01 =_mm_unpacklo_ps(cofactors0, cofactors1);
-        // [C00 C10 C01 C11]
+        const __m128 inverseDeterminant =
+            _mm_set1_ps(1.0f / determinant);
 
-        const __m128 cofactors2Zero =_mm_unpacklo_ps(cofactors2, _mm_setzero_ps());
-        // [C20 0 C21 0]
+        const __m128 inverseRow0 = _mm_setr_ps(
+            cofactor00,
+            cofactor01,
+            cofactor02,
+            0.0f
+        );
 
-        const __m128 adjugate0 =_mm_shuffle_ps(cofactors01,cofactors2Zero,_MM_SHUFFLE(3, 0, 1, 0));
-        // [C00 C10 C20 0]
+        const __m128 inverseRow1 = _mm_setr_ps(
+            cofactor10,
+            cofactor11,
+            cofactor12,
+            0.0f
+        );
 
-        const __m128 adjugate1 =_mm_shuffle_ps(cofactors01,cofactors2Zero,_MM_SHUFFLE(3, 2, 3, 2));
-        // [C01 C11 C21 0]
-
-        const __m128 adjugate2 =_mm_shuffle_ps(cofactors0,cofactors2,_MM_SHUFFLE(3, 2, 3, 2));
-        // [C02 C12 C22 0]
-
-        const __m128 inverseDeterminant =_mm_set1_ps(1.0f / determinant);
+        const __m128 inverseRow2 = _mm_setr_ps(
+            cofactor20,
+            cofactor21,
+            cofactor22,
+            0.0f
+        );
 
         return {
-            _mm_mul_ps(adjugate0, inverseDeterminant),
-            _mm_mul_ps(adjugate1, inverseDeterminant),
-            _mm_mul_ps(adjugate2, inverseDeterminant)
+            _mm_mul_ps(inverseRow0, inverseDeterminant),
+            _mm_mul_ps(inverseRow1, inverseDeterminant),
+            _mm_mul_ps(inverseRow2, inverseDeterminant)
         };
     }
 
