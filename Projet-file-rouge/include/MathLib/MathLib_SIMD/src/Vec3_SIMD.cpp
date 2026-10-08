@@ -416,6 +416,29 @@ namespace MathsSIMD
     
     const Vec3_SIMD Vec3_SIMD::UnitZ{0, 0, 1};
 
+
+    float Vec3_SIMD::DotASM(const Vec3_SIMD& rhs) const
+    {
+        const __m128 a = Load(data);
+        const __m128 b = Load(rhs.data);
+
+        float result;
+
+        __asm
+        {
+            movups xmm0, a
+            movups xmm1, b
+
+            mulps xmm0, xmm1
+
+            haddps xmm0, xmm0
+            haddps xmm0, xmm0
+
+            movss result, xmm0
+        }
+
+        return result;  
+    }
 #pragma endregion
     
 }
