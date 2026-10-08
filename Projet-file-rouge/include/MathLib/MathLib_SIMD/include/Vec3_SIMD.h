@@ -74,7 +74,7 @@ namespace MathsSIMD
         static const Vec3_SIMD UnitY;
         static const Vec3_SIMD UnitZ;
         
-        float Vec3_SIMD::DotASM(const Vec3_SIMD& rhs) const;
+        float DotASM(const Vec3_SIMD& rhs) const;
 #pragma endregion
     
     };
