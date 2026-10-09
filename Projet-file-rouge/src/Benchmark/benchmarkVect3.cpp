@@ -12,7 +12,7 @@
     BENCHMARK(func) \
         ->Arg(ITERATIONS) \
         ->Repetitions(REP) \
-        ->DisplayAggregatesOnly(false) \
+        ->ReportAggregatesOnly(true) \
         ->ComputeStatistics("p95", ComputeP95) \
         ->MinWarmUpTime(0.5)
 
