@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.20)
 project(MathStarter CXX ASM_MASM)
 
+
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -18,10 +19,13 @@ add_library(MathLib STATIC
         include/MathLib/Matrix3x3.h
         include/MathLib/Matrix4x4.h
         include/Platform/CpuFeatures.h
-        include/MathLib/MathLib_SIMD/src/Vec3_SIMD.cpp
+        src/MathLib/MathLib_SIMD/src/Vec3_SIMD.cpp
         include/MathLib/MathLib_SIMD/include/Vec3_SIMD.h
-        include/MathLib/MathLib_SIMD/src/Matrix3x3_SIMD.cpp
+        src/MathLib/MathLib_SIMD/src/Matrix3x3_SIMD.cpp
         include/MathLib/MathLib_SIMD/include/Matrix3x3_SIMD.h
+
+        include/MathLib/MathLib_SIMD/include/Vec3_ASM.h
+        include/MathLib/MathLib_SIMD/include/Vec3_ASM.asm
 )
 
 target_include_directories(MathLib PUBLIC
@@ -104,9 +108,16 @@ add_executable(BenchmarkApp src/Benchmark/main.cpp
         src/Benchmark/benchmarkMatrix4x4.cpp
         src/Benchmark/benchmarkVect4.cpp
         include/MathLib/MathLib_SIMD/include/Vec4_SIMD.h
-        include/MathLib/MathLib_SIMD/src/Vec4_SIMD.cpp
+        src/MathLib/MathLib_SIMD/src/Vec4_SIMD.cpp
         include/MathLib/MathLib_SIMD/include/Matrix4x4_SIMD.h
-        include/MathLib/MathLib_SIMD/src/Matrix4x4_SIMD.cpp)
+        src/MathLib/MathLib_SIMD/src/Matrix4x4_SIMD.cpp
+        src/MathLib/MathLib_SIMD/src/Matrix4x4_SIMD.cpp
+        src/MathLib/MathLib_SIMD/src/Matrix3x3_SIMD.cpp
+        src/MathLib/MathLib_SIMD/src/Vec3_SIMD.cpp
+        src/MathLib/MathLib_SIMD/src/Vec4_SIMD.cpp
+        src/MathLib/MathLib_SIMD/src/Vec4_SIMD.cpp
+        src/MathLib/MathLib_SIMD/src/Vec4_SIMD.cpp
+        include/MathLib/MathLib_SIMD/include/Vec3_ASM.h)
 
 target_link_libraries(BenchmarkApp PRIVATE MathLib benchmark::benchmark)
 
@@ -123,7 +134,7 @@ add_executable(UnitTests
         src/Tests/Vec3Tests.cpp
         src/Tests/Vec4Tests.cpp
         src/Tests/TestHelpers.h
-        include/MathLib/MathLib_SIMD/src/Matrix3x3_SIMD.cpp
+        src/MathLib/MathLib_SIMD/src/Matrix3x3_SIMD.cpp
 )
 target_include_directories(UnitTests PRIVATE src/Tests)
 target_link_libraries(UnitTests PRIVATE MathLib gtest_main)
@@ -151,7 +162,7 @@ add_executable(ViewerApp
         ${imgui_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp
         include/Viewer/BenchmarkResult.h
         include/Viewer/BenchmarkParser.h
-        include/MathLib/MathLib_SIMD/src/Matrix3x3_SIMD.cpp
+        src/MathLib/MathLib_SIMD/src/Matrix3x3_SIMD.cpp
 )
 
 target_include_directories(ViewerApp PRIVATE
