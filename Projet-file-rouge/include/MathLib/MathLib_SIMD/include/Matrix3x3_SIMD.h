@@ -3,6 +3,7 @@
 
 #include "MathLib_SIMD/include/Vec3_SIMD.h"
 #include <array>
+#include <immintrin.h>
 
 namespace MathsSIMD
 {

@@ -4,7 +4,7 @@ project(MathStarter CXX ASM_MASM)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
+add_compile_options(-march=native)
 if(MSVC)
     set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 endif()
