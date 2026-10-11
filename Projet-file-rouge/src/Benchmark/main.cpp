@@ -5,18 +5,13 @@
 #include <string>
 #include <fstream>
 
-#if defined(_MSC_VER)
-    #include <intrin.h>
-#elif defined(__GNUC__) || defined(__clang__)
-    #include <x86intrin.h>
-#endif
-
 class CustomConsoleReporter : public benchmark::ConsoleReporter {
 private:
     std::string current_category = "";
     std::string current_func_base = "";
 
     std::string ExtractCategory(const std::string& name) const {
+        if (name.find("Batch") != std::string::npos) return "BATCH";
         if (name.find("Vect3") != std::string::npos) return "VECT3";
         if (name.find("Vect4") != std::string::npos) return "VECT4";
         if (name.find("Matrix3x3") != std::string::npos) return "MATRIX 3x3";
@@ -55,16 +50,30 @@ public:
 
 int main(int argc, char* argv[])
 {
-    std::cout << "Dossier d'execution : " << std::filesystem::current_path() << std::endl;
+    std::cout << "Dossier d'execution : " << std::filesystem::current_path() << "\n\n";
     
+    std::cout << "=== OPTION D'EXECUTION ===\n";
+    std::cout << "1. Executer TOUS les benchmarks\n";
+    std::cout << "2. Executer uniquement les BATCHS (par defaut)\n";
+    std::cout << "Choix [1/2] (Entree = 2) : ";
+
+    std::string choice;
+    std::getline(std::cin, choice);
+
     char arg_out[] = "--benchmark_out=results.json";
     char arg_format[] = "--benchmark_out_format=json";
-    char arg_aggregates[] = "--benchmark_report_aggregates_only=true";
+    char arg_filter[] = "--benchmark_filter=Batch";
     
     std::vector<char*> args(argv, argv + argc);
     args.push_back(arg_out);
     args.push_back(arg_format);
-    args.push_back(arg_aggregates);
+
+    if (choice != "1") {
+        args.push_back(arg_filter);
+        std::cout << "-> Lancement des traitements par batchs uniquement...\n\n";
+    } else {
+        std::cout << "-> Lancement de la totalite des benchmarks...\n\n";
+    }
 
     int new_argc = static_cast<int>(args.size());
     char** new_argv = args.data();

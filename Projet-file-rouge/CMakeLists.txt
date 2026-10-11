@@ -117,7 +117,8 @@ add_executable(BenchmarkApp src/Benchmark/main.cpp
         src/MathLib/MathLib_SIMD/src/Vec4_SIMD.cpp
         src/MathLib/MathLib_SIMD/src/Vec4_SIMD.cpp
         src/MathLib/MathLib_SIMD/src/Vec4_SIMD.cpp
-        include/MathLib/MathLib_SIMD/include/Vec3_ASM.h)
+        include/MathLib/MathLib_SIMD/include/Vec3_ASM.h
+        src/Benchmark/benchmarkBatch.cpp)
 
 target_link_libraries(BenchmarkApp PRIVATE MathLib benchmark::benchmark)
 
