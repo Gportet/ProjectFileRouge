@@ -1,6 +1,9 @@
 ﻿#include "MathLib_SIMD/include/Vec3_SIMD.h"
 #include "MathLib_SIMD/include/Vec3_ASM.h"
 
+#include <algorithm>
+#include <limits>
+
 namespace MathsSIMD
 {
 #pragma region Initialize
@@ -263,18 +266,21 @@ namespace MathsSIMD
         const __m128 squared = _mm_mul_ps(vecA, vecA);
         
         // only y²
-        const __m128 y_squared = _mm_shuffle_ps(vecA, vecA, _MM_SHUFFLE(1, 1, 1, 1));
+        const __m128 y_squared = _mm_shuffle_ps(squared, squared, _MM_SHUFFLE(1, 1, 1, 1));
         // only z²
-        const __m128 z_squared = _mm_shuffle_ps(vecA, vecA, _MM_SHUFFLE(2, 2, 2, 2));
+        const __m128 z_squared = _mm_shuffle_ps(squared, squared, _MM_SHUFFLE(2, 2, 2, 2));
         
         // x² + y²
         const __m128 result1 = _mm_add_ps(squared, y_squared);
         
         // (x² + y²) + z²
-        const __m128 finalResult = _mm_add_ps(result1, z_squared);
+        const __m128 magnitudeSquared  = _mm_add_ps(result1, z_squared);
+        
+        // square root
+        const __m128 magnitude = _mm_sqrt_ps(magnitudeSquared);
         
         // return first value
-        return _mm_cvtss_f32(finalResult);
+        return _mm_cvtss_f32(magnitude);
     }
 
     Vec3_SIMD Vec3_SIMD::Normalize() const
@@ -360,12 +366,18 @@ namespace MathsSIMD
             throw std::domain_error("Cannot calculate angle with non-finite cosine");
         }
 
+        // Tolérance pour les imprécisions des flottants
+        constexpr float tolerance =
+            8.0f * std::numeric_limits<float>::epsilon();
+        
         if (cosine < -1.0f || cosine > 1.0f)
         {
             throw std::domain_error("Cosine must be in the range [-1, 1]");
         }
         
-        return static_cast<float>(std::acos(cosine));
+        const float clampedCosine = std::clamp(cosine, -1.0f, 1.0f);
+        
+        return std::acos(clampedCosine);
     }
 
     Vec3_SIMD Vec3_SIMD::Lerp(const Vec3_SIMD& a, const Vec3_SIMD& b, float t)
