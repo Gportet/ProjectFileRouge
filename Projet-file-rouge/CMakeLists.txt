@@ -4,7 +4,7 @@ project(MathStarter CXX ASM_MASM)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
+add_compile_options(-march=native)
 if(MSVC)
     set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 endif()
@@ -117,7 +117,8 @@ add_executable(BenchmarkApp src/Benchmark/main.cpp
         src/MathLib/MathLib_SIMD/src/Vec4_SIMD.cpp
         src/MathLib/MathLib_SIMD/src/Vec4_SIMD.cpp
         src/MathLib/MathLib_SIMD/src/Vec4_SIMD.cpp
-        include/MathLib/MathLib_SIMD/include/Vec3_ASM.h)
+        include/MathLib/MathLib_SIMD/include/Vec3_ASM.h
+        src/Benchmark/benchmarkBatch.cpp)
 
 target_link_libraries(BenchmarkApp PRIVATE MathLib benchmark::benchmark)
 

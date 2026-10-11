@@ -70,7 +70,8 @@ BenchmarkCategories LoadBenchmarkDataGroups(const std::string& filepath) {
             }
         } 
         else if (runType == "aggregate") {
-            if (aggregateName == "p95") {
+            // Prise en charge de median, mean et p95
+            if (aggregateName == "median" || aggregateName == "mean" || aggregateName == "p95") {
                 group.p95Metrics.realTime = item.value("real_time", 0.0);
                 group.p95Metrics.cpuTime = item.value("cpu_time", 0.0);
                 group.p95Metrics.cyclesPerOp = cyclesValue;

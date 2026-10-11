@@ -3,7 +3,7 @@
 #include <xmmintrin.h>
 #include <cmath>
 #include <stdexcept>
-
+#include <immintrin.h>
 namespace MathsSIMD
 {
     struct Vec3
