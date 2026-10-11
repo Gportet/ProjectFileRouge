@@ -70,13 +70,13 @@ BenchmarkCategories LoadBenchmarkDataGroups(const std::string& filepath) {
             }
         } 
         else if (runType == "aggregate") {
+            // Prise en charge de median, mean et p95
             if (aggregateName == "median" || aggregateName == "mean" || aggregateName == "p95") {
                 group.p95Metrics.realTime = item.value("real_time", 0.0);
                 group.p95Metrics.cpuTime = item.value("cpu_time", 0.0);
                 group.p95Metrics.cyclesPerOp = cyclesValue;
                 group.p95Metrics.itemsPerSecond = item.value("items_per_second", 0.0);
                 group.p95Metrics.iterations = item.value("iterations", 0LL);
-                group.iterationCycles.push_back(cyclesValue);
             } 
             else if (aggregateName == "stddev") {
                 group.stdDevCpuTime = item.value("cpu_time", 0.0);

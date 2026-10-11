@@ -5,9 +5,8 @@
 #include <filesystem>
 #include <random>
 #include <cstdint>
-#include "MathLib/Matrix3x3.h"
-#include "MathLib/Vec3.h"
 #include "benchmarkUtils.h"
+#include "MathLib_SIMD/include/Matrix3x3_SIMD.h"
 
 #define REGISTER_MAT3_BENCHMARK(func) \
     BENCHMARK(func) \
@@ -32,18 +31,18 @@ static void BM_Matrix3x3_ADD(benchmark::State& state)
     std::mt19937 rng(42);
     std::uniform_real_distribution<float> dist(-100.0f, 100.0f);
     
-    std::vector<Maths::Matrix3x3<float>> m1(count);
-    std::vector<Maths::Matrix3x3<float>> m2(count);
-    std::vector<Maths::Matrix3x3<float>> output(count);
+    std::vector<MathsSIMD::Matrix3x3_SIMD> m1(count);
+    std::vector<MathsSIMD::Matrix3x3_SIMD> m2(count);
+    std::vector<MathsSIMD::Matrix3x3_SIMD> output(count);
     
     for (std::size_t i = 0; i < count; ++i)
     {
-        m1[i] = Maths::Matrix3x3<float>({
+        m1[i] = MathsSIMD::Matrix3x3_SIMD({
             dist(rng), dist(rng), dist(rng),
             dist(rng), dist(rng), dist(rng),
             dist(rng), dist(rng), dist(rng)
         });
-        m2[i] = Maths::Matrix3x3<float>({
+        m2[i] = MathsSIMD::Matrix3x3_SIMD({
             dist(rng), dist(rng), dist(rng),
             dist(rng), dist(rng), dist(rng),
             dist(rng), dist(rng), dist(rng)
@@ -70,18 +69,18 @@ static void BM_Matrix3x3_SUB(benchmark::State& state)
     std::mt19937 rng(42);
     std::uniform_real_distribution<float> dist(-100.0f, 100.0f);
     
-    std::vector<Maths::Matrix3x3<float>> m1(count);
-    std::vector<Maths::Matrix3x3<float>> m2(count);
-    std::vector<Maths::Matrix3x3<float>> output(count);
+    std::vector<MathsSIMD::Matrix3x3_SIMD> m1(count);
+    std::vector<MathsSIMD::Matrix3x3_SIMD> m2(count);
+    std::vector<MathsSIMD::Matrix3x3_SIMD> output(count);
     
     for (std::size_t i = 0; i < count; ++i)
     {
-        m1[i] = Maths::Matrix3x3<float>({
+        m1[i] = MathsSIMD::Matrix3x3_SIMD({
             dist(rng), dist(rng), dist(rng),
             dist(rng), dist(rng), dist(rng),
             dist(rng), dist(rng), dist(rng)
         });
-        m2[i] = Maths::Matrix3x3<float>({
+        m2[i] = MathsSIMD::Matrix3x3_SIMD({
             dist(rng), dist(rng), dist(rng),
             dist(rng), dist(rng), dist(rng),
             dist(rng), dist(rng), dist(rng)
@@ -108,18 +107,18 @@ static void BM_Matrix3x3_MULMatrix(benchmark::State& state)
     std::mt19937 rng(42);
     std::uniform_real_distribution<float> dist(-100.0f, 100.0f);
     
-    std::vector<Maths::Matrix3x3<float>> m1(count);
-    std::vector<Maths::Matrix3x3<float>> m2(count);
-    std::vector<Maths::Matrix3x3<float>> output(count);
+    std::vector<MathsSIMD::Matrix3x3_SIMD> m1(count);
+    std::vector<MathsSIMD::Matrix3x3_SIMD> m2(count);
+    std::vector<MathsSIMD::Matrix3x3_SIMD> output(count);
     
     for (std::size_t i = 0; i < count; ++i)
     {
-        m1[i] = Maths::Matrix3x3<float>({
+        m1[i] = MathsSIMD::Matrix3x3_SIMD({
             dist(rng), dist(rng), dist(rng),
             dist(rng), dist(rng), dist(rng),
             dist(rng), dist(rng), dist(rng)
         });
-        m2[i] = Maths::Matrix3x3<float>({
+        m2[i] = MathsSIMD::Matrix3x3_SIMD({
             dist(rng), dist(rng), dist(rng),
             dist(rng), dist(rng), dist(rng),
             dist(rng), dist(rng), dist(rng)
@@ -146,13 +145,13 @@ static void BM_Matrix3x3_MULVec3(benchmark::State& state)
     std::mt19937 rng(42);
     std::uniform_real_distribution<float> dist(-100.0f, 100.0f);
     
-    std::vector<Maths::Matrix3x3<float>> m1(count);
-    std::vector<Maths::Vec3<float>> v1(count);
-    std::vector<Maths::Vec3<float>> output(count);
+    std::vector<MathsSIMD::Matrix3x3_SIMD> m1(count);
+    std::vector<MathsSIMD::Vec3_SIMD> v1(count);
+    std::vector<MathsSIMD::Vec3_SIMD> output(count);
     
     for (std::size_t i = 0; i < count; ++i)
     {
-        m1[i] = Maths::Matrix3x3<float>({
+        m1[i] = MathsSIMD::Matrix3x3_SIMD({
             dist(rng), dist(rng), dist(rng),
             dist(rng), dist(rng), dist(rng),
             dist(rng), dist(rng), dist(rng)
@@ -180,13 +179,13 @@ static void BM_Matrix3x3_MULScalar(benchmark::State& state)
     std::mt19937 rng(42);
     std::uniform_real_distribution<float> dist(-100.0f, 100.0f);
     
-    std::vector<Maths::Matrix3x3<float>> m1(count);
+    std::vector<MathsSIMD::Matrix3x3_SIMD> m1(count);
     std::vector<float> scalars(count);
-    std::vector<Maths::Matrix3x3<float>> output(count);
+    std::vector<MathsSIMD::Matrix3x3_SIMD> output(count);
     
     for (std::size_t i = 0; i < count; ++i)
     {
-        m1[i] = Maths::Matrix3x3<float>({
+        m1[i] = MathsSIMD::Matrix3x3_SIMD({
             dist(rng), dist(rng), dist(rng),
             dist(rng), dist(rng), dist(rng),
             dist(rng), dist(rng), dist(rng)
@@ -214,18 +213,18 @@ static void BM_Matrix3x3_MULAssignMatrix(benchmark::State& state)
     std::mt19937 rng(42);
     std::uniform_real_distribution<float> dist(-100.0f, 100.0f);
     
-    std::vector<Maths::Matrix3x3<float>> m1(count);
-    std::vector<Maths::Matrix3x3<float>> m1_original(count);
-    std::vector<Maths::Matrix3x3<float>> m2(count);
+    std::vector<MathsSIMD::Matrix3x3_SIMD> m1(count);
+    std::vector<MathsSIMD::Matrix3x3_SIMD> m1_original(count);
+    std::vector<MathsSIMD::Matrix3x3_SIMD> m2(count);
     
     for (std::size_t i = 0; i < count; ++i)
     {
-        m1[i] = Maths::Matrix3x3<float>({
+        m1[i] = MathsSIMD::Matrix3x3_SIMD({
             dist(rng), dist(rng), dist(rng),
             dist(rng), dist(rng), dist(rng),
             dist(rng), dist(rng), dist(rng)
         });
-        m2[i] = Maths::Matrix3x3<float>({
+        m2[i] = MathsSIMD::Matrix3x3_SIMD({
             dist(rng), dist(rng), dist(rng),
             dist(rng), dist(rng), dist(rng),
             dist(rng), dist(rng), dist(rng)
@@ -257,17 +256,17 @@ static void BM_Matrix3x3_Equal(benchmark::State& state)
     std::mt19937 rng(42);
     std::uniform_real_distribution<float> dist(-100.0f, 100.0f);
     
-    std::vector<Maths::Matrix3x3<float>> m1(count);
-    std::vector<Maths::Matrix3x3<float>> m2(count);
+    std::vector<MathsSIMD::Matrix3x3_SIMD> m1(count);
+    std::vector<MathsSIMD::Matrix3x3_SIMD> m2(count);
     
     for (std::size_t i = 0; i < count; ++i)
     {
-        m1[i] = Maths::Matrix3x3<float>({
+        m1[i] = MathsSIMD::Matrix3x3_SIMD({
             dist(rng), dist(rng), dist(rng),
             dist(rng), dist(rng), dist(rng),
             dist(rng), dist(rng), dist(rng)
         });
-        m2[i] = Maths::Matrix3x3<float>({
+        m2[i] = MathsSIMD::Matrix3x3_SIMD({
             dist(rng), dist(rng), dist(rng),
             dist(rng), dist(rng), dist(rng),
             dist(rng), dist(rng), dist(rng)
@@ -294,12 +293,12 @@ static void BM_Matrix3x3_Transpose(benchmark::State& state)
     std::mt19937 rng(42);
     std::uniform_real_distribution<float> dist(-100.0f, 100.0f);
     
-    std::vector<Maths::Matrix3x3<float>> m1(count);
-    std::vector<Maths::Matrix3x3<float>> output(count);
+    std::vector<MathsSIMD::Matrix3x3_SIMD> m1(count);
+    std::vector<MathsSIMD::Matrix3x3_SIMD> output(count);
     
     for (std::size_t i = 0; i < count; ++i)
     {
-        m1[i] = Maths::Matrix3x3<float>({
+        m1[i] = MathsSIMD::Matrix3x3_SIMD({
             dist(rng), dist(rng), dist(rng),
             dist(rng), dist(rng), dist(rng),
             dist(rng), dist(rng), dist(rng)
@@ -326,12 +325,12 @@ static void BM_Matrix3x3_Determinant(benchmark::State& state)
     std::mt19937 rng(42);
     std::uniform_real_distribution<float> dist(-100.0f, 100.0f);
     
-    std::vector<Maths::Matrix3x3<float>> m1(count);
+    std::vector<MathsSIMD::Matrix3x3_SIMD> m1(count);
     std::vector<float> output(count);
     
     for (std::size_t i = 0; i < count; ++i)
     {
-        m1[i] = Maths::Matrix3x3<float>({
+        m1[i] = MathsSIMD::Matrix3x3_SIMD({
             dist(rng), dist(rng), dist(rng),
             dist(rng), dist(rng), dist(rng),
             dist(rng), dist(rng), dist(rng)
@@ -358,12 +357,12 @@ static void BM_Matrix3x3_Inverse(benchmark::State& state)
     std::mt19937 rng(42);
     std::uniform_real_distribution<float> dist(1.0f, 10.0f); // Valeurs évitant les matrices singulières
     
-    std::vector<Maths::Matrix3x3<float>> m1(count);
-    std::vector<Maths::Matrix3x3<float>> output(count);
+    std::vector<MathsSIMD::Matrix3x3_SIMD> m1(count);
+    std::vector<MathsSIMD::Matrix3x3_SIMD> output(count);
     
     for (std::size_t i = 0; i < count; ++i)
     {
-        m1[i] = Maths::Matrix3x3<float>({
+        m1[i] = MathsSIMD::Matrix3x3_SIMD({
             dist(rng), dist(rng), dist(rng),
             dist(rng), dist(rng) + 20.0f, dist(rng),
             dist(rng), dist(rng), dist(rng) + 40.0f
@@ -390,8 +389,8 @@ static void BM_Matrix3x3_Scale(benchmark::State& state)
     std::mt19937 rng(42);
     std::uniform_real_distribution<float> dist(-100.0f, 100.0f);
     
-    std::vector<Maths::Vec3<float>> scales(count);
-    std::vector<Maths::Matrix3x3<float>> output(count);
+    std::vector<MathsSIMD::Vec3_SIMD> scales(count);
+    std::vector<MathsSIMD::Matrix3x3_SIMD> output(count);
     
     for (std::size_t i = 0; i < count; ++i)
     {
@@ -402,7 +401,7 @@ static void BM_Matrix3x3_Scale(benchmark::State& state)
     {
         for (std::size_t i = 0; i < count; ++i)
         {
-            output[i] = Maths::Matrix3x3<float>::Scale(scales[i]);   
+            output[i] = MathsSIMD::Matrix3x3_SIMD::Scale(scales[i]);   
             benchmark::DoNotOptimize(output[i]);
         }
         benchmark::ClobberMemory();
@@ -419,7 +418,7 @@ static void BM_Matrix3x3_RotationX(benchmark::State& state)
     std::uniform_real_distribution<float> dist(-3.14159f, 3.14159f);
     
     std::vector<float> angles(count);
-    std::vector<Maths::Matrix3x3<float>> output(count);
+    std::vector<MathsSIMD::Matrix3x3_SIMD> output(count);
     
     for (std::size_t i = 0; i < count; ++i)
     {
@@ -430,7 +429,7 @@ static void BM_Matrix3x3_RotationX(benchmark::State& state)
     {
         for (std::size_t i = 0; i < count; ++i)
         {
-            output[i] = Maths::Matrix3x3<float>::RotationX(angles[i]);   
+            output[i] = MathsSIMD::Matrix3x3_SIMD::RotationX(angles[i]);   
             benchmark::DoNotOptimize(output[i]);
         }
         benchmark::ClobberMemory();

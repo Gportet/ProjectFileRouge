@@ -5,8 +5,8 @@
 #include <filesystem>
 #include <random>
 #include <cstdint>
-#include "MathLib/Vec3.h"
 #include "benchmarkUtils.h"
+#include "MathLib_SIMD/include/Vec3_SIMD.h"
 
 #define REGISTER_VEC3_BENCHMARK(func) \
     BENCHMARK(func) \
@@ -31,9 +31,9 @@ static void BM_Vect3_SUM(benchmark::State& state)
     std::mt19937 rng(42);
     std::uniform_real_distribution<float> dist(-100.0, 100.0);
     
-    std::vector<Maths::Vec3<float>> v1(count);
-    std::vector<Maths::Vec3<float>> v2(count);
-    std::vector<Maths::Vec3<float>> output(count);
+    std::vector<MathsSIMD::Vec3_SIMD> v1(count);
+    std::vector<MathsSIMD::Vec3_SIMD> v2(count);
+    std::vector<MathsSIMD::Vec3_SIMD> output(count);
     
     for (std::size_t i = 0; i < count; ++i)
     {
@@ -61,9 +61,9 @@ static void BM_Vect3_SUB(benchmark::State& state)
     std::mt19937 rng(42);
     std::uniform_real_distribution<float> dist(-100.0, 100.0);
     
-    std::vector<Maths::Vec3<float>> v1(count);
-    std::vector<Maths::Vec3<float>> v2(count);
-    std::vector<Maths::Vec3<float>> output(count);
+    std::vector<MathsSIMD::Vec3_SIMD> v1(count);
+    std::vector<MathsSIMD::Vec3_SIMD> v2(count);
+    std::vector<MathsSIMD::Vec3_SIMD> output(count);
     
     for (std::size_t i = 0; i < count; ++i)
     {
@@ -91,9 +91,9 @@ static void BM_Vect3_MUL(benchmark::State& state)
     std::mt19937 rng(42);
     std::uniform_real_distribution<float> dist(-100.0, 100.0);
     
-    std::vector<Maths::Vec3<float>> v1(count);
-    std::vector<Maths::Vec3<float>> v2(count);
-    std::vector<Maths::Vec3<float>> output(count);
+    std::vector<MathsSIMD::Vec3_SIMD> v1(count);
+    std::vector<MathsSIMD::Vec3_SIMD> v2(count);
+    std::vector<MathsSIMD::Vec3_SIMD> output(count);
     
     for (std::size_t i = 0; i < count; ++i)
     {
@@ -121,9 +121,9 @@ static void BM_Vect3_DIV(benchmark::State& state)
     std::mt19937 rng(42);
     std::uniform_real_distribution<float> dist(-100.0, 100.0);
     
-    std::vector<Maths::Vec3<float>> v1(count);
-    std::vector<Maths::Vec3<float>> v2(count);
-    std::vector<Maths::Vec3<float>> output(count);
+    std::vector<MathsSIMD::Vec3_SIMD> v1(count);
+    std::vector<MathsSIMD::Vec3_SIMD> v2(count);
+    std::vector<MathsSIMD::Vec3_SIMD> output(count);
     
     for (std::size_t i = 0; i < count; ++i)
     {
@@ -151,8 +151,8 @@ static void BM_Vect3_NEG(benchmark::State& state)
     std::mt19937 rng(42);
     std::uniform_real_distribution<float> dist(-100.0, 100.0);
     
-    std::vector<Maths::Vec3<float>> v1(count);
-    std::vector<Maths::Vec3<float>> output(count);
+    std::vector<MathsSIMD::Vec3_SIMD> v1(count);
+    std::vector<MathsSIMD::Vec3_SIMD> output(count);
     
     for (std::size_t i = 0; i < count; ++i)
     {
@@ -179,9 +179,9 @@ static void BM_Vect3_MULScalar(benchmark::State& state)
     std::mt19937 rng(42);
     std::uniform_real_distribution<float> dist(-100.0, 100.0);
     
-    std::vector<Maths::Vec3<float>> v1(count);
+    std::vector<MathsSIMD::Vec3_SIMD> v1(count);
     std::vector<float> scalars(count);
-    std::vector<Maths::Vec3<float>> output(count);
+    std::vector<MathsSIMD::Vec3_SIMD> output(count);
     
     for (std::size_t i = 0; i < count; ++i)
     {
@@ -209,9 +209,9 @@ static void BM_Vect3_DIVScalar(benchmark::State& state)
     std::mt19937 rng(42);
     std::uniform_real_distribution<float> dist(-100.0, 100.0);
     
-    std::vector<Maths::Vec3<float>> v1(count);
+    std::vector<MathsSIMD::Vec3_SIMD> v1(count);
     std::vector<float> scalars(count);
-    std::vector<Maths::Vec3<float>> output(count);
+    std::vector<MathsSIMD::Vec3_SIMD> output(count);
     
     for (std::size_t i = 0; i < count; ++i)
     {
@@ -239,9 +239,9 @@ static void BM_Vect3_ADDAssign(benchmark::State& state)
     std::mt19937 rng(42);
     std::uniform_real_distribution<float> dist(-100.0, 100.0);
     
-    std::vector<Maths::Vec3<float>> v1(count);
-    std::vector<Maths::Vec3<float>> v1_original(count);
-    std::vector<Maths::Vec3<float>> v2(count);
+    std::vector<MathsSIMD::Vec3_SIMD> v1(count);
+    std::vector<MathsSIMD::Vec3_SIMD> v1_original(count);
+    std::vector<MathsSIMD::Vec3_SIMD> v2(count);
     
     for (std::size_t i = 0; i < count; ++i)
     {
@@ -274,9 +274,9 @@ static void BM_Vect3_SUBAssign(benchmark::State& state)
     std::mt19937 rng(42);
     std::uniform_real_distribution<float> dist(-100.0, 100.0);
     
-    std::vector<Maths::Vec3<float>> v1(count);
-    std::vector<Maths::Vec3<float>> v2(count);
-    std::vector<Maths::Vec3<float>> v1_original(count);
+    std::vector<MathsSIMD::Vec3_SIMD> v1(count);
+    std::vector<MathsSIMD::Vec3_SIMD> v2(count);
+    std::vector<MathsSIMD::Vec3_SIMD> v1_original(count);
     
     for (std::size_t i = 0; i < count; ++i)
     {
@@ -309,9 +309,9 @@ static void BM_Vect3_MULAssign(benchmark::State& state)
     std::mt19937 rng(42);
     std::uniform_real_distribution<float> dist(-100.0, 100.0);
     
-    std::vector<Maths::Vec3<float>> v1(count);
-    std::vector<Maths::Vec3<float>> v2(count);
-    std::vector<Maths::Vec3<float>> v1_original(count);
+    std::vector<MathsSIMD::Vec3_SIMD> v1(count);
+    std::vector<MathsSIMD::Vec3_SIMD> v2(count);
+    std::vector<MathsSIMD::Vec3_SIMD> v1_original(count);
     
     for (std::size_t i = 0; i < count; ++i)
     {
@@ -344,8 +344,8 @@ static void BM_Vect3_DIVAssign(benchmark::State& state)
     std::mt19937 rng(42);
     std::uniform_real_distribution<float> dist(-100.0, 100.0);
     
-    std::vector<Maths::Vec3<float>> v1(count);
-    std::vector<Maths::Vec3<float>> v1_original(count);
+    std::vector<MathsSIMD::Vec3_SIMD> v1(count);
+    std::vector<MathsSIMD::Vec3_SIMD> v1_original(count);
     std::vector<float> scalars(count);
     
     for (std::size_t i = 0; i < count; ++i)
@@ -379,8 +379,8 @@ static void BM_Vect3_MulScalarAssign(benchmark::State& state)
     std::mt19937 rng(42);
     std::uniform_real_distribution<float> dist(-100.0, 100.0);
     
-    std::vector<Maths::Vec3<float>> v1(count);
-    std::vector<Maths::Vec3<float>> v1_original(count);
+    std::vector<MathsSIMD::Vec3_SIMD> v1(count);
+    std::vector<MathsSIMD::Vec3_SIMD> v1_original(count);
     std::vector<float> scalars(count);
     
     for (std::size_t i = 0; i < count; ++i)
@@ -414,8 +414,8 @@ static void BM_Vect3_DIVScalarAssign(benchmark::State& state)
     std::mt19937 rng(42);
     std::uniform_real_distribution<float> dist(-100.0, 100.0);
     
-    std::vector<Maths::Vec3<float>> v1(count);
-    std::vector<Maths::Vec3<float>> v1_original(count);
+    std::vector<MathsSIMD::Vec3_SIMD> v1(count);
+    std::vector<MathsSIMD::Vec3_SIMD> v1_original(count);
     std::vector<float> scalars(count);
     
     for (std::size_t i = 0; i < count; ++i)
@@ -449,8 +449,8 @@ static void BM_Vect3_Equal(benchmark::State& state)
     std::mt19937 rng(42);
     std::uniform_real_distribution<float> dist(-100.0, 100.0);
     
-    std::vector<Maths::Vec3<float>> v1(count);
-    std::vector<Maths::Vec3<float>> v2(count);
+    std::vector<MathsSIMD::Vec3_SIMD> v1(count);
+    std::vector<MathsSIMD::Vec3_SIMD> v2(count);
     
     for (std::size_t i = 0; i < count; ++i)
     {
@@ -478,8 +478,8 @@ static void BM_Vect3_NotEqual(benchmark::State& state)
     std::mt19937 rng(42);
     std::uniform_real_distribution<float> dist(-100.0, 100.0);
     
-    std::vector<Maths::Vec3<float>> v1(count);
-    std::vector<Maths::Vec3<float>> v2(count);
+    std::vector<MathsSIMD::Vec3_SIMD> v1(count);
+    std::vector<MathsSIMD::Vec3_SIMD> v2(count);
     
     for (std::size_t i = 0; i < count; ++i)
     {
@@ -507,8 +507,8 @@ static void BM_Vect3_Dot(benchmark::State& state)
     std::mt19937 rng(42);
     std::uniform_real_distribution<float> dist(-100.0, 100.0);
     
-    std::vector<Maths::Vec3<float>> v1(count);
-    std::vector<Maths::Vec3<float>> v2(count);
+    std::vector<MathsSIMD::Vec3_SIMD> v1(count);
+    std::vector<MathsSIMD::Vec3_SIMD> v2(count);
     std::vector<float> output(count);
     
     for (std::size_t i = 0; i < count; ++i)
@@ -537,9 +537,9 @@ static void BM_Vect3_Cross(benchmark::State& state)
     std::mt19937 rng(42);
     std::uniform_real_distribution<float> dist(-100.0, 100.0);
     
-    std::vector<Maths::Vec3<float>> v1(count);
-    std::vector<Maths::Vec3<float>> v2(count);
-    std::vector<Maths::Vec3<float>> output(count);
+    std::vector<MathsSIMD::Vec3_SIMD> v1(count);
+    std::vector<MathsSIMD::Vec3_SIMD> v2(count);
+    std::vector<MathsSIMD::Vec3_SIMD> output(count);
     
     for (std::size_t i = 0; i < count; ++i)
     {
@@ -567,7 +567,7 @@ static void BM_Vect3_MagnitudeSquared(benchmark::State& state)
     std::mt19937 rng(42);
     std::uniform_real_distribution<float> dist(-100.0, 100.0);
     
-    std::vector<Maths::Vec3<float>> v1(count);
+    std::vector<MathsSIMD::Vec3_SIMD> v1(count);
     std::vector<float> output(count);
     
     for (std::size_t i = 0; i < count; ++i)
@@ -595,7 +595,7 @@ static void BM_Vect3_Magnitude(benchmark::State& state)
     std::mt19937 rng(42);
     std::uniform_real_distribution<float> dist(-100.0, 100.0);
     
-    std::vector<Maths::Vec3<float>> v1(count);
+    std::vector<MathsSIMD::Vec3_SIMD> v1(count);
     std::vector<float> output(count);
     
     for (std::size_t i = 0; i < count; ++i)
@@ -623,8 +623,8 @@ static void BM_Vect3_Normalize(benchmark::State& state)
     std::mt19937 rng(42);
     std::uniform_real_distribution<float> dist(-100.0, 100.0);
     
-    std::vector<Maths::Vec3<float>> v1(count);
-    std::vector<Maths::Vec3<float>> output(count);
+    std::vector<MathsSIMD::Vec3_SIMD> v1(count);
+    std::vector<MathsSIMD::Vec3_SIMD> output(count);
     
     for (std::size_t i = 0; i < count; ++i)
     {
@@ -651,8 +651,8 @@ static void BM_Vect3_DistanceSquared(benchmark::State& state)
     std::mt19937 rng(42);
     std::uniform_real_distribution<float> dist(-100.0, 100.0);
     
-    std::vector<Maths::Vec3<float>> v1(count);
-    std::vector<Maths::Vec3<float>> v2(count);
+    std::vector<MathsSIMD::Vec3_SIMD> v1(count);
+    std::vector<MathsSIMD::Vec3_SIMD> v2(count);
     std::vector<float> output(count);
     
     for (std::size_t i = 0; i < count; ++i)
@@ -681,8 +681,8 @@ static void BM_Vect3_Distance(benchmark::State& state)
     std::mt19937 rng(42);
     std::uniform_real_distribution<float> dist(-100.0, 100.0);
     
-    std::vector<Maths::Vec3<float>> v1(count);
-    std::vector<Maths::Vec3<float>> v2(count);
+    std::vector<MathsSIMD::Vec3_SIMD> v1(count);
+    std::vector<MathsSIMD::Vec3_SIMD> v2(count);
     std::vector<float> output(count);
     
     for (std::size_t i = 0; i < count; ++i)
@@ -711,8 +711,8 @@ static void BM_Vect3_Angle(benchmark::State& state)
     std::mt19937 rng(42);
     std::uniform_real_distribution<float> dist(-100.0, 100.0);
     
-    std::vector<Maths::Vec3<float>> v1(count);
-    std::vector<Maths::Vec3<float>> v2(count);
+    std::vector<MathsSIMD::Vec3_SIMD> v1(count);
+    std::vector<MathsSIMD::Vec3_SIMD> v2(count);
     std::vector<float> output(count);
     
     for (std::size_t i = 0; i < count; ++i)
@@ -742,10 +742,10 @@ static void BM_Vect3_Lerp(benchmark::State& state)
     std::uniform_real_distribution<float> dist(-100.0, 100.0);
     std::uniform_real_distribution<float> dist_t(0.0f, 1.0f);
     
-    std::vector<Maths::Vec3<float>> v1(count);
-    std::vector<Maths::Vec3<float>> v2(count);
+    std::vector<MathsSIMD::Vec3_SIMD> v1(count);
+    std::vector<MathsSIMD::Vec3_SIMD> v2(count);
     std::vector<float> t_factors(count);
-    std::vector<Maths::Vec3<float>> output(count);
+    std::vector<MathsSIMD::Vec3_SIMD> output(count);
     
     for (std::size_t i = 0; i < count; ++i)
     {
@@ -758,7 +758,7 @@ static void BM_Vect3_Lerp(benchmark::State& state)
     {
         for (std::size_t i = 0; i < count; ++i)
         {
-            output[i] = Maths::Vec3<float>::Lerp(v1[i], v2[i], t_factors[i]);
+            output[i] = MathsSIMD::Vec3_SIMD::Lerp(v1[i], v2[i], t_factors[i]);
             benchmark::DoNotOptimize(output[i]);
         }
         benchmark::ClobberMemory();
@@ -774,9 +774,9 @@ static void BM_Vect3_Min(benchmark::State& state)
     std::mt19937 rng(42);
     std::uniform_real_distribution<float> dist(-100.0, 100.0);
     
-    std::vector<Maths::Vec3<float>> v1(count);
-    std::vector<Maths::Vec3<float>> v2(count);
-    std::vector<Maths::Vec3<float>> output(count);
+    std::vector<MathsSIMD::Vec3_SIMD> v1(count);
+    std::vector<MathsSIMD::Vec3_SIMD> v2(count);
+    std::vector<MathsSIMD::Vec3_SIMD> output(count);
     
     for (std::size_t i = 0; i < count; ++i)
     {
@@ -788,7 +788,7 @@ static void BM_Vect3_Min(benchmark::State& state)
     {
         for (std::size_t i = 0; i < count; ++i)
         {
-            output[i] = Maths::Vec3<float>::Min(v1[i], v2[i]);
+            output[i] = MathsSIMD::Vec3_SIMD::Min(v1[i], v2[i]);
             benchmark::DoNotOptimize(output[i]);
         }
         benchmark::ClobberMemory();
@@ -804,9 +804,9 @@ static void BM_Vect3_Max(benchmark::State& state)
     std::mt19937 rng(42);
     std::uniform_real_distribution<float> dist(-100.0, 100.0);
     
-    std::vector<Maths::Vec3<float>> v1(count);
-    std::vector<Maths::Vec3<float>> v2(count);
-    std::vector<Maths::Vec3<float>> output(count);
+    std::vector<MathsSIMD::Vec3_SIMD> v1(count);
+    std::vector<MathsSIMD::Vec3_SIMD> v2(count);
+    std::vector<MathsSIMD::Vec3_SIMD> output(count);
     
     for (std::size_t i = 0; i < count; ++i)
     {
@@ -818,7 +818,7 @@ static void BM_Vect3_Max(benchmark::State& state)
     {
         for (std::size_t i = 0; i < count; ++i)
         {
-            output[i] = Maths::Vec3<float>::Max(v1[i], v2[i]);
+            output[i] = MathsSIMD::Vec3_SIMD::Max(v1[i], v2[i]);
             benchmark::DoNotOptimize(output[i]);
         }
         benchmark::ClobberMemory();

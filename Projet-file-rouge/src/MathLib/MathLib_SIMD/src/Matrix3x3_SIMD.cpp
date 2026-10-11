@@ -230,4 +230,149 @@ namespace MathsSIMD
 
         return Matrix3x3_SIMD(result0, result1, result2);
     }
+
+    float Matrix3x3_SIMD::Determinant() const
+    {
+        const __m128 row1 = rows[1]; 
+        const __m128 row2 = rows[2]; 
+        
+        const __m128 shuffleOne  = _mm_shuffle_ps(row1,row1, _MM_SHUFFLE(3, 0, 0, 1)); // E D D 0
+        const __m128 shuffleTwo = _mm_shuffle_ps(row2,row2, _MM_SHUFFLE(3, 1, 2, 2)); // I I H 0
+        const __m128 shuffleThree = _mm_shuffle_ps(row1,row1, _MM_SHUFFLE(3, 1, 2,2)); // F F E 0
+        const __m128 shuffleFour = _mm_shuffle_ps(row2,row2, _MM_SHUFFLE(3, 0, 0, 1)); // H G G 0
+        
+        const __m128 firstProducts = _mm_mul_ps(shuffleOne, shuffleTwo);
+        const __m128 secondProducts = _mm_mul_ps(shuffleThree, shuffleFour);
+        
+        const __m128 finalProduct = _mm_sub_ps(firstProducts, secondProducts);
+        
+        const __m128 row0 = rows[0];
+        const __m128 products = _mm_mul_ps(row0, finalProduct);
+        
+        const __m128 signs = _mm_setr_ps(1.0f, -1.0f, 1.0f, 1.0f);
+        const __m128 result = _mm_mul_ps(products, signs);
+        
+        const __m128 horizontal1 = _mm_hadd_ps(result, result);
+        const __m128 horizontal2 = _mm_hadd_ps(horizontal1, horizontal1);
+
+        return _mm_cvtss_f32(horizontal2);
+    }
+
+    Matrix3x3_SIMD Matrix3x3_SIMD::Inverse(float relativeTolerance) const
+    {
+        const float a = (*this)(0, 0);
+        const float b = (*this)(0, 1);
+        const float c = (*this)(0, 2);
+
+        const float d = (*this)(1, 0);
+        const float e = (*this)(1, 1);
+        const float f = (*this)(1, 2);
+
+        const float g = (*this)(2, 0);
+        const float h = (*this)(2, 1);
+        const float i = (*this)(2, 2);
+
+        const float cofactor00 = e * i - f * h;
+        const float cofactor01 = c * h - b * i;
+        const float cofactor02 = b * f - c * e;
+
+        const float cofactor10 = f * g - d * i;
+        const float cofactor11 = a * i - c * g;
+        const float cofactor12 = c * d - a * f;
+
+        const float cofactor20 = d * h - e * g;
+        const float cofactor21 = b * g - a * h;
+        const float cofactor22 = a * e - b * d;
+
+        const float determinant =
+            a * cofactor00 +
+            b * cofactor10 +
+            c * cofactor20;
+
+        if (std::abs(determinant) <= relativeTolerance)
+        {
+            throw std::runtime_error("Matrix is not invertible.");
+        }
+
+        const __m128 inverseDeterminant =
+            _mm_set1_ps(1.0f / determinant);
+
+        const __m128 inverseRow0 = _mm_setr_ps(
+            cofactor00,
+            cofactor01,
+            cofactor02,
+            0.0f
+        );
+
+        const __m128 inverseRow1 = _mm_setr_ps(
+            cofactor10,
+            cofactor11,
+            cofactor12,
+            0.0f
+        );
+
+        const __m128 inverseRow2 = _mm_setr_ps(
+            cofactor20,
+            cofactor21,
+            cofactor22,
+            0.0f
+        );
+
+        return {
+            _mm_mul_ps(inverseRow0, inverseDeterminant),
+            _mm_mul_ps(inverseRow1, inverseDeterminant),
+            _mm_mul_ps(inverseRow2, inverseDeterminant)
+        };
+    }
+
+    Matrix3x3_SIMD Matrix3x3_SIMD::Scale(const Vec3_SIMD& scale)
+    {
+        const __m128 scaleRegister = scale.Load(scale.data);
+        
+        const __m128 row1 = _mm_shuffle_ps(scaleRegister,scaleRegister,_MM_SHUFFLE(3, 3, 3, 0));
+        const __m128 row2 = _mm_shuffle_ps(scaleRegister,scaleRegister,_MM_SHUFFLE(3, 3, 1, 3));
+        const __m128 row3 = _mm_shuffle_ps(scaleRegister,scaleRegister,_MM_SHUFFLE(3, 2, 3, 3));
+        
+        return {
+            row1,
+            row2,
+            row3,
+            };
+    }
+    
+    Matrix3x3_SIMD Matrix3x3_SIMD::RotationX(float radians)
+    {
+        const float c = std::cos(radians);
+        const float s = std::sin(radians);
+
+        return {
+            _mm_setr_ps(1.0f, 0.0f, 0.0f, 0.0f),
+            _mm_setr_ps(0.0f, c, -s, 0.0f),
+            _mm_setr_ps(0.0f, s, c, 0.0f)
+        };
+    }
+
+    Matrix3x3_SIMD Matrix3x3_SIMD::RotationY(float radians)
+    {
+        const float c = std::cos(radians);
+        const float s = std::sin(radians);
+
+        return {
+            _mm_setr_ps(c, 0.0f, s, 0.0f),
+            _mm_setr_ps(0.0f, 1.0f, 0.0f, 0.0f),
+            _mm_setr_ps(-s, 0.0f, c, 0.0f)
+        };
+    }
+
+    Matrix3x3_SIMD Matrix3x3_SIMD::RotationZ(float radians)
+    {
+        const float c = std::cos(radians);
+        const float s = std::sin(radians);
+
+        return {
+            _mm_setr_ps(c, -s, 0.0f, 0.0f),
+            _mm_setr_ps(s, c, 0.0f, 0.0f),
+            _mm_setr_ps(0.0f, 0.0f, 1.0f, 0.0f)
+        };
+    }
 }
