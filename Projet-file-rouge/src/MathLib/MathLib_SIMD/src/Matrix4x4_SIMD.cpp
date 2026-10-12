@@ -430,7 +430,7 @@ Matrix4x4_SIMD Matrix4x4_SIMD::Inverse(float relativeTolerance) const
 
     Matrix4x4_SIMD Matrix4x4_SIMD::Scale(const Vec3_SIMD& scale)
     {
-        const __m128 scaleRegister = scale.Load(scale.data);
+        const __m128 scaleRegister = scale.data;
 
         const __m128 row1 = _mm_shuffle_ps(scaleRegister, scaleRegister, _MM_SHUFFLE(3, 3, 3, 0));
         const __m128 row2 = _mm_shuffle_ps(scaleRegister, scaleRegister, _MM_SHUFFLE(3, 3, 1, 3));
@@ -487,7 +487,7 @@ Matrix4x4_SIMD Matrix4x4_SIMD::Inverse(float relativeTolerance) const
 
     Matrix4x4_SIMD Matrix4x4_SIMD::Translation(const Vec3_SIMD& offset)
     {
-        const __m128 offsetRegister = offset.Load(offset.data);
+        const __m128 offsetRegister = offset.data;
 
         const float x = _mm_cvtss_f32(offsetRegister);
         const float y = _mm_cvtss_f32(_mm_shuffle_ps(offsetRegister, offsetRegister, _MM_SHUFFLE(1, 1, 1, 1)));
@@ -504,7 +504,7 @@ Matrix4x4_SIMD Matrix4x4_SIMD::Inverse(float relativeTolerance) const
     Vec3_SIMD Matrix4x4_SIMD::TransformPoint(
         const Vec3_SIMD& point) const
     {
-        const __m128 vecPoint = point.Load(point.data);
+        const __m128 vecPoint = point.data;
 
         const __m128 rowOneResult = _mm_mul_ps(rows[0], vecPoint);
         const __m128 rowTwoResult = _mm_mul_ps(rows[1], vecPoint);
@@ -529,7 +529,7 @@ Matrix4x4_SIMD Matrix4x4_SIMD::Inverse(float relativeTolerance) const
     Vec3_SIMD Matrix4x4_SIMD::TransformDirection(
         const Vec3_SIMD& direction) const
     {
-        const __m128 vecDirection = direction.Load(direction.data);
+        const __m128 vecDirection = direction.data;
 
         const __m128 rowOneResult = _mm_mul_ps(rows[0], vecDirection);
         const __m128 rowTwoResult = _mm_mul_ps(rows[1], vecDirection);

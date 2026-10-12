@@ -127,7 +127,7 @@ namespace MathsSIMD
 
     Vec3_SIMD Matrix3x3_SIMD::operator*(const Vec3_SIMD& rhs) const
     {
-        const __m128 vecRhs = rhs.Load(rhs.data);
+        const __m128 vecRhs = rhs.data;
         
         const __m128 rowOneResult = _mm_mul_ps(rows[0], vecRhs);
         const __m128 rowTwoResult = _mm_mul_ps(rows[1], vecRhs);
@@ -327,7 +327,7 @@ namespace MathsSIMD
 
     Matrix3x3_SIMD Matrix3x3_SIMD::Scale(const Vec3_SIMD& scale)
     {
-        const __m128 scaleRegister = scale.Load(scale.data);
+        const __m128 scaleRegister = scale.data;
         
         const __m128 row1 = _mm_shuffle_ps(scaleRegister,scaleRegister,_MM_SHUFFLE(3, 3, 3, 0));
         const __m128 row2 = _mm_shuffle_ps(scaleRegister,scaleRegister,_MM_SHUFFLE(3, 3, 1, 3));

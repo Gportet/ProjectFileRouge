@@ -3,7 +3,7 @@
 #include <xmmintrin.h>
 #include <cmath>
 #include <stdexcept>
-#include <immintrin.h>
+
 namespace MathsSIMD
 {
     struct Vec3
@@ -14,11 +14,11 @@ namespace MathsSIMD
     class Vec3_SIMD
     {
     public:
-        Vec3 data;
+        __m128 data;
         
         Vec3_SIMD();
         Vec3_SIMD(float x, float y, float z) noexcept;
-        explicit Vec3_SIMD(const Vec3& vec);
+        explicit Vec3_SIMD(const __m128& vec);
         
 
         

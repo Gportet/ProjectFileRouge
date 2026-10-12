@@ -267,7 +267,7 @@ namespace MathsSIMD
 
     float Vec4_SIMD::Angle(const Vec4_SIMD& rhs) const
     {
-        const Vec4_SIMD normalizedA = Normalize();
+        const Vec4_SIMD normalizedA = this->Normalize();
         const Vec4_SIMD normalizedB = rhs.Normalize();
 
         const float cosine = normalizedA.Dot(normalizedB);
