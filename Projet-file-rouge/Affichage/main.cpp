@@ -28,31 +28,26 @@ std::vector<uint8_t> generate_gradient(uint32_t width, uint32_t height) {
     return buffer;
 }
 
-std::vector<uint8_t> draw_line(uint32_t x0_u, uint32_t y0_u, uint32_t x1_u, uint32_t y1_u,  uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255)
+void draw_line(std::vector<uint8_t>& buffer, uint32_t width, uint32_t height,
+               int x0, int y0, int x1, int y1, 
+               uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255)
 {
-    int x0 = static_cast<int>(x0_u);
-    int y0 = static_cast<int>(y0_u);
-    int x1 = static_cast<int>(x1_u);
-    int y1 = static_cast<int>(y1_u);
-
     int dx =  std::abs(x1 - x0);
     int dy = -std::abs(y1 - y0);         
     int sx = (x0 < x1) ? 1 : -1;     
     int sy = (y0 < y1) ? 1 : -1;     
     int err = dx + dy;
     
-    std::vector<uint8_t> buffer(WIDTH * HEIGHT * 4, 0);
-    
     while (true)
     {
-        put_pixel(buffer, x0_u, y0_u, x1_u, sx, sy, a, b);
-    
-        
-        if (x0 >= 0 && x0 < static_cast<int>(WIDTH) && y0 >= 0 && y0 < static_cast<int>(HEIGHT)) {
-            put_pixel(buffer, static_cast<uint32_t>(x0), static_cast<uint32_t>(y0), WIDTH, r, g, b, a);
+        if (x0 >= 0 && x0 < static_cast<int>(width) && y0 >= 0 && y0 < static_cast<int>(height)) {
+            put_pixel(buffer, static_cast<uint32_t>(x0), static_cast<uint32_t>(y0), width, r, g, b, a);
         }
+
         if (x0 == x1 && y0 == y1) break;
+
         int e2 = 2 * err;
+
         if (e2 >= dy) { 
             err += dy; 
             x0 += sx; 
@@ -62,11 +57,28 @@ std::vector<uint8_t> draw_line(uint32_t x0_u, uint32_t y0_u, uint32_t x1_u, uint
             y0 += sy; 
         }
     }
-    return buffer;
-    
 }
 
 
+std::vector<uint8_t> draw_MulLine(double x1, double y1,int nb_line, int radius)
+{
+    std::vector<uint8_t> buffer(WIDTH * HEIGHT * 4, 0);
+    //origin
+    double x0 = static_cast<double>(WIDTH/2);
+    double y0 = static_cast<double>(HEIGHT/2);
+    
+    for (int i = 0; i < nb_line; ++i)
+    {
+        float angle = i * (2.0f * 3.14159f / nb_line);
+        
+        int x1 = x0 + static_cast<int>(radius * std::cos(angle));
+        int y1 = y0 + static_cast<int>(radius * std::sin(angle));
+
+
+        draw_line(buffer, WIDTH, HEIGHT, x1, y1, x0, y0,0,0,255);
+    }
+    return buffer;
+}
 int main() {
     if (!glfwInit()) {
         std::cerr << "Erreur GLFW" << std::endl;
@@ -93,7 +105,7 @@ int main() {
         return -1;
     }
 
-    std::vector<uint8_t> pixels = draw_line(0,0,500,500,255,255, 0);
+    std::vector<uint8_t> pixels = draw_MulLine(500,500,16, 100);
     GLuint textureID;
     glGenTextures(1, &textureID);
     glBindTexture(GL_TEXTURE_2D, textureID);
