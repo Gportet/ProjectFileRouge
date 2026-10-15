@@ -1,7 +1,7 @@
 ﻿#pragma once
 
-#include "MathLib_SIMD/include/Vec4_SIMD.h"
-#include "MathLib_SIMD/include/Vec3_SIMD.h"
+#include "MathLib/MathLib_SIMD/include/Vec4_SIMD.h"
+#include "MathLib/MathLib_SIMD/include/Vec3_SIMD.h"
 #include <array>
 #include <cstddef>
 #include <limits>

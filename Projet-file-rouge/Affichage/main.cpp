@@ -1,10 +1,15 @@
-﻿#include <iostream>
+﻿#include "MathLib/MathLib_SIMD/include/Matrix4x4_SIMD.h"
+#include "MathLib/MathLib_SIMD/include/Vec3_SIMD.h"
+
+#include <iostream>
 #include <vector>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <chrono>
 #include <cmath>
 #include <algorithm>
+
+
 
 const int WIDTH = 800;
 const int HEIGHT = 600;
@@ -154,6 +159,9 @@ std::vector<uint8_t> draw_Triangle(std::vector<uint8_t> framebuffer, Point v0, P
     return newBuffer;
 }
 
+#define PI 3.14159265358979323846f
+
+
 int main() {
     if (!glfwInit()) {
         std::cerr << "Erreur GLFW" << std::endl;
@@ -181,34 +189,58 @@ int main() {
     }
 
     std::vector<uint8_t> buffer(WIDTH * HEIGHT * 4, 0);
-    Point v0{400, 150}; 
-    Point v1{200, 450};
-    Point v2{600, 450}; 
-    
-    uint32_t c0 = rgb(255, 0, 0); // Rouge 
-    uint32_t c1 = rgb(0, 255, 0); // Vert 
-    uint32_t c2 = rgb(0, 0, 255); // Bleu
+    std::vector<uint8_t> pixels(buffer.size(), 0);
 
-    std::vector<uint8_t> pixels = draw_Triangle(buffer, v0, v1, v2, c0, c1, c2);
-    
+    // Sommets du triangle de base, centrés autour de l'origine
+    MathsSIMD::Vec3_SIMD base[3];
+    const float R = 200.0f;
+
+    for (int i = 0; i < 3; i++) {
+        float a = (float)i / 3.0f * 2.0f * PI - PI / 2.0f;
+
+        base[i] = MathsSIMD::Vec3_SIMD(
+            R * cosf(a),
+            R * sinf(a),
+            0.0f
+        );
+    }
+
+    // Couleurs des sommets
+    uint32_t c0 = rgb(255, 0, 0);
+    uint32_t c1 = rgb(0, 255, 0);
+    uint32_t c2 = rgb(0, 0, 255);
+
+    // Création de la texture
     GLuint textureID;
     glGenTextures(1, &textureID);
     glBindTexture(GL_TEXTURE_2D, textureID);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, WIDTH, HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels.data());
 
+    glTexImage2D(
+        GL_TEXTURE_2D, 0, GL_RGBA,
+        WIDTH, HEIGHT, 0,
+        GL_RGBA, GL_UNSIGNED_BYTE, nullptr
+    );
+
+    // Création du framebuffer
     GLuint fbo;
     glGenFramebuffers(1, &fbo);
     glBindFramebuffer(GL_READ_FRAMEBUFFER, fbo);
-    glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureID, 0);
+    glFramebufferTexture2D(
+        GL_READ_FRAMEBUFFER,
+        GL_COLOR_ATTACHMENT0,
+        GL_TEXTURE_2D,
+        textureID,
+        0
+    );
 
     double last = glfwGetTime();
     double fps_accum = 0.0;
     int fps_count = 0;
 
-    char title[256]; 
-    
+    char title[256];
+
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
 
@@ -216,37 +248,98 @@ int main() {
         int display_h = 0;
         glfwGetFramebufferSize(window, &display_w, &display_h);
 
+        // Angle de rotation
+        double seconds = glfwGetTime();
+        float angle = (float)seconds;
+
+        // Matrice : rotation puis translation vers le centre
+        MathsSIMD::Matrix4x4_SIMD matrix =
+            MathsSIMD::Matrix4x4_SIMD::Translation(
+                MathsSIMD::Vec3_SIMD(WIDTH / 2.0f, HEIGHT / 2.0f, 0.0f)
+            ) * MathsSIMD::Matrix4x4_SIMD::RotationZ(angle);
+
+        // Transformation des sommets
+        MathsSIMD::Vec3_SIMD p[3];
+
+        for (int i = 0; i < 3; ++i) {
+            p[i] = matrix.TransformPoint(base[i]);
+        }
+
+        // Récupération des coordonnées 2D
+        Point v0 = {
+            (int)p[0].data.m128_f32[0],
+            (int)p[0].data.m128_f32[1]
+        };
+
+        Point v1 = {
+            (int)p[1].data.m128_f32[0],
+            (int)p[1].data.m128_f32[1]
+        };
+
+        Point v2 = {
+            (int)p[2].data.m128_f32[0],
+            (int)p[2].data.m128_f32[1]
+        };
+
+        // Effacer le buffer avant de dessiner la nouvelle frame
+        std::fill(buffer.begin(), buffer.end(), 0);
+
+        // Dessiner le triangle dans la boucle
+        pixels = draw_Triangle(buffer, v0, v1, v2, c0, c1, c2);
+
+        // Envoyer les nouveaux pixels à la texture
+        glBindTexture(GL_TEXTURE_2D, textureID);
+
+        glTexSubImage2D(
+            GL_TEXTURE_2D, 0, 0, 0,
+            WIDTH, HEIGHT,
+            GL_RGBA, GL_UNSIGNED_BYTE,
+            pixels.data()
+        );
+
+        // Afficher la texture dans la fenêtre
         glBindFramebuffer(GL_READ_FRAMEBUFFER, fbo);
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-        glBlitFramebuffer(0, 0, WIDTH, HEIGHT, 0, 0, display_w, display_h, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
-        // ---- Update the FPS counter ----
+        glBlitFramebuffer(
+            0, 0, WIDTH, HEIGHT,
+            0, 0, display_w, display_h,
+            GL_COLOR_BUFFER_BIT,
+            GL_NEAREST
+        );
+
+        // Compteur FPS
         double now = glfwGetTime();
-        double dt  = now - last;
-        last       = now;
+        double dt = now - last;
+        last = now;
 
         fps_accum += dt;
         fps_count++;
 
         if (fps_accum >= 1.0) {
             double fps = (double)fps_count / fps_accum;
-            double ms  = 1000.0 * fps_accum / (double)fps_count;
+            double ms = 1000.0 * fps_accum / (double)fps_count;
 
-            snprintf(title, sizeof(title),
-                     "Chapter 03 — Triangles | %.1f FPS (%.2f ms/frame)",
-                     fps, ms);
+            snprintf(
+                title,
+                sizeof(title),
+                "Chapter 03 — Triangles | %.1f FPS (%.2f ms/frame)",
+                fps,
+                ms
+            );
 
             glfwSetWindowTitle(window, title);
 
             fps_accum = 0.0;
             fps_count = 0;
         }
-        
+
         glfwSwapBuffers(window);
     }
 
     glDeleteFramebuffers(1, &fbo);
     glDeleteTextures(1, &textureID);
+
     glfwDestroyWindow(window);
     glfwTerminate();
 

@@ -1,6 +1,8 @@
+
 cmake_minimum_required(VERSION 3.20)
 project(MathStarter CXX ASM_MASM)
 project(MathStarter C CXX ASM_MASM)
+
 # 1. Inclusion des modules CMake
 include(FetchContent)
 find_package(OpenGL REQUIRED)
@@ -21,7 +23,7 @@ add_library(glad STATIC
         src/glad.c
 )
 target_include_directories(glad PUBLIC
-       include
+        include
 )
 
 # 4. Bibliothèque MathLib
@@ -34,11 +36,18 @@ add_library(MathLib STATIC
         include/MathLib/Matrix3x3.h
         include/MathLib/Matrix4x4.h
         include/Platform/CpuFeatures.h
+
         src/MathLib/MathLib_SIMD/src/Vec3_SIMD.cpp
         include/MathLib/MathLib_SIMD/include/Vec3_SIMD.h
         src/MathLib/MathLib_SIMD/src/Matrix3x3_SIMD.cpp
         include/MathLib/MathLib_SIMD/include/Matrix3x3_SIMD.h
 
+        src/MathLib/MathLib_SIMD/src/Matrix4x4_SIMD.cpp
+        include/MathLib/MathLib_SIMD/include/Matrix4x4_SIMD.h
+
+        src/MathLib/MathLib_SIMD/src/Vec4_SIMD.cpp
+        include/MathLib/MathLib_SIMD/include/Vec4_SIMD.h
+        
         include/MathLib/MathLib_SIMD/include/Vec3_ASM.h
         include/MathLib/MathLib_SIMD/include/Vec3_ASM.asm
 )
@@ -192,6 +201,7 @@ add_executable(Affichage_test
 )
 
 target_link_libraries(Affichage_test PRIVATE
+        MathLib
         glad
         glfw
         OpenGL::GL
