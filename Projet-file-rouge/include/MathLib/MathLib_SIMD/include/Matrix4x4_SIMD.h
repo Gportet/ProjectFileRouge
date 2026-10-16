@@ -57,5 +57,7 @@ namespace MathsSIMD
 
         Vec3_SIMD TransformPoint(const Vec3_SIMD& point) const; // Affine only, w = 1.
         Vec3_SIMD TransformDirection(const Vec3_SIMD& direction) const; // Affine only, w = 0.
+        
+        static Matrix4x4_SIMD LookAt (const Vec3_SIMD& eye, const Vec3_SIMD& target, const Vec3_SIMD& up);
     };
 }

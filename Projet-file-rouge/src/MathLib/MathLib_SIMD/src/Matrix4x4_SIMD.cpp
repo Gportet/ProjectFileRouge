@@ -557,4 +557,26 @@ Matrix4x4_SIMD Matrix4x4_SIMD::Inverse(float relativeTolerance) const
 
         return Vec3_SIMD(x, y, z);
     }
+
+    Matrix4x4_SIMD Matrix4x4_SIMD::LookAt(const Vec3_SIMD& eye, const Vec3_SIMD& target, const Vec3_SIMD& up)
+    {
+        Vec3_SIMD back = (eye - target).Normalize();
+
+        // 2. Axe horizontal de la caméra
+        Vec3_SIMD right = up.Cross(back).Normalize();
+
+        // 3. Axe vertical corrigé
+        Vec3_SIMD cameraUp = back.Cross(right);
+        
+        const float tx = -right.Dot(eye);
+        const float ty = -cameraUp.Dot(eye);
+        const float tz = -back.Dot(eye);
+        
+        return {
+            _mm_setr_ps(MathsSIMD::Vec3_SIMD::GetX(right.data), MathsSIMD::Vec3_SIMD::GetY(right.data), MathsSIMD::Vec3_SIMD::GetZ(right.data), tx),
+            _mm_setr_ps(MathsSIMD::Vec3_SIMD::GetX(cameraUp.data), MathsSIMD::Vec3_SIMD::GetY(cameraUp.data), MathsSIMD::Vec3_SIMD::GetZ(cameraUp.data), ty),
+            _mm_setr_ps(MathsSIMD::Vec3_SIMD::GetX(up.data), MathsSIMD::Vec3_SIMD::GetY(up.data), MathsSIMD::Vec3_SIMD::GetZ(up.data), tz),
+            _mm_setr_ps(0.0f, 0.0f, 0.0f, 1.0f)
+        };
+    }
 }

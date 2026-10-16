@@ -77,9 +77,9 @@ namespace MathsSIMD
     
     Vec3_SIMD Vec3_SIMD::operator/(const Vec3_SIMD& rhs) const
     {
-        const float x = _mm_cvtss_f32(data);
-        const float y = _mm_cvtss_f32(_mm_shuffle_ps(data, data, _MM_SHUFFLE(1, 1, 1, 1)));
-        const float z = _mm_cvtss_f32( _mm_shuffle_ps(data, data, _MM_SHUFFLE(2, 2, 2, 2)));
+        const float x = _mm_cvtss_f32(rhs.data);
+        const float y = _mm_cvtss_f32(_mm_shuffle_ps(rhs.data, rhs.data, _MM_SHUFFLE(1, 1, 1, 1)));
+        const float z = _mm_cvtss_f32( _mm_shuffle_ps(rhs.data, rhs.data, _MM_SHUFFLE(2, 2, 2, 2)));
         
         if (x == 0.0f ||
             y == 0.0f ||
@@ -209,11 +209,8 @@ namespace MathsSIMD
     
     bool Vec3_SIMD::operator!=(const Vec3_SIMD& rhs) const
     {
-        const __m128 vecA = this->data;
-        const __m128 vecB = rhs.data;
-        
-        const __m128 result = _mm_cmpneq_ps(vecA, vecB);
-        return _mm_movemask_ps(result) != 0xF;
+        const __m128 result = _mm_cmpneq_ps(data, rhs.data);
+        return _mm_movemask_ps(result) != 0;
     }
 
 
@@ -294,9 +291,9 @@ namespace MathsSIMD
         
         const float magnitude = Magnitude();
         
-        if (magnitude == 0.0f)
+        if (magnitude == 0.0f || !std::isfinite(magnitude))
         {
-            throw std::domain_error("Cannot divide by zero");
+            throw std::domain_error("Cannot divide by zero or magnitude infinite");
         }
         
         const __m128 vecA = this->data;
