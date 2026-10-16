@@ -1,5 +1,7 @@
 ﻿#include "MathLib_SIMD/include/Matrix4x4_SIMD.h"
 
+#define PI 3.14159265358979323846f
+
 namespace MathsSIMD
 {
     Matrix4x4_SIMD::Matrix4x4_SIMD() : rows{        
@@ -577,6 +579,29 @@ Matrix4x4_SIMD Matrix4x4_SIMD::Inverse(float relativeTolerance) const
             _mm_setr_ps(MathsSIMD::Vec3_SIMD::GetX(cameraUp.data), MathsSIMD::Vec3_SIMD::GetY(cameraUp.data), MathsSIMD::Vec3_SIMD::GetZ(cameraUp.data), ty),
             _mm_setr_ps(MathsSIMD::Vec3_SIMD::GetX(up.data), MathsSIMD::Vec3_SIMD::GetY(up.data), MathsSIMD::Vec3_SIMD::GetZ(up.data), tz),
             _mm_setr_ps(0.0f, 0.0f, 0.0f, 1.0f)
+        };
+    }
+
+    Matrix4x4_SIMD Matrix4x4_SIMD::ProjectMatrix(const int Fov,const float width, const float height)
+    {
+        const float fovRadians = static_cast<float>(Fov) * PI / 180.0f;
+        
+        const float aspect = static_cast<float> (width / height);
+        const float near = 0.1f;
+        const float far = 100.f;
+        
+        const float tanHalfFov = std::tan(fovRadians / 2.f);
+        
+        const float OneXOne = 1.0f / (aspect * tanHalfFov );
+        const float TwoXTwo = 1.0f / tanHalfFov;
+        const float ThrXThr = - (far + near) / (far - near);
+        const float ThreeXFour = - ( 2 * far * near) / (far - near);
+        
+        return {
+            _mm_setr_ps(OneXOne,0.f,0.f,0.f),
+            _mm_setr_ps(0.f,TwoXTwo,0.f,0.f),
+            _mm_setr_ps(0.f,0.f,ThrXThr,ThreeXFour),
+            _mm_setr_ps(0.f,0.f,-1.f,0.f)
         };
     }
 }

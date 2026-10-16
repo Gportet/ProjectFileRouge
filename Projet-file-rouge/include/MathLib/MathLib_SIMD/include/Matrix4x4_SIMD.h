@@ -59,5 +59,6 @@ namespace MathsSIMD
         Vec3_SIMD TransformDirection(const Vec3_SIMD& direction) const; // Affine only, w = 0.
         
         static Matrix4x4_SIMD LookAt (const Vec3_SIMD& eye, const Vec3_SIMD& target, const Vec3_SIMD& up);
+        static Matrix4x4_SIMD ProjectMatrix(const int Fov, const float width, const float height);
     };
 }
