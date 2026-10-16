@@ -582,7 +582,7 @@ Matrix4x4_SIMD Matrix4x4_SIMD::Inverse(float relativeTolerance) const
         };
     }
 
-    Matrix4x4_SIMD Matrix4x4_SIMD::ProjectMatrix(const int Fov,const float width, const float height)
+    Matrix4x4_SIMD Matrix4x4_SIMD::ProjectMatrix(const int Fov,const int width, const int height)
     {
         const float fovRadians = static_cast<float>(Fov) * PI / 180.0f;
         
@@ -603,5 +603,15 @@ Matrix4x4_SIMD Matrix4x4_SIMD::Inverse(float relativeTolerance) const
             _mm_setr_ps(0.f,0.f,ThrXThr,ThreeXFour),
             _mm_setr_ps(0.f,0.f,-1.f,0.f)
         };
+    }
+
+    Matrix4x4_SIMD Matrix4x4_SIMD::MVP_Matrix(const Matrix4x4_SIMD& model,const Vec3_SIMD& eye, const Vec3_SIMD& target, const Vec3_SIMD& up,const int Fov,const int width, const int height)
+    {
+        Matrix4x4_SIMD M = model;
+        Matrix4x4_SIMD V = LookAt(eye,target,up);
+        Matrix4x4_SIMD P = ProjectMatrix(Fov,width,height);
+        
+        Matrix4x4_SIMD MVP = (P * V) * M;
+        return MVP;
     }
 }
