@@ -254,17 +254,16 @@ int main() {
 
         // Matrice : rotation puis translation vers le centre
         MathsSIMD::Matrix4x4_SIMD matrix =
-            MathsSIMD::Matrix4x4_SIMD::Translation(
-                MathsSIMD::Vec3_SIMD(WIDTH / 2.0f, HEIGHT / 2.0f, 0.0f)
-            ) * MathsSIMD::Matrix4x4_SIMD::RotationZ(angle);
+            MathsSIMD::Matrix4x4_SIMD::Translation(MathsSIMD::Vec3_SIMD(WIDTH / 2.0f, HEIGHT / 2.0f, 0.0f)) * MathsSIMD::Matrix4x4_SIMD::RotationZ(angle);
 
         // Transformation des sommets
         MathsSIMD::Vec3_SIMD p[3];
+        
 
         for (int i = 0; i < 3; ++i) {
             p[i] = matrix.TransformPoint(base[i]);
         }
-
+        
         // Récupération des coordonnées 2D
         Point v0 = {
             (int)p[0].data.m128_f32[0],

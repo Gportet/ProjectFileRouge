@@ -504,7 +504,14 @@ Matrix4x4_SIMD Matrix4x4_SIMD::Inverse(float relativeTolerance) const
     Vec3_SIMD Matrix4x4_SIMD::TransformPoint(
         const Vec3_SIMD& point) const
     {
-        const __m128 vecPoint = point.data;
+        const __m128 vecPoint = _mm_setr_ps(
+            _mm_cvtss_f32(point.data),
+            _mm_cvtss_f32(_mm_shuffle_ps(
+                point.data, point.data, _MM_SHUFFLE(1, 1, 1, 1))),
+            _mm_cvtss_f32(_mm_shuffle_ps(
+                point.data, point.data, _MM_SHUFFLE(2, 2, 2, 2))),
+            1.0f
+        );
 
         const __m128 rowOneResult = _mm_mul_ps(rows[0], vecPoint);
         const __m128 rowTwoResult = _mm_mul_ps(rows[1], vecPoint);
