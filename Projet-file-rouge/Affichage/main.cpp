@@ -374,7 +374,7 @@ int main() {
         //draw_RotatingTriangle(pixels, angle, c0, c1, c2);
 
         const float t = glfwGetTime();
-        MathsSIMD::Matrix4x4_SIMD model = MathsSIMD::Matrix4x4_SIMD::RotationY(t * 0.8f) * MathsSIMD::Matrix4x4_SIMD::RotationX(t * 0.5f);
+        MathsSIMD::Matrix4x4_SIMD model = MathsSIMD::Matrix4x4_SIMD::RotationY(t * 0.5f) * MathsSIMD::Matrix4x4_SIMD::RotationX(t * 0.75f);
         
         MathsSIMD::Matrix4x4_SIMD MVP =  MathsSIMD::Matrix4x4_SIMD::MVP_Matrix(model, eye, target, up,90, WIDTH, HEIGHT);
         
@@ -426,6 +426,8 @@ int main() {
         }
         
         
+        std::fill(pixels.begin(), pixels.end(), 0);
+
         for (int i = 0; i < 12; ++i)
         {
             const int v0   = CUBE_EDGES[i][0];

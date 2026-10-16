@@ -167,6 +167,15 @@ namespace MathsSIMD
     
     Vec3_SIMD& Vec3_SIMD::operator/=(const Vec3_SIMD& rhs)
     {
+        const float x = _mm_cvtss_f32(rhs.data);
+        const float y = _mm_cvtss_f32(_mm_shuffle_ps(rhs.data, rhs.data, _MM_SHUFFLE(1, 1, 1, 1)));
+        const float z = _mm_cvtss_f32(_mm_shuffle_ps(rhs.data, rhs.data, _MM_SHUFFLE(2, 2, 2, 2)));
+
+        if (x == 0.0f || y == 0.0f || z == 0.0f)
+        {
+            throw std::runtime_error("Division by zero");
+        }
+        
         __m128 vecA = this->data;
         const __m128 vecB = rhs.data;
         
@@ -178,6 +187,10 @@ namespace MathsSIMD
 
     Vec3_SIMD& Vec3_SIMD::operator*=(float scalar)
     {
+        if (scalar == 0.0f)
+        {
+            throw std::runtime_error("Division by zero");
+        }
         __m128 vecA = this->data;
         __m128 vScalar = _mm_set1_ps(scalar);
         
@@ -231,23 +244,25 @@ namespace MathsSIMD
         return x + y + z;
     }
 
-    Vec3_SIMD Vec3_SIMD::Cross(const Vec3_SIMD& rhs) const
-    {
-        const __m128 vecA = this->data;
-        const __m128 vecB = rhs.data;
-        
-        const __m128 vecA_yzx = _mm_shuffle_ps(vecA, vecA, _MM_SHUFFLE(3, 0, 2, 1));
-        const __m128 vecB_zyx = _mm_shuffle_ps(vecB, vecB, _MM_SHUFFLE(3, 0, 1, 2));
-        const __m128 result1 = _mm_mul_ps (vecA_yzx, vecB_zyx);
-        
-        const __m128 vecA_zyx = _mm_shuffle_ps(vecA, vecA, _MM_SHUFFLE(3, 0, 1, 2));
-        const __m128 vecB_yzx = _mm_shuffle_ps(vecB, vecB, _MM_SHUFFLE(3, 0, 2, 1));
-        const __m128 result2 = _mm_mul_ps (vecA_zyx, vecB_yzx);
-        
-        const __m128 resultCross = _mm_sub_ps(result1, result2);
-        
-        return Vec3_SIMD(resultCross);
-    }
+Vec3_SIMD Vec3_SIMD::Cross(const Vec3_SIMD& rhs) const
+{
+    const __m128 vecA = this->data;
+    const __m128 vecB = rhs.data;
+
+    const __m128 vecA_yzx = _mm_shuffle_ps(vecA, vecA, _MM_SHUFFLE(3, 0, 2, 1));
+    const __m128 vecB_zxy = _mm_shuffle_ps(vecB, vecB, _MM_SHUFFLE(3, 1, 0, 2));
+
+    const __m128 result1 = _mm_mul_ps(vecA_yzx, vecB_zxy);
+
+    const __m128 vecA_zxy = _mm_shuffle_ps(vecA, vecA, _MM_SHUFFLE(3, 1, 0, 2));
+    const __m128 vecB_yzx = _mm_shuffle_ps(vecB, vecB, _MM_SHUFFLE(3, 0, 2, 1));
+
+    const __m128 result2 = _mm_mul_ps(vecA_zxy, vecB_yzx);
+
+    const __m128 resultCross = _mm_sub_ps(result1, result2);
+
+    return Vec3_SIMD(resultCross);
+}
 
     float Vec3_SIMD::MagnitudeSquared() const
     {
