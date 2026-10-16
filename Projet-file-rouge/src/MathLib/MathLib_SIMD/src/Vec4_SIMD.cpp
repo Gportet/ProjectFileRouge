@@ -5,9 +5,8 @@
 namespace MathsSIMD
 {
 #pragma region Initialize
-    Vec4_SIMD::Vec4_SIMD() : data {0,0,0}
+    Vec4_SIMD::Vec4_SIMD() : data(_mm_setzero_ps())
     {
-    
     }
 
     Vec4_SIMD::Vec4_SIMD(__m128 value) : data {value}
@@ -169,26 +168,7 @@ namespace MathsSIMD
 
     float Vec4_SIMD::Magnitude() const
     {
-        const __m128 squared = _mm_mul_ps(this->data, this->data);
-        
-        // only y²
-        const __m128 y_squared = _mm_shuffle_ps(this->data, this->data, _MM_SHUFFLE(1, 1, 1, 1));
-        // only z²
-        const __m128 z_squared = _mm_shuffle_ps(this->data, this->data, _MM_SHUFFLE(2, 2, 2, 2));
-        // only z²
-        const __m128 w_squared = _mm_shuffle_ps(this->data, this->data, _MM_SHUFFLE(3, 3, 3, 3));
-        
-        // x² + y²
-        const __m128 result1 = _mm_add_ps(squared, y_squared);
-        
-        // (x² + y²) + z²
-        const __m128 result12 = _mm_add_ps(result1, z_squared);
-        
-        // (x² + y² + z²) + w²
-        const __m128 finalResult = _mm_add_ps(result12, w_squared);
-        
-        // return first value
-        return _mm_cvtss_f32(finalResult);
+        return std::sqrt(MagnitudeSquared());
     }
 
     Vec4_SIMD Vec4_SIMD::Normalize() const

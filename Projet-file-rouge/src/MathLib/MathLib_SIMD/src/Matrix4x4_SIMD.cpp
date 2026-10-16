@@ -563,11 +563,9 @@ Matrix4x4_SIMD Matrix4x4_SIMD::Inverse(float relativeTolerance) const
     Matrix4x4_SIMD Matrix4x4_SIMD::LookAt(const Vec3_SIMD& eye, const Vec3_SIMD& target, const Vec3_SIMD& up)
     {
         Vec3_SIMD back = (eye - target).Normalize();
-
-        // 2. Axe horizontal de la caméra
+        
         Vec3_SIMD right = up.Cross(back).Normalize();
-
-        // 3. Axe vertical corrigé
+        
         Vec3_SIMD cameraUp = back.Cross(right);
         
         const float tx = -right.Dot(eye);
@@ -577,7 +575,7 @@ Matrix4x4_SIMD Matrix4x4_SIMD::Inverse(float relativeTolerance) const
         return {
             _mm_setr_ps(MathsSIMD::Vec3_SIMD::GetX(right.data), MathsSIMD::Vec3_SIMD::GetY(right.data), MathsSIMD::Vec3_SIMD::GetZ(right.data), tx),
             _mm_setr_ps(MathsSIMD::Vec3_SIMD::GetX(cameraUp.data), MathsSIMD::Vec3_SIMD::GetY(cameraUp.data), MathsSIMD::Vec3_SIMD::GetZ(cameraUp.data), ty),
-            _mm_setr_ps(MathsSIMD::Vec3_SIMD::GetX(up.data), MathsSIMD::Vec3_SIMD::GetY(up.data), MathsSIMD::Vec3_SIMD::GetZ(up.data), tz),
+            _mm_setr_ps(MathsSIMD::Vec3_SIMD::GetX(back.data),MathsSIMD::Vec3_SIMD::GetY(back.data),MathsSIMD::Vec3_SIMD::GetZ(back.data),tz),
             _mm_setr_ps(0.0f, 0.0f, 0.0f, 1.0f)
         };
     }
@@ -586,7 +584,10 @@ Matrix4x4_SIMD Matrix4x4_SIMD::Inverse(float relativeTolerance) const
     {
         const float fovRadians = static_cast<float>(Fov) * PI / 180.0f;
         
-        const float aspect = static_cast<float> (width / height);
+        if (width <= 0 || height <= 0 || Fov <= 0 || Fov >= 180)
+            throw std::invalid_argument("Invalid projection parameters");
+        
+        const float aspect = static_cast<float>(width) / static_cast<float>(height);
         const float near = 0.1f;
         const float far = 100.f;
         

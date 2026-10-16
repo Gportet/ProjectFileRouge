@@ -229,8 +229,57 @@ void draw_RotatingTriangle(
     );
 }
 
+static const MathsSIMD::Vec3_SIMD CUBE_VERTS[8] =
+{
+    {-1.0f, -1.0f, -1.0f},
+    { 1.0f, -1.0f, -1.0f},
+    { 1.0f,  1.0f, -1.0f},
+    {-1.0f,  1.0f, -1.0f},
+
+    {-1.0f, -1.0f,  1.0f},
+    { 1.0f, -1.0f,  1.0f},
+    { 1.0f,  1.0f,  1.0f},
+    {-1.0f,  1.0f,  1.0f}
+};
 
 
+// Chaque ligne : { sommet de départ, sommet d'arrivée, axe }
+static const int CUBE_EDGES[12][3] =
+{
+    // Arêtes selon X
+    {0, 1, 0},
+    {3, 2, 0},
+    {7, 6, 0},
+    {4, 5, 0},
+
+    // Arêtes selon Y
+    {0, 3, 1},
+    {1, 2, 1},
+    {5, 6, 1},
+    {4, 7, 1},
+
+    // Arêtes selon Z
+    {0, 4, 2},
+    {1, 5, 2},
+    {2, 6, 2},
+    {3, 7, 2}
+};
+
+
+struct Color
+{
+    uint8_t r, g, b, a;
+};
+
+static const Color axis_color[3] = {
+    {255,   0,   0, 255}, // Axe X : rouge
+    {  0, 255,   0, 255}, // Axe Y : vert
+    {  0,   0, 255, 255}  // Axe Z : bleu
+};
+
+const MathsSIMD::Vec3_SIMD eye    = {0.0f, 0.0f, 5.0f};
+const MathsSIMD::Vec3_SIMD target = {0.0f, 0.0f, 0.0f};
+const MathsSIMD::Vec3_SIMD up     = {0.0f, 1.0f, 0.0f};
 
 int main() {
     if (!glfwInit()) {
@@ -238,6 +287,8 @@ int main() {
         return -1;
     }
 
+    
+    
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -319,10 +370,89 @@ int main() {
         glfwGetFramebufferSize(window, &display_w, &display_h);
 
         // Dessiner le triangle avec un angle qui évolue dans le temps
-        const float angle = static_cast<float>(glfwGetTime());
+        //const float angle = static_cast<float>(glfwGetTime());
+        //draw_RotatingTriangle(pixels, angle, c0, c1, c2);
 
-        draw_RotatingTriangle(pixels, angle, c0, c1, c2);
+        const float t = glfwGetTime();
+        MathsSIMD::Matrix4x4_SIMD model = MathsSIMD::Matrix4x4_SIMD::RotationY(t * 0.8f) * MathsSIMD::Matrix4x4_SIMD::RotationX(t * 0.5f);
+        
+        MathsSIMD::Matrix4x4_SIMD MVP =  MathsSIMD::Matrix4x4_SIMD::MVP_Matrix(model, eye, target, up,90, WIDTH, HEIGHT);
+        
+        int screen_x[8], screen_y[8];
+        bool visible[8];
 
+        for (int i = 0; i < 8; ++i)
+        {
+            const auto& vertex = CUBE_VERTS[i];
+
+            MathsSIMD::Vec4_SIMD point(_mm_setr_ps(
+                MathsSIMD::Vec3_SIMD::GetX(vertex.data),
+                MathsSIMD::Vec3_SIMD::GetY(vertex.data),
+                MathsSIMD::Vec3_SIMD::GetZ(vertex.data),
+                1.0f
+            ));
+
+            const MathsSIMD::Vec4_SIMD clip = MVP * point;
+
+            const float w = MathsSIMD::Vec4_SIMD::GetW(clip.data);
+
+            if (w <= 0.0001f || !std::isfinite(w))
+            {
+                visible[i] = false;
+                continue;
+            }
+
+            const float ndc_x =
+                MathsSIMD::Vec3_SIMD::GetX(clip.data) / w;
+
+            const float ndc_y =
+                MathsSIMD::Vec3_SIMD::GetY(clip.data) / w;
+
+            if (!std::isfinite(ndc_x) || !std::isfinite(ndc_y))
+            {
+                visible[i] = false;
+                continue;
+            }
+
+            screen_x[i] = static_cast<int>(
+                (ndc_x + 1.0f) * 0.5f * WIDTH
+            );
+
+            screen_y[i] = static_cast<int>(
+                (1.0f - ndc_y) * 0.5f * HEIGHT
+            );
+
+            visible[i] = true;
+        }
+        
+        
+        for (int i = 0; i < 12; ++i)
+        {
+            const int v0   = CUBE_EDGES[i][0];
+            const int v1   = CUBE_EDGES[i][1];
+            const int axis = CUBE_EDGES[i][2];
+
+            if (!visible[v0] || !visible[v1])
+                continue;
+
+            const Color& color = axis_color[axis];
+
+            draw_line(
+                pixels,
+                WIDTH,
+                HEIGHT,
+                screen_x[v0],
+                screen_y[v0],
+                screen_x[v1],
+                screen_y[v1],
+                color.r,
+                color.g,
+                color.b,
+                color.a
+            );
+        }
+        
+        
         // Envoyer les pixels à la texture OpenGL
         glBindTexture(GL_TEXTURE_2D, textureID);
 
