@@ -198,6 +198,8 @@ target_link_libraries(ViewerApp PRIVATE
 # Affichage_test
 add_executable(Affichage_test
         Affichage/main.cpp
+        include/Rendering/ZBuffer.h
+        src/Rendering/ZBuffer.cpp
 )
 
 target_link_libraries(Affichage_test PRIVATE
