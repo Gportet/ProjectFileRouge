@@ -197,8 +197,6 @@ target_link_libraries(ViewerApp PRIVATE
 
 # Affichage_test
 add_executable(Affichage_test
-        Affichage/main.cpp
-        main.cpp
         main.cpp
 )
 
