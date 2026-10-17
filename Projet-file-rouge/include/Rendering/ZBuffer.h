@@ -1,18 +1,16 @@
 #pragma once
 
-#include <cmath>
 #include <vector>
-#include <limits>
 
 class ZBuffer
 {
 private :
     int width, height;
-    std::vector <float> Zbuffer;
+    std::vector <float> depthBuffer;
     
 public:
     ZBuffer(int width, int height);
     void Clear();
-    bool TestAndApply();
+    bool TestAndApply(int x, int y, float depth);
     
 };

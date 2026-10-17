@@ -1,5 +1,6 @@
 ﻿#include "MathLib/MathLib_SIMD/include/Matrix4x4_SIMD.h"
 #include "MathLib/MathLib_SIMD/include/Vec3_SIMD.h"
+#include "Rendering/ZBuffer.h"
 
 #include <iostream>
 #include <vector>
@@ -83,6 +84,66 @@ void put_pixel(std::vector<uint8_t>& buffer, int x, int y,
     buffer[index + 3] = a;
 }
 
+int edge(Point a, Point b, Point p)
+{
+    return (p.x - a.x) * (b.y - a.y)
+         - (p.y - a.y) * (b.x - a.x);
+}
+
+void draw_Triangle(
+    std::vector<uint8_t>& buffer,
+    ZBuffer& zBuffer,
+    Point v0, Point v1, Point v2,
+    float z0, float z1, float z2)
+{
+    int area = edge(v0, v1, v2);
+
+    if (area == 0)
+        return;
+
+    if (area < 0)
+    {
+        std::swap(v1, v2);
+        std::swap(z1, z2);
+        area = -area;
+    }
+
+    const int minX = std::max(0, std::min({v0.x, v1.x, v2.x}));
+    const int minY = std::max(0, std::min({v0.y, v1.y, v2.y}));
+    const int maxX = std::min(WIDTH - 1, std::max({v0.x, v1.x, v2.x}));
+    const int maxY = std::min(HEIGHT - 1, std::max({v0.y, v1.y, v2.y}));
+
+    for (int y = minY; y <= maxY; ++y)
+    {
+        for (int x = minX; x <= maxX; ++x)
+        {
+            Point p = {x, y};
+
+            int w0 = edge(v1, v2, p);
+            int w1 = edge(v2, v0, p);
+            int w2 = edge(v0, v1, p);
+
+            if (w0 >= 0 && w1 >= 0 && w2 >= 0)
+            {
+                float lambda0 = static_cast<float>(w0) / area;
+                float lambda1 = static_cast<float>(w1) / area;
+                float lambda2 = static_cast<float>(w2) / area;
+
+                float depth =
+                    lambda0 * z0 +
+                    lambda1 * z1 +
+                    lambda2 * z2;
+
+                if (zBuffer.TestAndApply(x, y, depth))
+                {
+                    put_pixel(buffer, x, y, 255, 255, 255);
+                }
+            }
+        }
+    }
+}
+
+
 void clear_pixels(std::vector<uint8_t>& buffer) {
     for (size_t i = 0; i < buffer.size(); i += 4) {
         buffer[i + 0] = 0;   // R
@@ -164,13 +225,19 @@ const MathsSIMD::Vec3_SIMD eye    = {0.0f, 0.0f, 3.0f};
 const MathsSIMD::Vec3_SIMD target = {0.0f, 0.0f, 0.0f};
 const MathsSIMD::Vec3_SIMD up     = {0.0f, 1.0f, 0.0f};
 
+bool BackCulling(Point v0, Point v1, Point v2)
+{
+    return edge(v0, v1, v2) > 0;
+}
+
+
 int main() {
     if (!glfwInit()) {
         std::cerr << "Erreur GLFW" << std::endl;
         return -1;
     }
 
-    Mesh spot = load_obj("C:/ProjectFileRouge/Projet-file-rouge/Affichage/spot.obj");
+    Mesh spot = load_obj("C:/Users/jcrap/Documents/GitHub/ProjectFileRouge/Projet-file-rouge/Affichage/spot.obj");
     std::cout << "Sommets chargés : " << spot.vertices.size() << std::endl;
     std::cout << "Faces chargées : " << spot.faces.size() << std::endl;
 
@@ -191,7 +258,7 @@ int main() {
     }
 
     glfwMakeContextCurrent(window);
-    glfwSwapInterval(1);
+    glfwSwapInterval(0);
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
         std::cerr << "Erreur GLAD" << std::endl;
@@ -201,6 +268,8 @@ int main() {
     }
 
     std::vector<uint8_t> pixels(WIDTH * HEIGHT * 4, 0);
+    ZBuffer Zbuffer (WIDTH, HEIGHT);
+    
 
     GLuint textureID;
     glGenTextures(1, &textureID);
@@ -227,8 +296,15 @@ int main() {
 
     std::vector<int> screen_x(spot.vertices.size());
     std::vector<int> screen_y(spot.vertices.size());
+    std::vector<float> screen_z(spot.vertices.size());
     std::vector<bool> visible(spot.vertices.size());
 
+    double last = glfwGetTime();
+    double fps_accum = 0.0;
+    int fps_count = 0;
+
+    char title[256]; 
+    
     while (!glfwWindowShouldClose(window))
     {
         glfwPollEvents();
@@ -263,8 +339,9 @@ int main() {
 
             const float ndc_x = MathsSIMD::Vec3_SIMD::GetX(clip.data) / w;
             const float ndc_y = MathsSIMD::Vec3_SIMD::GetY(clip.data) / w;
+            const float ndc_z = MathsSIMD::Vec3_SIMD::GetZ(clip.data) / w;
 
-            if (!std::isfinite(ndc_x) || !std::isfinite(ndc_y))
+            if (!std::isfinite(ndc_x) || !std::isfinite(ndc_y) || !std::isfinite(ndc_z))
             {
                 visible[i] = false;
                 continue;
@@ -272,12 +349,19 @@ int main() {
 
             screen_x[i] = static_cast<int>((ndc_x + 1.0f) * 0.5f * WIDTH);
             screen_y[i] = static_cast<int>((1.0f - ndc_y) * 0.5f * HEIGHT);
+            screen_z[i] = ndc_z;
             visible[i] = true;
         }
 
         clear_pixels(pixels);
+        Zbuffer.Clear();
 
         const int max_vert_idx = static_cast<int>(spot.vertices.size());
+        
+        int totalTriangles = 0;
+        int displayedTriangles = 0;
+        int culledTriangles = 0;
+        
         for (const auto& face : spot.faces)
         {
             int v0 = face.v0;
@@ -290,16 +374,31 @@ int main() {
             {
                 continue;
             }
+            
+            if (!visible[v0] || !visible[v1] || !visible[v2])
+                continue;
 
-            if (visible[v0] && visible[v1]) {
-                draw_line(pixels, WIDTH, HEIGHT, screen_x[v0], screen_y[v0], screen_x[v1], screen_y[v1], 255, 255, 255);
+            // Backface Culling
+            if (!BackCulling(
+                {screen_x[v0], screen_y[v0]},
+                {screen_x[v1], screen_y[v1]},
+                {screen_x[v2], screen_y[v2]}
+                
+            ))
+            {
+                continue;
             }
-            if (visible[v1] && visible[v2]) {
-                draw_line(pixels, WIDTH, HEIGHT, screen_x[v1], screen_y[v1], screen_x[v2], screen_y[v2], 255, 255, 255);
-            }
-            if (visible[v2] && visible[v0]) {
-                draw_line(pixels, WIDTH, HEIGHT, screen_x[v2], screen_y[v2], screen_x[v0], screen_y[v0], 255, 255, 255);
-            }
+            
+            draw_Triangle(
+                pixels,
+                Zbuffer,
+                {screen_x[v0], screen_y[v0]},
+                {screen_x[v1], screen_y[v1]},
+                {screen_x[v2], screen_y[v2]},
+                screen_z[v0],
+                screen_z[v1],
+                screen_z[v2]
+            );
         }
 
         glBindTexture(GL_TEXTURE_2D, textureID);
@@ -311,8 +410,29 @@ int main() {
         glBlitFramebuffer(0, 0, WIDTH, HEIGHT, 0, 0, display_w, display_h, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
         glfwSwapBuffers(window);
-    }
+        // ---- Update the FPS counter ----
+        double now = glfwGetTime();
+        double dt  = now - last;
+        last       = now;
 
+        fps_accum += dt;
+        fps_count++;
+
+        if (fps_accum >= 1.0) {
+            double fps = (double)fps_count / fps_accum;
+            double ms  = 1000.0 * fps_accum / (double)fps_count;
+
+            snprintf(title, sizeof(title),
+                     "Chapter 02 — Lines | %.1f FPS (%.2f ms/frame)",
+                     fps, ms);
+
+            glfwSetWindowTitle(window, title);
+
+            fps_accum = 0.0;
+            fps_count = 0;
+        }
+    }
+    
     glDeleteFramebuffers(1, &fbo);
     glDeleteTextures(1, &textureID);
 
