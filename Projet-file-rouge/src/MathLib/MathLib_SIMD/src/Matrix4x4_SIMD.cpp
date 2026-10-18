@@ -1,5 +1,7 @@
 ﻿#include "MathLib_SIMD/include/Matrix4x4_SIMD.h"
 
+#define PI 3.14159265358979323846f
+
 namespace MathsSIMD
 {
     Matrix4x4_SIMD::Matrix4x4_SIMD() : rows{        
@@ -430,7 +432,7 @@ Matrix4x4_SIMD Matrix4x4_SIMD::Inverse(float relativeTolerance) const
 
     Matrix4x4_SIMD Matrix4x4_SIMD::Scale(const Vec3_SIMD& scale)
     {
-        const __m128 scaleRegister = scale.Load(scale.data);
+        const __m128 scaleRegister = scale.data;
 
         const __m128 row1 = _mm_shuffle_ps(scaleRegister, scaleRegister, _MM_SHUFFLE(3, 3, 3, 0));
         const __m128 row2 = _mm_shuffle_ps(scaleRegister, scaleRegister, _MM_SHUFFLE(3, 3, 1, 3));
@@ -487,7 +489,7 @@ Matrix4x4_SIMD Matrix4x4_SIMD::Inverse(float relativeTolerance) const
 
     Matrix4x4_SIMD Matrix4x4_SIMD::Translation(const Vec3_SIMD& offset)
     {
-        const __m128 offsetRegister = offset.Load(offset.data);
+        const __m128 offsetRegister = offset.data;
 
         const float x = _mm_cvtss_f32(offsetRegister);
         const float y = _mm_cvtss_f32(_mm_shuffle_ps(offsetRegister, offsetRegister, _MM_SHUFFLE(1, 1, 1, 1)));
@@ -504,7 +506,14 @@ Matrix4x4_SIMD Matrix4x4_SIMD::Inverse(float relativeTolerance) const
     Vec3_SIMD Matrix4x4_SIMD::TransformPoint(
         const Vec3_SIMD& point) const
     {
-        const __m128 vecPoint = point.Load(point.data);
+        const __m128 vecPoint = _mm_setr_ps(
+            _mm_cvtss_f32(point.data),
+            _mm_cvtss_f32(_mm_shuffle_ps(
+                point.data, point.data, _MM_SHUFFLE(1, 1, 1, 1))),
+            _mm_cvtss_f32(_mm_shuffle_ps(
+                point.data, point.data, _MM_SHUFFLE(2, 2, 2, 2))),
+            1.0f
+        );
 
         const __m128 rowOneResult = _mm_mul_ps(rows[0], vecPoint);
         const __m128 rowTwoResult = _mm_mul_ps(rows[1], vecPoint);
@@ -529,7 +538,7 @@ Matrix4x4_SIMD Matrix4x4_SIMD::Inverse(float relativeTolerance) const
     Vec3_SIMD Matrix4x4_SIMD::TransformDirection(
         const Vec3_SIMD& direction) const
     {
-        const __m128 vecDirection = direction.Load(direction.data);
+        const __m128 vecDirection = direction.data;
 
         const __m128 rowOneResult = _mm_mul_ps(rows[0], vecDirection);
         const __m128 rowTwoResult = _mm_mul_ps(rows[1], vecDirection);
@@ -549,5 +558,61 @@ Matrix4x4_SIMD Matrix4x4_SIMD::Inverse(float relativeTolerance) const
         const float z = _mm_cvtss_f32(row3FinalResult);
 
         return Vec3_SIMD(x, y, z);
+    }
+
+    Matrix4x4_SIMD Matrix4x4_SIMD::LookAt(const Vec3_SIMD& eye, const Vec3_SIMD& target, const Vec3_SIMD& up)
+    {
+        Vec3_SIMD back = (eye - target).Normalize();
+        
+        Vec3_SIMD right = up.Cross(back).Normalize();
+        
+        Vec3_SIMD cameraUp = back.Cross(right);
+        
+        const float tx = -right.Dot(eye);
+        const float ty = -cameraUp.Dot(eye);
+        const float tz = -back.Dot(eye);
+        
+        return {
+            _mm_setr_ps(MathsSIMD::Vec3_SIMD::GetX(right.data), MathsSIMD::Vec3_SIMD::GetY(right.data), MathsSIMD::Vec3_SIMD::GetZ(right.data), tx),
+            _mm_setr_ps(MathsSIMD::Vec3_SIMD::GetX(cameraUp.data), MathsSIMD::Vec3_SIMD::GetY(cameraUp.data), MathsSIMD::Vec3_SIMD::GetZ(cameraUp.data), ty),
+            _mm_setr_ps(MathsSIMD::Vec3_SIMD::GetX(back.data),MathsSIMD::Vec3_SIMD::GetY(back.data),MathsSIMD::Vec3_SIMD::GetZ(back.data),tz),
+            _mm_setr_ps(0.0f, 0.0f, 0.0f, 1.0f)
+        };
+    }
+
+    Matrix4x4_SIMD Matrix4x4_SIMD::ProjectMatrix(const int Fov,const int width, const int height)
+    {
+        const float fovRadians = static_cast<float>(Fov) * PI / 180.0f;
+        
+        if (width <= 0 || height <= 0 || Fov <= 0 || Fov >= 180)
+            throw std::invalid_argument("Invalid projection parameters");
+        
+        const float aspect = static_cast<float>(width) / static_cast<float>(height);
+        const float near = 0.1f;
+        const float far = 100.f;
+        
+        const float tanHalfFov = std::tan(fovRadians / 2.f);
+        
+        const float OneXOne = 1.0f / (aspect * tanHalfFov );
+        const float TwoXTwo = 1.0f / tanHalfFov;
+        const float ThrXThr = - (far + near) / (far - near);
+        const float ThreeXFour = - ( 2 * far * near) / (far - near);
+        
+        return {
+            _mm_setr_ps(OneXOne,0.f,0.f,0.f),
+            _mm_setr_ps(0.f,TwoXTwo,0.f,0.f),
+            _mm_setr_ps(0.f,0.f,ThrXThr,ThreeXFour),
+            _mm_setr_ps(0.f,0.f,-1.f,0.f)
+        };
+    }
+
+    Matrix4x4_SIMD Matrix4x4_SIMD::MVP_Matrix(const Matrix4x4_SIMD& model,const Vec3_SIMD& eye, const Vec3_SIMD& target, const Vec3_SIMD& up,const int Fov,const int width, const int height)
+    {
+        Matrix4x4_SIMD M = model;
+        Matrix4x4_SIMD V = LookAt(eye,target,up);
+        Matrix4x4_SIMD P = ProjectMatrix(Fov,width,height);
+        
+        Matrix4x4_SIMD MVP = (P * V) * M;
+        return MVP;
     }
 }

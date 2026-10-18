@@ -58,6 +58,11 @@ namespace MathsSIMD
         static const Vec4_SIMD UnitY;
         static const Vec4_SIMD UnitZ;
         static const Vec4_SIMD UnitW;
+        
+        static float GetW(__m128 v)
+        {
+            return _mm_cvtss_f32(_mm_shuffle_ps(v, v, _MM_SHUFFLE(2, 2, 2, 2)));
+        }
     
     };
 }

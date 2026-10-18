@@ -11,6 +11,9 @@
 
 #include "Viewer/BenchmarkParser.h"
 
+
+
+
 int main() {
     if (!glfwInit()) {
         std::cerr << "Erreur GLFW" << std::endl;
@@ -54,6 +57,7 @@ int main() {
         int display_w = 0;
         int display_h = 0;
         glfwGetFramebufferSize(window, &display_w, &display_h);
+
 
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();

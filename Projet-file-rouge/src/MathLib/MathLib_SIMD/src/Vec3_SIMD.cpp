@@ -7,20 +7,21 @@
 namespace MathsSIMD
 {
 #pragma region Initialize
-    Vec3_SIMD::Vec3_SIMD() : data {0,0,0}
+
+    
+    Vec3_SIMD::Vec3_SIMD() : data(_mm_setzero_ps())
     {
-        
+    }
+
+    Vec3_SIMD::Vec3_SIMD(float x, float y, float z) noexcept
+        : data(_mm_setr_ps(x, y, z, 0.f))
+    {
+    }
+
+    Vec3_SIMD::Vec3_SIMD(const __m128& vec) : data(vec)
+    {
     }
     
-    Vec3_SIMD::Vec3_SIMD(float x, float y, float z) noexcept : data { x, y, z } 
-    {
-        
-    }
-    
-    Vec3_SIMD::Vec3_SIMD(const Vec3& vec) : data { static_cast<float> (vec.x), static_cast<float> (vec.y), static_cast<float> (vec.z) }
-    {
-        
-    }
 #pragma endregion
 
     __m128 Vec3_SIMD::Load(const Vec3& vecToSimd) const
@@ -46,76 +47,74 @@ namespace MathsSIMD
 
     Vec3_SIMD Vec3_SIMD::operator+(const Vec3_SIMD& rhs) const
     {
-        const __m128 vecA = Load(this->data);
-        const __m128 vecB = Load(rhs.data);
+        const __m128 vecA = this->data;
+        const __m128 vecB = rhs.data;
         
         const __m128 result = _mm_add_ps (vecA, vecB);
-        const Vec3 vecResult = Store(result);
         
-        return Vec3_SIMD(vecResult);
+        return Vec3_SIMD(result);
     }
     
     Vec3_SIMD Vec3_SIMD::operator-(const Vec3_SIMD& rhs) const
     {
-        const __m128 vecA = Load(this->data);
-        const __m128 vecB = Load(rhs.data);
+        const __m128 vecA = this->data;
+        const __m128 vecB = rhs.data;
         
         const __m128 result = _mm_sub_ps (vecA, vecB);
-        const Vec3 vecResult = Store(result);
         
-        return Vec3_SIMD(vecResult);
+        return Vec3_SIMD(result);
     }
     
     Vec3_SIMD Vec3_SIMD::operator*(const Vec3_SIMD& rhs) const
     {
-        const __m128 vecA = Load(this->data);
-        const __m128 vecB = Load(rhs.data);
+        const __m128 vecA = this->data;
+        const __m128 vecB = rhs.data;
         
         const __m128 result = _mm_mul_ps (vecA, vecB);
-        const Vec3 vecResult = Store(result);
         
-        return Vec3_SIMD(vecResult);
+        return Vec3_SIMD(result);
     }
     
     Vec3_SIMD Vec3_SIMD::operator/(const Vec3_SIMD& rhs) const
     {
-        if (rhs.data.x == 0.0f ||
-            rhs.data.y == 0.0f ||
-            rhs.data.z == 0.0f)
+        const float x = _mm_cvtss_f32(rhs.data);
+        const float y = _mm_cvtss_f32(_mm_shuffle_ps(rhs.data, rhs.data, _MM_SHUFFLE(1, 1, 1, 1)));
+        const float z = _mm_cvtss_f32( _mm_shuffle_ps(rhs.data, rhs.data, _MM_SHUFFLE(2, 2, 2, 2)));
+        
+        if (x == 0.0f ||
+            y == 0.0f ||
+            z == 0.0f)
         {
             throw std::runtime_error("Division by zero");
         }
         
-        const __m128 vecA = Load(this->data);
-        const __m128 vecB = Load(rhs.data);
+        const __m128 vecA = this->data;
+        const __m128 vecB = rhs.data;
         
         const __m128 result = _mm_div_ps (vecA, vecB);
-        const Vec3 vecResult = Store(result);
         
-        return Vec3_SIMD(vecResult);
+        return Vec3_SIMD(result);
     }
 
     Vec3_SIMD Vec3_SIMD::operator-() const
     {
         const Vec3 nullVec { 0.f,0.f,0.f };
         const __m128 nullRegister = Load(nullVec);
-        const __m128 vecA = Load(this->data);
+        const __m128 vecA = this->data;
         
         const __m128 minusVecA = _mm_sub_ps (nullRegister, vecA);
-        const Vec3 vecResult = Store(minusVecA);
         
-        return Vec3_SIMD(vecResult);
+        return Vec3_SIMD(minusVecA);
     }
 
     Vec3_SIMD Vec3_SIMD::operator*(float scalar) const
     {
-        const __m128 vecA = Load(this->data);
+        const __m128 vecA = this->data;
         const __m128 vScalar = _mm_set1_ps(scalar);
         
         const __m128 result = _mm_mul_ps (vecA, vScalar);
-        const Vec3 vecResult = Store(result);
         
-        return Vec3_SIMD(vecResult);
+        return Vec3_SIMD(result);
     }
     
     Vec3_SIMD Vec3_SIMD::operator/(float scalar) const
@@ -125,85 +124,97 @@ namespace MathsSIMD
             throw std::runtime_error("Division by zero");
         }
         
-        const __m128 vecA = Load(this->data);
+        const __m128 vecA = this->data;
         const __m128 vScalar = _mm_set1_ps(scalar);
         
         const __m128 result = _mm_div_ps (vecA, vScalar);
-        const Vec3 vecResult = Store(result);
         
-        return Vec3_SIMD(vecResult);
+        return Vec3_SIMD(result);
     }
 
     Vec3_SIMD& Vec3_SIMD::operator+=(const Vec3_SIMD& rhs)
     {
-        __m128 vecA = Load(this->data);
-        __m128 vecB = Load(rhs.data);
+         __m128 vecA = this->data;
+        const __m128 vecB = rhs.data;
         
         vecA = _mm_add_ps (vecA, vecB);
-        this->data = Store(vecA);
+        this->data = vecA;
         
         return *this;
     }
     
     Vec3_SIMD& Vec3_SIMD::operator-=(const Vec3_SIMD& rhs)
     {
-        __m128 vecA = Load(this->data);
-        __m128 vecB = Load(rhs.data);
+        __m128 vecA = this->data;
+        const __m128 vecB = rhs.data;
         
         vecA = _mm_sub_ps (vecA, vecB);
-        this->data = Store(vecA);
+        this->data = vecA;
         
         return *this;
     }
     
     Vec3_SIMD& Vec3_SIMD::operator*=(const Vec3_SIMD& rhs)
     {
-        __m128 vecA = Load(this->data);
-        __m128 vecB = Load(rhs.data);
+        __m128 vecA = this->data;
+        __m128 vecB = rhs.data;
         
         vecA = _mm_mul_ps (vecA, vecB);
-        this->data = Store(vecA);
+        this->data = vecA;
         
         return *this;
     }
     
     Vec3_SIMD& Vec3_SIMD::operator/=(const Vec3_SIMD& rhs)
     {
-        __m128 vecA = Load(this->data);
-        __m128 vecB = Load(rhs.data);
+        const float x = _mm_cvtss_f32(rhs.data);
+        const float y = _mm_cvtss_f32(_mm_shuffle_ps(rhs.data, rhs.data, _MM_SHUFFLE(1, 1, 1, 1)));
+        const float z = _mm_cvtss_f32(_mm_shuffle_ps(rhs.data, rhs.data, _MM_SHUFFLE(2, 2, 2, 2)));
+
+        if (x == 0.0f || y == 0.0f || z == 0.0f)
+        {
+            throw std::runtime_error("Division by zero");
+        }
+        
+        __m128 vecA = this->data;
+        const __m128 vecB = rhs.data;
         
         vecA = _mm_div_ps (vecA, vecB);
-        this->data = Store(vecA);
+        this->data = vecA;
         
         return *this;
     }
 
     Vec3_SIMD& Vec3_SIMD::operator*=(float scalar)
     {
-        __m128 vecA = Load(this->data);
+        if (scalar == 0.0f)
+        {
+            throw std::runtime_error("Division by zero");
+        }
+        __m128 vecA = this->data;
         __m128 vScalar = _mm_set1_ps(scalar);
         
         vecA = _mm_mul_ps (vecA, vScalar);
-        this->data = Store(vecA);
+        this->data = vecA;
         
         return *this;
     }
     
     Vec3_SIMD& Vec3_SIMD::operator/=(float scalar)
     {
-        __m128 vecA = Load(this->data);
+        __m128 vecA = this->data;
         __m128 vScalar = _mm_set1_ps(scalar);
         
         vecA = _mm_div_ps (vecA, vScalar);
-        this->data = Store(vecA);
+        this->data = vecA;
         
         return *this;
     }
 
     bool Vec3_SIMD::operator==(const Vec3_SIMD& rhs) const
     {
-        const __m128 vecA = Load(this->data);
-        const __m128 vecB = Load(rhs.data);
+        const __m128 vecA = this->data;
+        const __m128 vecB = rhs.data;
         
         const __m128 result = _mm_cmpeq_ps(vecA, vecB);
         return _mm_movemask_ps(result) == 0xF;
@@ -211,11 +222,8 @@ namespace MathsSIMD
     
     bool Vec3_SIMD::operator!=(const Vec3_SIMD& rhs) const
     {
-        const __m128 vecA = Load(this->data);
-        const __m128 vecB = Load(rhs.data);
-        
-        const __m128 result = _mm_cmpneq_ps(vecA, vecB);
-        return _mm_movemask_ps(result) != 0xF;
+        const __m128 result = _mm_cmpneq_ps(data, rhs.data);
+        return _mm_movemask_ps(result) != 0;
     }
 
 
@@ -224,8 +232,8 @@ namespace MathsSIMD
 #pragma region MathFormula 
     float Vec3_SIMD::Dot(const Vec3_SIMD& rhs) const
     {
-        const __m128 vecA = Load(this->data);
-        const __m128 vecB = Load(rhs.data);
+        const __m128 vecA = this->data;
+        const __m128 vecB = rhs.data;
         
         const __m128 result = _mm_mul_ps (vecA, vecB);
         
@@ -236,23 +244,25 @@ namespace MathsSIMD
         return x + y + z;
     }
 
-    Vec3_SIMD Vec3_SIMD::Cross(const Vec3_SIMD& rhs) const
-    {
-        const __m128 vecA = Load(this->data);
-        const __m128 vecB = Load(rhs.data);
-        
-        const __m128 vecA_yzx = _mm_shuffle_ps(vecA, vecA, _MM_SHUFFLE(3, 0, 2, 1));
-        const __m128 vecB_zyx = _mm_shuffle_ps(vecB, vecB, _MM_SHUFFLE(3, 0, 1, 2));
-        const __m128 result1 = _mm_mul_ps (vecA_yzx, vecB_zyx);
-        
-        const __m128 vecA_zyx = _mm_shuffle_ps(vecA, vecA, _MM_SHUFFLE(3, 0, 1, 2));
-        const __m128 vecB_yzx = _mm_shuffle_ps(vecB, vecB, _MM_SHUFFLE(3, 0, 2, 1));
-        const __m128 result2 = _mm_mul_ps (vecA_zyx, vecB_yzx);
-        
-        const __m128 resultFinal = _mm_sub_ps(result1, result2);
-        
-        return Vec3_SIMD(Store(resultFinal));
-    }
+Vec3_SIMD Vec3_SIMD::Cross(const Vec3_SIMD& rhs) const
+{
+    const __m128 vecA = this->data;
+    const __m128 vecB = rhs.data;
+
+    const __m128 vecA_yzx = _mm_shuffle_ps(vecA, vecA, _MM_SHUFFLE(3, 0, 2, 1));
+    const __m128 vecB_zxy = _mm_shuffle_ps(vecB, vecB, _MM_SHUFFLE(3, 1, 0, 2));
+
+    const __m128 result1 = _mm_mul_ps(vecA_yzx, vecB_zxy);
+
+    const __m128 vecA_zxy = _mm_shuffle_ps(vecA, vecA, _MM_SHUFFLE(3, 1, 0, 2));
+    const __m128 vecB_yzx = _mm_shuffle_ps(vecB, vecB, _MM_SHUFFLE(3, 0, 2, 1));
+
+    const __m128 result2 = _mm_mul_ps(vecA_zxy, vecB_yzx);
+
+    const __m128 resultCross = _mm_sub_ps(result1, result2);
+
+    return Vec3_SIMD(resultCross);
+}
 
     float Vec3_SIMD::MagnitudeSquared() const
     {
@@ -261,7 +271,7 @@ namespace MathsSIMD
     
     float Vec3_SIMD::Magnitude() const
     {
-        const __m128 vecA = Load(this->data);
+        const __m128 vecA = this->data;
         
         const __m128 squared = _mm_mul_ps(vecA, vecA);
         
@@ -285,30 +295,34 @@ namespace MathsSIMD
 
     Vec3_SIMD Vec3_SIMD::Normalize() const
     {
-        if (!std::isfinite(data.x) || !std::isfinite(data.y) || !std::isfinite(data.z))
+        const float x = _mm_cvtss_f32(data);
+        const float y = _mm_cvtss_f32(_mm_shuffle_ps(data, data, _MM_SHUFFLE(1, 1, 1, 1)));
+        const float z = _mm_cvtss_f32( _mm_shuffle_ps(data, data, _MM_SHUFFLE(2, 2, 2, 2)));
+        
+        if (!std::isfinite(x) || !std::isfinite(y) || !std::isfinite(z))
         {
             throw std::domain_error("Cannot normalize non-finite components");
         }
         
         const float magnitude = Magnitude();
         
-        if (magnitude == 0.0f)
+        if (magnitude == 0.0f || !std::isfinite(magnitude))
         {
-            throw std::domain_error("Cannot divide by zero");
+            throw std::domain_error("Cannot divide by zero or magnitude infinite");
         }
         
-        const __m128 vecA = Load(this->data);
+        const __m128 vecA = this->data;
         const __m128 MagnitudeV = _mm_set1_ps(magnitude);
         
-        const __m128 result = _mm_div_ps (vecA, MagnitudeV);
+        const __m128 resultNormalize = _mm_div_ps (vecA, MagnitudeV);
         
-        return Vec3_SIMD(Store(result));
+        return Vec3_SIMD(resultNormalize);
     }
 
     float Vec3_SIMD::DistanceSquared(const Vec3_SIMD& rhs) const
     {
-        const __m128 vecA = Load(this->data);
-        const __m128 vecB = Load(rhs.data);
+        const __m128 vecA = this->data;
+        const __m128 vecB = rhs.data;
         
         const __m128 diff = _mm_sub_ps (vecA, vecB);
         const __m128 squaredDiff = _mm_mul_ps (diff, diff);
@@ -329,8 +343,8 @@ namespace MathsSIMD
     
     float Vec3_SIMD::Distance(const Vec3_SIMD& rhs) const
     {
-        const __m128 vecA = Load(this->data);
-        const __m128 vecB = Load(rhs.data);
+        const __m128 vecA = this->data;
+        const __m128 vecB = rhs.data;
         
         const __m128 diff = _mm_sub_ps (vecA, vecB);
         const __m128 squaredDiff = _mm_mul_ps (diff, diff);
@@ -382,8 +396,8 @@ namespace MathsSIMD
 
     Vec3_SIMD Vec3_SIMD::Lerp(const Vec3_SIMD& a, const Vec3_SIMD& b, float t)
     {
-        const __m128 vecA = a.Load(a.data);
-        const __m128 vecB = b.Load(b.data);
+        const __m128 vecA = a.data;
+        const __m128 vecB = b.data;
         
         
         const __m128 scalar = _mm_set1_ps(t);
@@ -392,27 +406,27 @@ namespace MathsSIMD
         const __m128 resultA = _mm_mul_ps (vecA, oneMinusT);
         const __m128 resultB = _mm_mul_ps (vecB, scalar);
         
-        const __m128 result = _mm_add_ps (resultA, resultB);
+        const __m128 resultLerp = _mm_add_ps (resultA, resultB);
         
-        return Vec3_SIMD(a.Store(result));
+        return Vec3_SIMD(resultLerp);
     }
 
     Vec3_SIMD Vec3_SIMD::Min(const Vec3_SIMD& a, const Vec3_SIMD& b)
     {
-        const __m128 vecA = a.Load(a.data);
-        const __m128 vecB = b.Load(b.data);
+        const __m128 vecA = a.data;
+        const __m128 vecB = b.data;
         
         const __m128 minVec = _mm_min_ps(vecA, vecB);
-        return Vec3_SIMD(a.Store(minVec));
+        return Vec3_SIMD(minVec);
     }
 
     Vec3_SIMD Vec3_SIMD::Max(const Vec3_SIMD& a, const Vec3_SIMD& b)
     {
-        const __m128 vecA = a.Load(a.data);
-        const __m128 vecB = b.Load(b.data);
+        const __m128 vecA = a.data;
+        const __m128 vecB = b.data;
         
         const __m128 maxVec = _mm_max_ps(vecA, vecB);
-        return Vec3_SIMD(a.Store(maxVec)); 
+        return Vec3_SIMD(maxVec); 
     }
 
     const Vec3_SIMD Vec3_SIMD::Zero{0,0,0};
@@ -432,7 +446,7 @@ namespace MathsSIMD
 
     float Vec3_SIMD::DotASM(const Vec3_SIMD& rhs) const
     {
-        return DotVec3ASM(&this->data.x, &rhs.data.x);
+        return DotVec3ASM(reinterpret_cast<const float*>(&data),reinterpret_cast<const float*>(&rhs.data));
     }
 #pragma endregion
     

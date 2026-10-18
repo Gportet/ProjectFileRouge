@@ -1,7 +1,7 @@
 ﻿#pragma once
 
-#include "MathLib_SIMD/include/Vec4_SIMD.h"
-#include "MathLib_SIMD/include/Vec3_SIMD.h"
+#include "MathLib/MathLib_SIMD/include/Vec4_SIMD.h"
+#include "MathLib/MathLib_SIMD/include/Vec3_SIMD.h"
 #include <array>
 #include <cstddef>
 #include <limits>
@@ -57,5 +57,9 @@ namespace MathsSIMD
 
         Vec3_SIMD TransformPoint(const Vec3_SIMD& point) const; // Affine only, w = 1.
         Vec3_SIMD TransformDirection(const Vec3_SIMD& direction) const; // Affine only, w = 0.
+        
+        static Matrix4x4_SIMD LookAt (const Vec3_SIMD& eye, const Vec3_SIMD& target, const Vec3_SIMD& up);
+        static Matrix4x4_SIMD ProjectMatrix(const int Fov, const int width, const int height);
+        static Matrix4x4_SIMD MVP_Matrix(const Matrix4x4_SIMD& model,const Vec3_SIMD& eye, const Vec3_SIMD& target, const Vec3_SIMD& up,const int Fov,const int width, const int height);
     };
 }

@@ -8,6 +8,6 @@ namespace MathsSIMD
 {
     inline float DotASM(const Vec3_SIMD& a, const Vec3_SIMD& b)
     {
-        return DotVec3ASM(&a.data.x, &b.data.x);
+        return DotVec3ASM(reinterpret_cast<const float*>(&a.data),reinterpret_cast<const float*>(&b.data));
     }
 }

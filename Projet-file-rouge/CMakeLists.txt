@@ -1,19 +1,28 @@
 cmake_minimum_required(VERSION 3.20)
-project(MathStarter CXX ASM_MASM)
+project(MathStarter C CXX ASM_MASM)
 
+include(FetchContent)
+find_package(OpenGL REQUIRED)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-add_compile_options(-march=native)
+
 if(MSVC)
+    add_compile_options(/arch:AVX2)
     set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+else()
+    add_compile_options(-march=native)
 endif()
 
-# Bibliothèque MathLib
+# ------------------------------------------------------------------------------
+# GLAD & MathLib
+# ------------------------------------------------------------------------------
+add_library(glad STATIC src/glad.c)
+target_include_directories(glad PUBLIC include)
+
 add_library(MathLib STATIC
         src/Platform/CpuFeatures.cpp
         src/Tests/TestHelpers.h
-
         include/MathLib/Vec3.h
         include/MathLib/Vec4.h
         include/MathLib/Matrix3x3.h
@@ -23,11 +32,13 @@ add_library(MathLib STATIC
         include/MathLib/MathLib_SIMD/include/Vec3_SIMD.h
         src/MathLib/MathLib_SIMD/src/Matrix3x3_SIMD.cpp
         include/MathLib/MathLib_SIMD/include/Matrix3x3_SIMD.h
-
+        src/MathLib/MathLib_SIMD/src/Matrix4x4_SIMD.cpp
+        include/MathLib/MathLib_SIMD/include/Matrix4x4_SIMD.h
+        src/MathLib/MathLib_SIMD/src/Vec4_SIMD.cpp
+        include/MathLib/MathLib_SIMD/include/Vec4_SIMD.h
         include/MathLib/MathLib_SIMD/include/Vec3_ASM.h
         include/MathLib/MathLib_SIMD/include/Vec3_ASM.asm
 )
-
 target_include_directories(MathLib PUBLIC
         include
         include/MathLib
@@ -36,10 +47,9 @@ target_include_directories(MathLib PUBLIC
         Platform
 )
 
-# --- Dépendances externes via FetchContent ---
-include(FetchContent)
-
-# Récupération de nlohmann_json via Git
+# ------------------------------------------------------------------------------
+# Dépendances Externes
+# ------------------------------------------------------------------------------
 FetchContent_Declare(
         json
         GIT_REPOSITORY https://github.com/nlohmann/json.git
@@ -47,15 +57,13 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(json)
 
-# Récupération de Dear ImGui
 FetchContent_Declare(
         imgui
         GIT_REPOSITORY https://github.com/ocornut/imgui.git
-        GIT_TAG        docking # Branche très pratique pour le fenêtrage
+        GIT_TAG        docking
 )
 FetchContent_MakeAvailable(imgui)
 
-# Création de la bibliothèque ImGui
 add_library(imgui STATIC
         ${imgui_SOURCE_DIR}/imgui.cpp
         ${imgui_SOURCE_DIR}/imgui_draw.cpp
@@ -65,7 +73,6 @@ add_library(imgui STATIC
 )
 target_include_directories(imgui PUBLIC ${imgui_SOURCE_DIR})
 
-# Récupération de ImPlot
 FetchContent_Declare(
         implot
         GIT_REPOSITORY https://github.com/epezent/implot.git
@@ -73,7 +80,6 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(implot)
 
-# Création de la bibliothèque ImPlot
 add_library(implot STATIC
         ${implot_SOURCE_DIR}/implot.cpp
         ${implot_SOURCE_DIR}/implot_items.cpp
@@ -81,7 +87,7 @@ add_library(implot STATIC
 )
 target_include_directories(implot PUBLIC ${implot_SOURCE_DIR})
 target_link_libraries(implot PUBLIC imgui)
-# Google Benchmark
+
 FetchContent_Declare(
         googlebenchmark
         GIT_REPOSITORY https://github.com/google/benchmark.git
@@ -90,7 +96,6 @@ FetchContent_Declare(
 set(BENCHMARK_ENABLE_TESTING OFF CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googlebenchmark)
 
-# GoogleTest
 FetchContent_Declare(
         googletest
         GIT_REPOSITORY https://github.com/google/googletest.git
@@ -99,9 +104,21 @@ FetchContent_Declare(
 set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
-# Application Benchmark
-add_executable(BenchmarkApp src/Benchmark/main.cpp
+FetchContent_Declare(
+        glfw
+        GIT_REPOSITORY https://github.com/glfw/glfw.git
+        GIT_TAG        3.4
+)
+set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(glfw)
 
+# ------------------------------------------------------------------------------
+# Executables
+# ------------------------------------------------------------------------------
+add_executable(BenchmarkApp
+        src/Benchmark/main.cpp
         include/benchmarkUtils.h
         src/Benchmark/benchmarkVect3.cpp
         src/Benchmark/benchmarkMatrix3x3.cpp
@@ -111,23 +128,15 @@ add_executable(BenchmarkApp src/Benchmark/main.cpp
         src/MathLib/MathLib_SIMD/src/Vec4_SIMD.cpp
         include/MathLib/MathLib_SIMD/include/Matrix4x4_SIMD.h
         src/MathLib/MathLib_SIMD/src/Matrix4x4_SIMD.cpp
-        src/MathLib/MathLib_SIMD/src/Matrix4x4_SIMD.cpp
         src/MathLib/MathLib_SIMD/src/Matrix3x3_SIMD.cpp
         src/MathLib/MathLib_SIMD/src/Vec3_SIMD.cpp
-        src/MathLib/MathLib_SIMD/src/Vec4_SIMD.cpp
-        src/MathLib/MathLib_SIMD/src/Vec4_SIMD.cpp
-        src/MathLib/MathLib_SIMD/src/Vec4_SIMD.cpp
         include/MathLib/MathLib_SIMD/include/Vec3_ASM.h
-        src/Benchmark/benchmarkBatch.cpp)
-
+        src/Benchmark/benchmarkBatch.cpp
+)
 target_link_libraries(BenchmarkApp PRIVATE MathLib benchmark::benchmark)
 
-# Tests unitaires
 enable_testing()
 include(GoogleTest)
-
-
-
 add_executable(UnitTests
         src/Tests/CpuFeaturesTests.cpp
         src/Tests/Matrix3x3Tests.cpp
@@ -141,21 +150,6 @@ target_include_directories(UnitTests PRIVATE src/Tests)
 target_link_libraries(UnitTests PRIVATE MathLib gtest_main)
 gtest_discover_tests(UnitTests)
 
-
-
-# --- Ajout de GLFW pour le fenêtrage ---
-FetchContent_Declare(
-        glfw
-        GIT_REPOSITORY https://github.com/glfw/glfw.git
-        GIT_TAG        3.4
-)
-set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
-set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-FetchContent_MakeAvailable(glfw)
-
-
-# --- Configuration de l'executable ViewerApp ---
 add_executable(ViewerApp
         src/Viewer/main.cpp
         src/Viewer/BenchmarkParser.cpp
@@ -165,17 +159,40 @@ add_executable(ViewerApp
         include/Viewer/BenchmarkParser.h
         src/MathLib/MathLib_SIMD/src/Matrix3x3_SIMD.cpp
 )
-
 target_include_directories(ViewerApp PRIVATE
         ${imgui_SOURCE_DIR}
         ${imgui_SOURCE_DIR}/backends
 )
-
 target_link_libraries(ViewerApp PRIVATE
         MathLib
         nlohmann_json::nlohmann_json
         imgui
         implot
         glfw
-        opengl32
+        OpenGL::GL
+)
+
+add_executable(Affichage_test
+        include/Engine/ZBuffer.h
+        include/Engine/Camera.h
+        include/Engine/DisplayWindow.h
+        include/Engine/Mesh.h
+        include/Engine/ObjLoader.h
+        include/Engine/Pipeline.h
+        src/Engine/ZBuffer.cpp
+        src/Engine/DisplayWindow.cpp
+        src/Engine/ObjLoader.cpp
+        src/Engine/Pipeline.cpp
+        main.cpp
+)
+
+target_include_directories(Affichage_test PRIVATE
+        include
+)
+
+target_link_libraries(Affichage_test PRIVATE
+        MathLib
+        glad
+        glfw
+        OpenGL::GL
 )
