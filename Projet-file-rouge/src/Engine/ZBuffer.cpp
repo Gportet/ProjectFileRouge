@@ -1,4 +1,5 @@
-#include "Rendering/ZBuffer.h"
+#include "Engine/ZBuffer.h"
+#include <algorithm>
 #include <cmath>
 #include <limits>
 
