@@ -24,7 +24,7 @@ int main() {
     Pipeline pipeline(WIDTH, HEIGHT);
     
     Camera camera(
-        MathsSIMD::Vec3_SIMD(0.0f, 0.0f, 3.0f),
+        MathsSIMD::Vec3_SIMD(0.0f, 0.0f, 10.0f),
         MathsSIMD::Vec3_SIMD(0.0f, 0.0f, 0.0f),
         MathsSIMD::Vec3_SIMD(0.0f, 1.0f, 0.0f)
     );
