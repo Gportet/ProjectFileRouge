@@ -187,10 +187,6 @@ namespace MathsSIMD
 
     Vec3_SIMD& Vec3_SIMD::operator*=(float scalar)
     {
-        if (scalar == 0.0f)
-        {
-            throw std::runtime_error("Division by zero");
-        }
         __m128 vecA = this->data;
         __m128 vScalar = _mm_set1_ps(scalar);
         
@@ -202,6 +198,10 @@ namespace MathsSIMD
     
     Vec3_SIMD& Vec3_SIMD::operator/=(float scalar)
     {
+        if (scalar == 0.0f)
+        {
+            throw std::runtime_error("Division by zero");
+        }
         __m128 vecA = this->data;
         __m128 vScalar = _mm_set1_ps(scalar);
         
@@ -369,28 +369,16 @@ Vec3_SIMD Vec3_SIMD::Cross(const Vec3_SIMD& rhs) const
     {
         const Vec3_SIMD normalizedA = Normalize();
         const Vec3_SIMD normalizedB = rhs.Normalize();
-        
-        Vec3_SIMD vecA (normalizedA);
-        Vec3_SIMD vecB (normalizedB);
-        
-        const float cosine = vecA.Dot(vecB);
-        
+
+        const float cosine = normalizedA.Dot(normalizedB);
+
         if (!std::isfinite(cosine))
         {
             throw std::domain_error("Cannot calculate angle with non-finite cosine");
         }
 
-        // Tolérance pour les imprécisions des flottants
-        constexpr float tolerance =
-            8.0f * std::numeric_limits<float>::epsilon();
-        
-        if (cosine < -1.0f || cosine > 1.0f)
-        {
-            throw std::domain_error("Cosine must be in the range [-1, 1]");
-        }
-        
         const float clampedCosine = std::clamp(cosine, -1.0f, 1.0f);
-        
+
         return std::acos(clampedCosine);
     }
 

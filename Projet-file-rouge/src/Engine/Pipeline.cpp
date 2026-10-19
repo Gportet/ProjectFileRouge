@@ -31,7 +31,7 @@ int Pipeline::Edge(Point a, Point b, Point p) {
 }
 
 bool Pipeline::BackCulling(Point v0, Point v1, Point v2) {
-    return Edge(v0, v1, v2) > 0;
+    return Edge(v0, v1, v2) < 0;
 }
 
 void Pipeline::DrawTriangle(Point v0, Point v1, Point v2, float z0, float z1, float z2, float iw0, float iw1, float iw2, Vec2 uv0, Vec2 uv1, Vec2 uv2, Texture *texture) {
@@ -68,16 +68,16 @@ void Pipeline::DrawTriangle(Point v0, Point v1, Point v2, float z0, float z1, fl
             int w2 = Edge(v0, v1, p);
 
             if (w0 >= 0 && w1 >= 0 && w2 >= 0) {
-                float lambda0 = static_cast<float>(w0) / inv_area;
-                float lambda1 = static_cast<float>(w1) / inv_area;
-                float lambda2 = static_cast<float>(w2) / inv_area;
+                float lambda0 = static_cast<float>(w0) * inv_area;
+                float lambda1 = static_cast<float>(w1) * inv_area;
+                float lambda2 = static_cast<float>(w2) * inv_area;
 
                 float depth = lambda0 * z0 + lambda1 * z1 + lambda2 * z2;
 
                 float uw = lambda0 * u0w + lambda1 * u1w + lambda2 * u2w;
                 float vw = lambda0 * v0w + lambda1 * v1w + lambda2 * v2w;
                 float iw = lambda0 * iw0 + lambda1 * iw1 + lambda2 * iw2;
-                if (iw == 0.0f)
+                if (!std::isfinite(iw) || iw <= 0.0f)
                     continue;
 
                 float u = uw / iw;

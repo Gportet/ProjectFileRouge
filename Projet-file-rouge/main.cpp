@@ -15,14 +15,14 @@ int main() {
         return -1;
     }
 
-    Mesh mesh = ObjLoader::Load("C:/Users/aponce/Documents/GitHub/ProjectFileRouge/spot.obj");
+    Mesh mesh = ObjLoader::Load("C:/Users/jcrap/Documents/GitHub/ProjectFileRouge/spot.obj");
     if (mesh.vertices.empty()) {
         std::cerr << "Erreur : Maillage vide ou non trouve." << std::endl;
         return -1;
     }
     
     Texture texture; 
-    if (!Texture::texture_load("C:/Users/aponce/Documents/GitHub/ProjectFileRouge/Projet-file-rouge/spot_texture.png", &texture))
+    if (!Texture::texture_load("C:/Users/jcrap/Documents/GitHub/ProjectFileRouge/spot_texture.png", &texture))
     {
         std::cout << "Erreur d'initialisation de la texture." << std::endl;
         return 1;
@@ -70,6 +70,7 @@ int main() {
             MathsSIMD::Vec4_SIMD v0_clip = mvp * v0_local;
             MathsSIMD::Vec4_SIMD v1_clip = mvp * v1_local;
             MathsSIMD::Vec4_SIMD v2_clip = mvp * v2_local;
+            
 
             alignas(16) float raw0[4], raw1[4], raw2[4];
             _mm_store_ps(raw0, v0_clip.data);
@@ -103,7 +104,6 @@ int main() {
             if (pipeline.BackCulling(p0, p1, p2)) {
                 continue;
             }
-            
             
             pipeline.DrawTriangle(
                 p0, p1, p2,
