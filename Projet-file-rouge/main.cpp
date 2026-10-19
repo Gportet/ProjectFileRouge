@@ -15,12 +15,19 @@ int main() {
         return -1;
     }
 
-    Mesh mesh = ObjLoader::Load("C:/ProjectFileRouge/Projet-file-rouge/assets/spot.obj");
+    Mesh mesh = ObjLoader::Load("C:/Users/jcrap/Documents/GitHub/ProjectFileRouge/spot.obj");
     if (mesh.vertices.empty()) {
         std::cerr << "Erreur : Maillage vide ou non trouve." << std::endl;
         return -1;
     }
-
+    
+    Texture texture; 
+    if (!Texture::texture_load("C:/Users/jcrap/Documents/GitHub/ProjectFileRouge/spot_texture.png", &texture))
+    {
+        std::cout << "Erreur d'initialisation de la texture." << std::endl;
+        return 1;
+    }
+    
     Pipeline pipeline(WIDTH, HEIGHT);
     
     Camera camera(
@@ -63,6 +70,7 @@ int main() {
             MathsSIMD::Vec4_SIMD v0_clip = mvp * v0_local;
             MathsSIMD::Vec4_SIMD v1_clip = mvp * v1_local;
             MathsSIMD::Vec4_SIMD v2_clip = mvp * v2_local;
+            
 
             alignas(16) float raw0[4], raw1[4], raw2[4];
             _mm_store_ps(raw0, v0_clip.data);
@@ -83,11 +91,27 @@ int main() {
             Point p2 = { static_cast<int>((x2 + 1.0f) * 0.5f * WIDTH),
                          static_cast<int>((1.0f - y2) * 0.5f * HEIGHT) };
 
+            // Récupération des UV de chaque sommet
+            Vec2 uv0 = mesh.uvs[face.vt0];
+            Vec2 uv1 = mesh.uvs[face.vt1];
+            Vec2 uv2 = mesh.uvs[face.vt2];
+
+            // Inverses de w pour la correction de perspective
+            float iw0 = 1.0f / w0;
+            float iw1 = 1.0f / w1;
+            float iw2 = 1.0f / w2;
+            
             if (pipeline.BackCulling(p0, p1, p2)) {
                 continue;
             }
-
-            pipeline.DrawTriangle(p0, p1, p2, z0, z1, z2);
+            
+            pipeline.DrawTriangle(
+                p0, p1, p2,
+                z0, z1, z2,
+                iw0, iw1, iw2,
+                uv0, uv1, uv2,
+                &texture
+            );
         }
 
         window.RenderBuffer(pipeline.GetColorBuffer());

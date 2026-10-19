@@ -64,6 +64,16 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(imgui)
 
+
+FetchContent_Declare(
+        stb
+        GIT_REPOSITORY https://github.com/nothings/stb.git
+        GIT_TAG master
+        GIT_SHALLOW TRUE
+)
+
+FetchContent_MakeAvailable(stb)
+
 add_library(imgui STATIC
         ${imgui_SOURCE_DIR}/imgui.cpp
         ${imgui_SOURCE_DIR}/imgui_draw.cpp
@@ -184,6 +194,11 @@ add_executable(Affichage_test
         src/Engine/ObjLoader.cpp
         src/Engine/Pipeline.cpp
         main.cpp
+        src/Engine/Mesh.cpp
+)
+
+target_include_directories(Affichage_test PRIVATE
+        ${stb_SOURCE_DIR}
 )
 
 target_include_directories(Affichage_test PRIVATE
@@ -196,3 +211,4 @@ target_link_libraries(Affichage_test PRIVATE
         glfw
         OpenGL::GL
 )
+
