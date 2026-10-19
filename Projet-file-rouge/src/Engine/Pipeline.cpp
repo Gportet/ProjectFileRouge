@@ -34,7 +34,7 @@ bool Pipeline::BackCulling(Point v0, Point v1, Point v2) {
     return Edge(v0, v1, v2) > 0;
 }
 
-void Pipeline::DrawTriangle(Point v0, Point v1, Point v2, float z0, float z1, float z2) {
+void Pipeline::DrawTriangle(Point v0, Point v1, Point v2, float z0, float z1, float z2, float iw0, float iw1, float iw2, Vec2 uv0, Vec2 uv1, Vec2 uv2, Texture *texture) {
     int area = Edge(v0, v1, v2);
 
     if (area == 0)
@@ -43,6 +43,8 @@ void Pipeline::DrawTriangle(Point v0, Point v1, Point v2, float z0, float z1, fl
     if (area < 0) {
         std::swap(v1, v2);
         std::swap(z1, z2);
+        std::swap(iw1, iw2);
+        std::swap(uv1, uv2);
         area = -area;
     }
 
@@ -51,6 +53,12 @@ void Pipeline::DrawTriangle(Point v0, Point v1, Point v2, float z0, float z1, fl
     const int maxX = std::min(m_width - 1, std::max({v0.x, v1.x, v2.x}));
     const int maxY = std::min(m_height - 1, std::max({v0.y, v1.y, v2.y}));
 
+    float inv_area = 1.0f / (float)area;
+    
+    float u0w = uv0.u * iw0, v0w = uv0.v * iw0;
+    float u1w = uv1.u * iw1, v1w = uv1.v * iw1;
+    float u2w = uv2.u * iw2, v2w = uv2.v * iw2;
+    
     for (int y = minY; y <= maxY; ++y) {
         for (int x = minX; x <= maxX; ++x) {
             Point p = {x, y};
@@ -60,14 +68,30 @@ void Pipeline::DrawTriangle(Point v0, Point v1, Point v2, float z0, float z1, fl
             int w2 = Edge(v0, v1, p);
 
             if (w0 >= 0 && w1 >= 0 && w2 >= 0) {
-                float lambda0 = static_cast<float>(w0) / area;
-                float lambda1 = static_cast<float>(w1) / area;
-                float lambda2 = static_cast<float>(w2) / area;
+                float lambda0 = static_cast<float>(w0) / inv_area;
+                float lambda1 = static_cast<float>(w1) / inv_area;
+                float lambda2 = static_cast<float>(w2) / inv_area;
 
                 float depth = lambda0 * z0 + lambda1 * z1 + lambda2 * z2;
 
+                float uw = lambda0 * u0w + lambda1 * u1w + lambda2 * u2w;
+                float vw = lambda0 * v0w + lambda1 * v1w + lambda2 * v2w;
+                float iw = lambda0 * iw0 + lambda1 * iw1 + lambda2 * iw2;
+                if (iw == 0.0f)
+                    continue;
+
+                float u = uw / iw;
+                float v = vw / iw;
+
                 if (m_zBuffer.TestAndApply(x, y, depth)) {
-                    PutPixel(x, y, 255, 255, 255);
+                    uint32_t color = Texture::texture_sample(texture, u, v);
+
+                    PutPixel(
+                        x, y,
+                        (color >> 16) & 0xFF,
+                        (color >> 8) & 0xFF,
+                        color & 0xFF
+                    );
                 }
             }
         }
