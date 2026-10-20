@@ -3,9 +3,24 @@
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
+#include <cmath>
 
+void Mesh::ComputeFaceNormals() {
+    faceNormals.clear();
+    faceNormals.reserve(faces.size());
 
+    for (const auto& face : faces) {
+        const auto& v0 = vertices[face.v0];
+        const auto& v1 = vertices[face.v1];
+        const auto& v2 = vertices[face.v2];
 
+        MathsSIMD::Vec3_SIMD e1 = v1 - v0;
+        MathsSIMD::Vec3_SIMD e2 = v2 - v0;
+
+        MathsSIMD::Vec3_SIMD normal = e1.Cross(e2).Normalize();
+        faceNormals.push_back(normal);
+    }
+}
 bool Texture::texture_load(const char* path, Texture* texture)
 {
     int w, h, channels;

@@ -4,6 +4,7 @@
 #include "Engine/Camera.h"
 #include "MathLib/MathLib_SIMD/include/Vec4_SIMD.h"
 #include <iostream>
+#include "include/Engine/Light.h"
 
 const int WIDTH = 800;
 const int HEIGHT = 800;
@@ -15,14 +16,16 @@ int main() {
         return -1;
     }
 
-    Mesh mesh = ObjLoader::Load("C:/Users/jcrap/Documents/GitHub/ProjectFileRouge/spot.obj");
+    Mesh mesh = ObjLoader::Load("C:/ProjectFileRouge/Projet-file-rouge/assets/spot.obj");
     if (mesh.vertices.empty()) {
         std::cerr << "Erreur : Maillage vide ou non trouve." << std::endl;
         return -1;
     }
     
+    DirectionalLight sunLight;
+    
     Texture texture; 
-    if (!Texture::texture_load("C:/Users/jcrap/Documents/GitHub/ProjectFileRouge/spot_texture.png", &texture))
+    if (!Texture::texture_load("C:/ProjectFileRouge/Projet-file-rouge/assets/spot_texture.png", &texture))
     {
         std::cout << "Erreur d'initialisation de la texture." << std::endl;
         return 1;
@@ -43,7 +46,11 @@ int main() {
         float time = static_cast<float>(window.GetTime());
         MathsSIMD::Matrix4x4_SIMD mvp = camera.GetMVPMatrix(time, WIDTH, HEIGHT);
 
-        for (const auto& face : mesh.faces) {
+        MathsSIMD::Matrix4x4_SIMD rotModel = MathsSIMD::Matrix4x4_SIMD::RotationY(time * 0.7f);
+        
+        for (size_t fidx = 0; fidx < mesh.faces.size(); ++fidx) {
+            const auto& face = mesh.faces[fidx];
+
             const auto& v0 = mesh.vertices[face.v0];
             const auto& v1 = mesh.vertices[face.v1];
             const auto& v2 = mesh.vertices[face.v2];
@@ -70,7 +77,6 @@ int main() {
             MathsSIMD::Vec4_SIMD v0_clip = mvp * v0_local;
             MathsSIMD::Vec4_SIMD v1_clip = mvp * v1_local;
             MathsSIMD::Vec4_SIMD v2_clip = mvp * v2_local;
-            
 
             alignas(16) float raw0[4], raw1[4], raw2[4];
             _mm_store_ps(raw0, v0_clip.data);
@@ -91,7 +97,14 @@ int main() {
             Point p2 = { static_cast<int>((x2 + 1.0f) * 0.5f * WIDTH),
                          static_cast<int>((1.0f - y2) * 0.5f * HEIGHT) };
 
-            // Récupération des UV de chaque sommet
+            if (pipeline.BackCulling(p0, p1, p2)) {
+                continue;
+            }
+            
+            MathsSIMD::Vec3_SIMD worldNormal = rotModel.TransformDirection(mesh.faceNormals[fidx]);
+            
+            float brightness = sunLight.CalculateBrightness(worldNormal);
+
             Vec2 uv0 = mesh.uvs[face.vt0];
             Vec2 uv1 = mesh.uvs[face.vt1];
             Vec2 uv2 = mesh.uvs[face.vt2];
@@ -110,7 +123,8 @@ int main() {
                 z0, z1, z2,
                 iw0, iw1, iw2,
                 uv0, uv1, uv2,
-                &texture
+                &texture,
+                brightness
             );
         }
 

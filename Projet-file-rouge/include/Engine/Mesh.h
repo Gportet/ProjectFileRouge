@@ -20,6 +20,10 @@ struct Mesh {
     std::vector<MathsSIMD::Vec3_SIMD> vertices;
     std::vector<Face> faces;
     std::vector<Vec2> uvs;
+    
+    std::vector<MathsSIMD::Vec3_SIMD> faceNormals;
+    
+    void ComputeFaceNormals();
 };
 
 

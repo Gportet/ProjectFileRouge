@@ -34,7 +34,12 @@ bool Pipeline::BackCulling(Point v0, Point v1, Point v2) {
     return Edge(v0, v1, v2) < 0;
 }
 
-void Pipeline::DrawTriangle(Point v0, Point v1, Point v2, float z0, float z1, float z2, float iw0, float iw1, float iw2, Vec2 uv0, Vec2 uv1, Vec2 uv2, Texture *texture) {
+void Pipeline::DrawTriangle(Point v0, Point v1, Point v2, 
+                           float z0, float z1, float z2, 
+                           float iw0, float iw1, float iw2, 
+                           Vec2 uv0, Vec2 uv1, Vec2 uv2, 
+                           Texture *texture, 
+                           float brightness) {
     int area = Edge(v0, v1, v2);
 
     if (area == 0)
@@ -82,16 +87,16 @@ void Pipeline::DrawTriangle(Point v0, Point v1, Point v2, float z0, float z1, fl
 
                 float u = uw / iw;
                 float v = vw / iw;
-
+                
                 if (m_zBuffer.TestAndApply(x, y, depth)) {
                     uint32_t color = Texture::texture_sample(texture, u, v);
+                    
+                    float l = std::clamp(brightness, 0.0f, 1.0f);
+                    uint8_t r = static_cast<uint8_t>(((color >> 16) & 0xFF) * l);
+                    uint8_t g = static_cast<uint8_t>(((color >> 8) & 0xFF) * l);
+                    uint8_t b = static_cast<uint8_t>((color & 0xFF) * l);
 
-                    PutPixel(
-                        x, y,
-                        (color >> 16) & 0xFF,
-                        (color >> 8) & 0xFF,
-                        color & 0xFF
-                    );
+                    PutPixel(x, y, r, g, b);
                 }
             }
         }
