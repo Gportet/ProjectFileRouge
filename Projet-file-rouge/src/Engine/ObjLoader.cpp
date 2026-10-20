@@ -63,6 +63,10 @@ Mesh ObjLoader::Load(const std::string& filename) {
             }
         }
     }
+    if (!mesh.faces.empty()) {
+        mesh.ComputeFaceNormals();
+        mesh.ComputeVertexNormals();
+    }
 
     return mesh;
 }
