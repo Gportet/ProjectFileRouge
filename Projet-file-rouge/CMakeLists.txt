@@ -195,6 +195,7 @@ add_executable(Affichage_test
         src/Engine/Pipeline.cpp
         main.cpp
         src/Engine/Mesh.cpp
+        include/Engine/Light.h
 )
 
 target_include_directories(Affichage_test PRIVATE

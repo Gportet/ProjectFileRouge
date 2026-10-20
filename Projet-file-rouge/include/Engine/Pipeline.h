@@ -3,6 +3,28 @@
 #include <cstdint>
 #include "Mesh.h"
 #include "Engine/ZBuffer.h"
+#include "Engine/Light.h"
+#include "MathLib_SIMD/include/Vec4_SIMD.h"
+
+struct ClipVertex {
+    MathsSIMD::Vec4_SIMD clipPos;
+    MathsSIMD::Vec3_SIMD normal;
+    Vec2 uv;
+    
+    static ClipVertex Lerp(const ClipVertex& a, const ClipVertex& b, float t) {
+        ClipVertex v;
+        v.clipPos = MathsSIMD::Vec4_SIMD::Lerp(a.clipPos, b.clipPos, t);
+        v.normal  = MathsSIMD::Vec3_SIMD::Lerp(a.normal, b.normal, t);
+        v.uv.u    = a.uv.u + (b.uv.u - a.uv.u) * t;
+        v.uv.v    = a.uv.v + (b.uv.v - a.uv.v) * t;
+        return v;
+    }
+};
+
+struct ClipTriangle { 
+    ClipVertex v0, v1, v2;
+};
+
 
 class Pipeline {
 private:
@@ -26,9 +48,21 @@ public:
                   Vec2 uv0, Vec2 uv1, Vec2 uv2, 
                   Texture *texture, 
                   float brightness = 1.0f);
+    void DrawTrianglePhong(Point v0, Point v1, Point v2, 
+                       float z0, float z1, float z2, 
+                       float iw0, float iw1, float iw2, 
+                       Vec2 uv0, Vec2 uv1, Vec2 uv2, 
+                       MathsSIMD::Vec3_SIMD n0, 
+                       MathsSIMD::Vec3_SIMD n1, 
+                       MathsSIMD::Vec3_SIMD n2,
+                       Texture *texture, 
+                       const DirectionalLight& light,
+                       const MathsSIMD::Vec3_SIMD& halfVector);
     bool BackCulling(Point v0, Point v1, Point v2);
 
     const uint8_t* GetColorBuffer() const { return m_pixels.data(); }
     int GetWidth() const { return m_width; }
     int GetHeight() const { return m_height; }
+    
+    static int ClipTriangleNear(const ClipVertex& v0, const ClipVertex& v1, const ClipVertex& v2, ClipTriangle outTris[2]);
 };

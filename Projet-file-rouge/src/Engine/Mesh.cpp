@@ -21,6 +21,26 @@ void Mesh::ComputeFaceNormals() {
         faceNormals.push_back(normal);
     }
 }
+
+void Mesh::ComputeVertexNormals() {
+    vertexNormals.assign(vertices.size(), MathsSIMD::Vec3_SIMD(0.0f, 0.0f, 0.0f));
+    
+    for (size_t i = 0; i < faces.size(); ++i) {
+        const auto& face = faces[i];
+        const auto& fNorm = faceNormals[i];
+
+        vertexNormals[face.v0] = vertexNormals[face.v0] + fNorm;
+        vertexNormals[face.v1] = vertexNormals[face.v1] + fNorm;
+        vertexNormals[face.v2] = vertexNormals[face.v2] + fNorm;
+    }
+    
+    for (auto& vn : vertexNormals) {
+        if (vn.MagnitudeSquared() > 0.0f) {
+            vn = vn.Normalize();
+        }
+    }
+}
+
 bool Texture::texture_load(const char* path, Texture* texture)
 {
     int w, h, channels;
