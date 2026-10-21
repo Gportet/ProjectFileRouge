@@ -2,6 +2,44 @@
 #include <algorithm>
 #include <cmath>
 
+
+void Pipeline::initThreads()
+{
+    stopThreads();
+    
+    m_threads.reserve(4);
+    for (int i = 0; i < 4; ++i)
+    {
+        m_threads.emplace_back(&Pipeline::WorkerThread, this, i);
+    }
+}
+
+void Pipeline::stopThreads()
+{
+    for (auto& thread : m_threads)
+    {
+        thread.request_stop();
+    }
+    m_threads.clear();
+}
+
+void Pipeline::WorkerThread(std::stop_token stopToken, size_t threadIndex)
+{
+    while (!stopToken.stop_requested())
+    {
+        //Attend le jeton
+        m_startSemaphore.acquire();
+        
+        //securité
+        if (stopToken.stop_requested()) break;
+        
+        //sinder l'écran
+        
+        m_doneLatch->count_down();
+        return;
+    }
+}
+
 Pipeline::Pipeline(int width, int height) 
     : m_width(width), m_height(height), 
       m_pixels(width * height * 4, 0), 

@@ -1,10 +1,16 @@
 #pragma once
 #include <vector>
 #include <cstdint>
+#include <thread>
+
 #include "Mesh.h"
 #include "Engine/ZBuffer.h"
 #include "Engine/Light.h"
 #include "MathLib_SIMD/include/Vec4_SIMD.h"
+#include <stop_token>
+#include <semaphore> 
+#include <latch>    
+#include <memory>    
 
 struct ClipVertex {
     MathsSIMD::Vec4_SIMD clipPos;
@@ -36,6 +42,12 @@ private:
     void PutPixel(int x, int y, uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255);
     int Edge(Point a, Point b, Point p);
     bool ClipLine(int& x0, int& y0, int& x1, int& y1);
+    
+    //Threading
+    std::vector<std::jthread> m_threads;
+        void WorkerThread(std::stop_token stopToken, size_t threadIndex);
+    std::counting_semaphore<4> m_startSemaphore{0}; // jeton de lancement 
+    std::unique_ptr<std::latch> m_doneLatch; // pointeur lash frame courante 
 
 public:
     Pipeline(int width, int height);
@@ -65,4 +77,7 @@ public:
     int GetHeight() const { return m_height; }
     
     static int ClipTriangleNear(const ClipVertex& v0, const ClipVertex& v1, const ClipVertex& v2, ClipTriangle outTris[2]);
+    
+    void initThreads();
+    void stopThreads();
 };
