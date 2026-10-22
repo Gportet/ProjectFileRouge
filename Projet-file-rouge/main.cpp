@@ -149,19 +149,17 @@ int main() {
                 }
 
                 // Dessin du triangle avec ombrage de Phong pixel par pixel
-                pipeline.DrawTrianglePhong(
-                    p0, p1, p2,
-                    z0, z1, z2,
-                    iw0, iw1, iw2,
-                    tri.v0.uv, tri.v1.uv, tri.v2.uv,
-                    tri.v0.normal, tri.v1.normal, tri.v2.normal,
-                    &texture,
-                    sunLight,
-                    halfVector
-                );
+                pipeline.SubmitTriangle(
+                                p0, p1, p2,
+                                z0, z1, z2,
+                                iw0, iw1, iw2,
+                                tri.v0.uv, tri.v1.uv, tri.v2.uv,
+                                tri.v0.normal, tri.v1.normal, tri.v2.normal,
+                                &texture, sunLight, halfVector
+                            );
             }
         }
-
+        pipeline.StartFramSync();
         // Transfert du Framebuffer vers la fenêtre et affichage
         window.RenderBuffer(pipeline.GetColorBuffer());
     }
