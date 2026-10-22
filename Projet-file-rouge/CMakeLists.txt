@@ -74,6 +74,14 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(stb)
 
+FetchContent_Declare(
+        freetype
+        GIT_REPOSITORY https://gitlab.freedesktop.org/freetype/freetype.git
+        GIT_TAG        VER-2-14-3
+        GIT_SHALLOW    TRUE
+)
+FetchContent_MakeAvailable(freetype)
+
 add_library(imgui STATIC
         ${imgui_SOURCE_DIR}/imgui.cpp
         ${imgui_SOURCE_DIR}/imgui_draw.cpp
@@ -196,6 +204,10 @@ add_executable(Affichage_test
         main.cpp
         src/Engine/Mesh.cpp
         include/Engine/Light.h
+        src/Engine/utils/Font.cpp
+        include/Engine/utils/Font.h
+        src/Engine/utils/Filepath.cpp
+        include/Engine/utils/Filepath.h
 )
 
 target_include_directories(Affichage_test PRIVATE
@@ -211,5 +223,6 @@ target_link_libraries(Affichage_test PRIVATE
         glad
         glfw
         OpenGL::GL
+        freetype
 )
 

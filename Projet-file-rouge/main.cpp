@@ -5,13 +5,42 @@
 #include "Engine/Light.h"
 #include "MathLib/MathLib_SIMD/include/Vec4_SIMD.h"
 #include "MathLib/MathLib_SIMD/include/Matrix4x4_SIMD.h"
+#include "Engine/utils/Font.h"
 #include <iostream>
 
 // Resolution de la fenetre d'affichage
 const int WIDTH = 800;
 const int HEIGHT = 800;
 
+/* Appel avant le return
+void testFont()
+{
+    Font font(
+        FontTag("Arial"),
+        Filepath("C:/Users/aponce/Documents/GitHub/ProjectFileRouge/Projet-file-rouge/assets/arial/ARIAL.TTF")
+    );
+
+    FT_Face face = font.getFont(16);
+
+    if (!face)
+    {
+        std::cerr << "Impossible de charger la police\n";
+        return;
+    }
+
+    auto [width, height] = font.getTextSize("Bonjour", 16);
+
+    std::cout << "Largeur : " << width << " px\n";
+    std::cout << "Hauteur : " << height << " px\n";
+}
+*/
+
+
+
 int main() {
+    
+
+    
     // =========================================================================
     // 1. INITIALISATION DU CONTEXTE ET DU MOTOR DE RENDU
     // =========================================================================
@@ -22,7 +51,7 @@ int main() {
     }
 
     // Chargement du maillage 3D (.obj)
-    Mesh mesh = ObjLoader::Load("C:/ProjectFileRouge/Projet-file-rouge/assets/spot.obj");
+    Mesh mesh = ObjLoader::Load("C:/Users/aponce/Documents/GitHub/ProjectFileRouge/spot.obj");
     if (mesh.vertices.empty()) {
         std::cerr << "Erreur : Maillage vide ou chemin introuvable." << std::endl;
         return -1;
@@ -33,7 +62,7 @@ int main() {
 
     // Chargement de la texture (Albedo)
     Texture texture; 
-    if (!Texture::texture_load("C:/ProjectFileRouge/Projet-file-rouge/assets/spot_texture.png", &texture)) {
+    if (!Texture::texture_load("C:/Users/aponce/Documents/GitHub/ProjectFileRouge/spot_texture.png", &texture)) {
         std::cerr << "Erreur : Impossible de charger la texture." << std::endl;
         return 1;
     }
@@ -165,6 +194,5 @@ int main() {
         // Transfert du Framebuffer vers la fenêtre et affichage
         window.RenderBuffer(pipeline.GetColorBuffer());
     }
-
     return 0;
 }
