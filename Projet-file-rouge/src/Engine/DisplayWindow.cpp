@@ -8,6 +8,7 @@ DisplayWindow::DisplayWindow(int width, int height, const std::string& title)
 bool DisplayWindow::Init() {
     if (!glfwInit()) return false;
     
+
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -16,6 +17,7 @@ bool DisplayWindow::Init() {
     if (!m_window) { glfwTerminate(); return false; }
 
     glfwMakeContextCurrent(m_window);
+    
     glfwSwapInterval(0);
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) return false;
