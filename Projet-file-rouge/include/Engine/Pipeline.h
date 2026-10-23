@@ -6,6 +6,7 @@
 #include "Engine/Light.h"
 #include "MathLib_SIMD/include/Vec4_SIMD.h"
 
+
 struct ClipVertex {
     MathsSIMD::Vec4_SIMD clipPos;
     MathsSIMD::Vec3_SIMD normal;
@@ -28,7 +29,6 @@ struct ClipTriangle {
 
 class Pipeline {
 private:
-    
     int m_width;
     int m_height;
     std::vector<uint8_t> m_pixels;

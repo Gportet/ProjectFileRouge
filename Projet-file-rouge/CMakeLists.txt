@@ -221,6 +221,12 @@ add_executable(Affichage_test
         
         include/Engine/Rendering/UnlitShader.h
         src/Engine/Rendering/UnlitShader.cpp
+        
+        include/Engine/Rendering/LambertShader.h
+        src/Engine/Rendering/LambertShader.cpp
+        
+        include/Engine/Rendering/PhongShader.h
+        src/Engine/Rendering/PhongShader.cpp
 )
 
 target_include_directories(Affichage_test PRIVATE
