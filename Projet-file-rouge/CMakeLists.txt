@@ -204,10 +204,23 @@ add_executable(Affichage_test
         main.cpp
         src/Engine/Mesh.cpp
         include/Engine/Light.h
-        src/Engine/utils/Font.cpp
-        include/Engine/utils/Font.h
-        src/Engine/utils/Filepath.cpp
+
+        # ----------------------------
+        # Utils / Rendering
+        # ----------------------------  
         include/Engine/utils/Filepath.h
+        src/Engine/utils/Filepath.cpp
+        
+        include/Engine/utils/Font.h
+        src/Engine/utils/Font.cpp
+        
+        include/Engine/Ressources/Texture.h
+        src/Engine/Ressources/Texture.cpp
+        
+        include/Engine/Rendering/Shader.h
+        
+        include/Engine/Rendering/UnlitShader.h
+        src/Engine/Rendering/UnlitShader.cpp
 )
 
 target_include_directories(Affichage_test PRIVATE

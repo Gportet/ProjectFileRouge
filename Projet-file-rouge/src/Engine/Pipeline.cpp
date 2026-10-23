@@ -89,7 +89,7 @@ void Pipeline::DrawTriangle(Point v0, Point v1, Point v2,
                 float v = vw / iw;
                 
                 if (m_zBuffer.TestAndApply(x, y, depth)) {
-                    uint32_t color = Texture::texture_sample(texture, u, v);
+                    uint32_t color = texture->SampleNearest(u, v);
                     
                     float l = std::clamp(brightness, 0.0f, 1.0f);
                     uint8_t r = static_cast<uint8_t>(((color >> 16) & 0xFF) * l);
@@ -178,8 +178,7 @@ void Pipeline::DrawTrianglePhong(Point v0, Point v1, Point v2,
                     // Blinn-Phong
                     float ndoth = std::max(0.0f, N.Dot(halfVector));
                     float spec = pow32(ndoth) * light.specularStrength;
-                    
-                    uint32_t texel = Texture::texture_sample(texture, u, v);
+                    uint32_t texel = texture->SampleNearest(u, v);
                     float texR = static_cast<float>((texel >> 16) & 0xFF);
                     float texG = static_cast<float>((texel >> 8) & 0xFF);
                     float texB = static_cast<float>(texel & 0xFF);

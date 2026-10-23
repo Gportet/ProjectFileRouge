@@ -51,7 +51,7 @@ int main() {
     }
 
     // Chargement du maillage 3D (.obj)
-    Mesh mesh = ObjLoader::Load("C:/Users/aponce/Documents/GitHub/ProjectFileRouge/spot.obj");
+    Mesh mesh = ObjLoader::Load("C:/Users/jcrap/Documents/GitHub/ProjectFileRouge/spot.obj");
     if (mesh.vertices.empty()) {
         std::cerr << "Erreur : Maillage vide ou chemin introuvable." << std::endl;
         return -1;
@@ -61,8 +61,9 @@ int main() {
     DirectionalLight sunLight;
 
     // Chargement de la texture (Albedo)
-    Texture texture; 
-    if (!Texture::texture_load("C:/Users/aponce/Documents/GitHub/ProjectFileRouge/spot_texture.png", &texture)) {
+    Texture texture;
+
+    if (!texture.Load(Filepath("C:/Users/jcrap/Documents/GitHub/ProjectFileRouge/spot_texture.png"))) {
         std::cerr << "Erreur : Impossible de charger la texture." << std::endl;
         return 1;
     }
@@ -177,16 +178,13 @@ int main() {
                     continue;
                 }
 
-                // Dessin du triangle avec ombrage de Phong pixel par pixel
-                pipeline.DrawTrianglePhong(
+                // Dessin du triangle sans ombrage de Phong
+                pipeline.DrawTriangle(
                     p0, p1, p2,
                     z0, z1, z2,
                     iw0, iw1, iw2,
                     tri.v0.uv, tri.v1.uv, tri.v2.uv,
-                    tri.v0.normal, tri.v1.normal, tri.v2.normal,
-                    &texture,
-                    sunLight,
-                    halfVector
+                    &texture
                 );
             }
         }
