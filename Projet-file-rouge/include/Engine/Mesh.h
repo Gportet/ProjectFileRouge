@@ -2,6 +2,9 @@
 #include <vector>
 #include "MathLib/MathLib_SIMD/include/Vec3_SIMD.h"
 
+const int WIDTH = 800;
+const int HEIGHT = 800;
+
 struct Point {
     int x;
     int y;

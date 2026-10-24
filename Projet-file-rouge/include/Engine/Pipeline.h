@@ -9,8 +9,6 @@
 #include "MathLib_SIMD/include/Vec4_SIMD.h"
 #include <stop_token>
 #include <semaphore> 
-#include <latch>    
-#include <memory>    
 
 struct ClipVertex {
     MathsSIMD::Vec4_SIMD clipPos;
@@ -50,8 +48,7 @@ private:
     int m_height;
     std::vector<uint8_t> m_pixels;
     ZBuffer m_zBuffer;
-
-    void PutPixel(int x, int y, uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255);
+    
     int Edge(Point a, Point b, Point p);
     bool ClipLine(int& x0, int& y0, int& x1, int& y1);
     
@@ -71,6 +68,7 @@ public:
     Pipeline(int width, int height);
     ~Pipeline();
     
+    void PutPixel(int x, int y, uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255);
     void Clear();
     void DrawLine(int x0, int y0, int x1, int y1, uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255);
     void DrawTrianglePhong(Point v0, Point v1, Point v2, 
