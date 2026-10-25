@@ -37,13 +37,18 @@ struct ClipVertex {
 
 struct TriangleJob {
     Point p0, p1, p2;
+
     float z0, z1, z2;
     float iw0, iw1, iw2;
+
     Vec2 uv0, uv1, uv2;
+
+    MathsSIMD::Vec3_SIMD pos0, pos1, pos2;
     MathsSIMD::Vec3_SIMD n0, n1, n2;
+
     Texture* texture;
     DirectionalLight light;
-    MathsSIMD::Vec3_SIMD halfVector;
+    MathsSIMD::Vec3_SIMD cameraPosition;
 };
 
 struct ClipTriangle { 
@@ -94,7 +99,9 @@ public:
         MathsSIMD::Vec3_SIMD n2,
         Texture* texture,
         const DirectionalLight& light,
-        const MathsSIMD::Vec3_SIMD& cameraPosition
+        const MathsSIMD::Vec3_SIMD& cameraPosition,
+        int bandMinY,
+        int bandMaxY
     );
     bool BackCulling(Point v0, Point v1, Point v2);
 
@@ -108,14 +115,32 @@ public:
     void stopThreads();
     void StartFramSync();
     
-    void SubmitTriangle(Point p0, Point p1, Point p2, 
-                        float z0, float z1, float z2, 
-                        float iw0, float iw1, float iw2, 
-                        Vec2 uv0, Vec2 uv1, Vec2 uv2, 
-                        MathsSIMD::Vec3_SIMD n0, MathsSIMD::Vec3_SIMD n1, MathsSIMD::Vec3_SIMD n2,
-                        Texture* texture, const DirectionalLight& light, 
-                        const MathsSIMD::Vec3_SIMD& halfVector) 
+    void SubmitTriangle(
+        Point p0, Point p1, Point p2,
+        float z0, float z1, float z2,
+        float iw0, float iw1, float iw2,
+        Vec2 uv0, Vec2 uv1, Vec2 uv2,
+        MathsSIMD::Vec3_SIMD pos0,
+        MathsSIMD::Vec3_SIMD pos1,
+        MathsSIMD::Vec3_SIMD pos2,
+        MathsSIMD::Vec3_SIMD n0,
+        MathsSIMD::Vec3_SIMD n1,
+        MathsSIMD::Vec3_SIMD n2,
+        Texture* texture,
+        const DirectionalLight& light,
+        const MathsSIMD::Vec3_SIMD& cameraPosition
+    )
     {
-        m_jobs.push_back({p0, p1, p2, z0, z1, z2, iw0, iw1, iw2, uv0, uv1, uv2, n0, n1, n2, texture, light, halfVector});
+        m_jobs.push_back({
+            p0, p1, p2,
+            z0, z1, z2,
+            iw0, iw1, iw2,
+            uv0, uv1, uv2,
+            pos0, pos1, pos2,
+            n0, n1, n2,
+            texture,
+            light,
+            cameraPosition
+        });
     }
 };

@@ -2,6 +2,16 @@
 #include <algorithm>
 #include <cmath>
 
+Pipeline::Pipeline(int width, int height) 
+    : m_width(width), m_height(height), 
+      m_pixels(width * height * 4, 0), 
+      m_zBuffer(width, height),
+      m_Shader(std::make_unique<BlinnPhongShader>())
+{
+    m_jobs.reserve(1000);
+    initThreads(); 
+}
+
 Pipeline::~Pipeline() {
     stopThreads();
 }
@@ -21,30 +31,42 @@ void Pipeline::initThreads()
 
 void Pipeline::WorkerThread(std::stop_token stopToken, size_t threadIndex)
 {
-    int sliceHeight = m_height / 4;
-    int minY = static_cast<int>(threadIndex) * sliceHeight;
-    int maxY = (threadIndex == 3) ? (m_height - 1) : (minY + sliceHeight - 1);
+    const int sliceHeight = m_height / 4;
+    const int minY = static_cast<int>(threadIndex) * sliceHeight;
+    const int maxY = (threadIndex == 3)
+        ? (m_height - 1)
+        : (minY + sliceHeight - 1);
 
     while (!stopToken.stop_requested())
     {
         m_workerStart[threadIndex].acquire();
-        
-        if (stopToken.stop_requested()) break;
-        
+
+        if (stopToken.stop_requested())
+            break;
+
         for (const auto& job : m_jobs)
         {
-            DrawTrianglePhong(
+            DrawTriangle(
                 job.p0, job.p1, job.p2,
+
                 job.z0, job.z1, job.z2,
                 job.iw0, job.iw1, job.iw2,
+
                 job.uv0, job.uv1, job.uv2,
+
+                job.pos0, job.pos1, job.pos2,
                 job.n0, job.n1, job.n2,
-                job.texture, job.light, job.halfVector,
-                minY, maxY
+
+                job.texture,
+                job.light,
+                job.cameraPosition,
+
+                minY,
+                maxY
             );
         }
 
-        m_endSemaphore.release(1);
+        m_endSemaphore.release();
     }
 }
 
@@ -78,16 +100,7 @@ void Pipeline::stopThreads()
     m_threads.clear();
 }
 
-Pipeline::Pipeline(int width, int height) 
-    : m_width(width), m_height(height), 
-      m_pixels(width * height * 4, 0), 
-      m_zBuffer(width, height),
-      m_Shader(std::make_unique<PhongShader>())
-{}
-{
-    m_jobs.reserve(1000);
-    initThreads(); 
-}
+
 
 void Pipeline::Clear() {
     for (size_t i = 0; i < m_pixels.size(); i += 4) {

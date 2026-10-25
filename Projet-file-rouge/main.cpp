@@ -194,7 +194,7 @@ int main() {
 
                 // Dessin du triangle sans ombrage de Phong
                 // Dessin du triangle avec le Shader
-                pipeline.DrawTriangle(
+                pipeline.SubmitTriangle(
                     p0, p1, p2,
                     z0, z1, z2,
                     iw0, iw1, iw2,
