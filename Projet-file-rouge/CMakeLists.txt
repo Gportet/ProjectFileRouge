@@ -227,6 +227,9 @@ add_executable(Affichage_test
         
         include/Engine/Rendering/PhongShader.h
         src/Engine/Rendering/PhongShader.cpp
+ 
+        include/Engine/Rendering/BlinnPhongShader.h
+        src/Engine/Rendering/BlinnPhongShader.cpp
 )
 
 target_include_directories(Affichage_test PRIVATE

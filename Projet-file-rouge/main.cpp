@@ -72,8 +72,10 @@ int main() {
     Pipeline pipeline(WIDTH, HEIGHT);
     
     // Configuration de la camera virtuelle (Position Eye, Target, Up Vector)
+    const MathsSIMD::Vec3_SIMD cameraPosition(0.0f, 0.0f, 3.0f);
+
     Camera camera(
-        MathsSIMD::Vec3_SIMD(0.0f, 0.0f, 3.0f),
+        cameraPosition,
         MathsSIMD::Vec3_SIMD(0.0f, 0.0f, 0.0f),
         MathsSIMD::Vec3_SIMD(0.0f, 1.0f, 0.0f)
     );
@@ -93,9 +95,7 @@ int main() {
         
         // Matrice de rotation globale pour l'orientation des normales en World Space
         MathsSIMD::Matrix4x4_SIMD rotModel = MathsSIMD::Matrix4x4_SIMD::RotationY(time * 0.7f);
-
-        // Precalcul du Half-Vector (Blinn-Phong) unique pour toute la frame
-        MathsSIMD::Vec3_SIMD halfVector = sunLight.GetHalfVector();
+        
 
         // ---------------------------------------------------------------------
         // PASSE 1 : TRAITEMENT GEOMETRIQUE ET DECOUPAGE (GEOMETRY PASS)
@@ -126,6 +126,12 @@ int main() {
             cv0.clipPos = mvp * v0_local;
             cv1.clipPos = mvp * v1_local;
             cv2.clipPos = mvp * v2_local;
+            
+            // Positions des sommets en World Space
+            cv0.worldPosition = rotModel.TransformPoint(v0_pos);
+            cv1.worldPosition = rotModel.TransformPoint(v1_pos);
+            cv2.worldPosition = rotModel.TransformPoint(v2_pos);
+            
 
             // Transformation des normales de sommets dans l'Espace Monde (World Space)
             cv0.normal = rotModel.TransformDirection(mesh.vertexNormals[face.v0]);
@@ -179,12 +185,27 @@ int main() {
                 }
 
                 // Dessin du triangle sans ombrage de Phong
+                // Dessin du triangle avec le Shader
                 pipeline.DrawTriangle(
                     p0, p1, p2,
                     z0, z1, z2,
                     iw0, iw1, iw2,
-                    tri.v0.uv, tri.v1.uv, tri.v2.uv,
-                    &texture
+
+                    tri.v0.uv,
+                    tri.v1.uv,
+                    tri.v2.uv,
+
+                    tri.v0.worldPosition,
+                    tri.v1.worldPosition,
+                    tri.v2.worldPosition,
+
+                    tri.v0.normal,
+                    tri.v1.normal,
+                    tri.v2.normal,
+
+                    &texture,
+                    sunLight,
+                    cameraPosition
                 );
             }
         }

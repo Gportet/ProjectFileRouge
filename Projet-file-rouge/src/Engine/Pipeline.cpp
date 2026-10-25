@@ -5,7 +5,9 @@
 Pipeline::Pipeline(int width, int height) 
     : m_width(width), m_height(height), 
       m_pixels(width * height * 4, 0), 
-      m_zBuffer(width, height) {}
+      m_zBuffer(width, height),
+      m_Shader(std::make_unique<PhongShader>())
+{}
 
 void Pipeline::Clear() {
     for (size_t i = 0; i < m_pixels.size(); i += 4) {
@@ -34,95 +36,34 @@ bool Pipeline::BackCulling(Point v0, Point v1, Point v2) {
     return Edge(v0, v1, v2) < 0;
 }
 
-void Pipeline::DrawTriangle(Point v0, Point v1, Point v2, 
-                           float z0, float z1, float z2, 
-                           float iw0, float iw1, float iw2, 
-                           Vec2 uv0, Vec2 uv1, Vec2 uv2, 
-                           Texture *texture, 
-                           float brightness) {
+void Pipeline::DrawTriangle(
+    Point v0, Point v1, Point v2,
+    float z0, float z1, float z2,
+    float iw0, float iw1, float iw2,
+    Vec2 uv0, Vec2 uv1, Vec2 uv2,
+    MathsSIMD::Vec3_SIMD pos0,
+    MathsSIMD::Vec3_SIMD pos1,
+    MathsSIMD::Vec3_SIMD pos2,
+    MathsSIMD::Vec3_SIMD n0,
+    MathsSIMD::Vec3_SIMD n1,
+    MathsSIMD::Vec3_SIMD n2,
+    Texture* texture,
+    const DirectionalLight& light,
+    const MathsSIMD::Vec3_SIMD& cameraPosition
+)
+{
     int area = Edge(v0, v1, v2);
 
     if (area == 0)
         return;
 
-    if (area < 0) {
+    if (area < 0)
+    {
         std::swap(v1, v2);
         std::swap(z1, z2);
         std::swap(iw1, iw2);
         std::swap(uv1, uv2);
-        area = -area;
-    }
-
-    const int minX = std::max(0, std::min({v0.x, v1.x, v2.x}));
-    const int minY = std::max(0, std::min({v0.y, v1.y, v2.y}));
-    const int maxX = std::min(m_width - 1, std::max({v0.x, v1.x, v2.x}));
-    const int maxY = std::min(m_height - 1, std::max({v0.y, v1.y, v2.y}));
-
-    float inv_area = 1.0f / (float)area;
-    
-    float u0w = uv0.u * iw0, v0w = uv0.v * iw0;
-    float u1w = uv1.u * iw1, v1w = uv1.v * iw1;
-    float u2w = uv2.u * iw2, v2w = uv2.v * iw2;
-    
-    for (int y = minY; y <= maxY; ++y) {
-        for (int x = minX; x <= maxX; ++x) {
-            Point p = {x, y};
-
-            int w0 = Edge(v1, v2, p);
-            int w1 = Edge(v2, v0, p);
-            int w2 = Edge(v0, v1, p);
-
-            if (w0 >= 0 && w1 >= 0 && w2 >= 0) {
-                float lambda0 = static_cast<float>(w0) * inv_area;
-                float lambda1 = static_cast<float>(w1) * inv_area;
-                float lambda2 = static_cast<float>(w2) * inv_area;
-
-                float depth = lambda0 * z0 + lambda1 * z1 + lambda2 * z2;
-
-                float uw = lambda0 * u0w + lambda1 * u1w + lambda2 * u2w;
-                float vw = lambda0 * v0w + lambda1 * v1w + lambda2 * v2w;
-                float iw = lambda0 * iw0 + lambda1 * iw1 + lambda2 * iw2;
-                if (!std::isfinite(iw) || iw <= 0.0f)
-                    continue;
-
-                float u = uw / iw;
-                float v = vw / iw;
-                
-                if (m_zBuffer.TestAndApply(x, y, depth)) {
-                    uint32_t color = texture->SampleNearest(u, v);
-                    
-                    float l = std::clamp(brightness, 0.0f, 1.0f);
-                    uint8_t r = static_cast<uint8_t>(((color >> 16) & 0xFF) * l);
-                    uint8_t g = static_cast<uint8_t>(((color >> 8) & 0xFF) * l);
-                    uint8_t b = static_cast<uint8_t>((color & 0xFF) * l);
-
-                    PutPixel(x, y, r, g, b);
-                }
-            }
-        }
-    }
-}
-
-
-
-void Pipeline::DrawTrianglePhong(Point v0, Point v1, Point v2, 
-                               float z0, float z1, float z2, 
-                               float iw0, float iw1, float iw2, 
-                               Vec2 uv0, Vec2 uv1, Vec2 uv2, 
-                               MathsSIMD::Vec3_SIMD n0, 
-                               MathsSIMD::Vec3_SIMD n1, 
-                               MathsSIMD::Vec3_SIMD n2,
-                               Texture *texture, 
-                               const DirectionalLight& light,
-                               const MathsSIMD::Vec3_SIMD& halfVector) {
-    int area = Edge(v0, v1, v2);
-    if (area == 0) return;
-
-    if (area < 0) {
-        std::swap(v1, v2);
-        std::swap(z1, z2);
-        std::swap(iw1, iw2);
-        std::swap(uv1, uv2);
+        std::swap(pos1, pos2);
         std::swap(n1, n2);
         area = -area;
     }
@@ -132,64 +73,87 @@ void Pipeline::DrawTrianglePhong(Point v0, Point v1, Point v2,
     const int maxX = std::min(m_width - 1, std::max({v0.x, v1.x, v2.x}));
     const int maxY = std::min(m_height - 1, std::max({v0.y, v1.y, v2.y}));
 
-    float inv_area = 1.0f / static_cast<float>(area);
+    const float inv_area = 1.0f / static_cast<float>(area);
 
-    float u0w = uv0.u * iw0, v0w = uv0.v * iw0;
-    float u1w = uv1.u * iw1, v1w = uv1.v * iw1;
-    float u2w = uv2.u * iw2, v2w = uv2.v * iw2;
+    // Préparation des UV pour l'interpolation perspective correcte
+    const float u0w = uv0.u * iw0;
+    const float v0w = uv0.v * iw0;
+    const float u1w = uv1.u * iw1;
+    const float v1w = uv1.v * iw1;
+    const float u2w = uv2.u * iw2;
+    const float v2w = uv2.v * iw2;
 
-    // Pré-division des normales par w
-    MathsSIMD::Vec3_SIMD n0w = n0 * iw0;
-    MathsSIMD::Vec3_SIMD n1w = n1 * iw1;
-    MathsSIMD::Vec3_SIMD n2w = n2 * iw2;
+    // Préparation des positions et normales
+    const MathsSIMD::Vec3_SIMD pos0w = pos0 * iw0;
+    const MathsSIMD::Vec3_SIMD pos1w = pos1 * iw1;
+    const MathsSIMD::Vec3_SIMD pos2w = pos2 * iw2;
 
-    MathsSIMD::Vec3_SIMD L = light.direction.Normalize();
+    const MathsSIMD::Vec3_SIMD n0w = n0 * iw0;
+    const MathsSIMD::Vec3_SIMD n1w = n1 * iw1;
+    const MathsSIMD::Vec3_SIMD n2w = n2 * iw2;
 
-    for (int y = minY; y <= maxY; ++y) {
-        for (int x = minX; x <= maxX; ++x) {
-            Point p = {x, y};
+    for (int y = minY; y <= maxY; ++y)
+    {
+        for (int x = minX; x <= maxX; ++x)
+        {
+            Point p = { x, y };
 
-            int w0 = Edge(v1, v2, p);
-            int w1 = Edge(v2, v0, p);
-            int w2 = Edge(v0, v1, p);
+            const int w0 = Edge(v1, v2, p);
+            const int w1 = Edge(v2, v0, p);
+            const int w2 = Edge(v0, v1, p);
 
-            if (w0 >= 0 && w1 >= 0 && w2 >= 0) {
-                float lambda0 = static_cast<float>(w0) * inv_area;
-                float lambda1 = static_cast<float>(w1) * inv_area;
-                float lambda2 = static_cast<float>(w2) * inv_area;
+            if (w0 < 0 || w1 < 0 || w2 < 0)
+                continue;
 
-                float depth = lambda0 * z0 + lambda1 * z1 + lambda2 * z2;
+            const float lambda0 = static_cast<float>(w0) * inv_area;
+            const float lambda1 = static_cast<float>(w1) * inv_area;
+            const float lambda2 = static_cast<float>(w2) * inv_area;
 
-                if (m_zBuffer.TestAndApply(x, y, depth)) {
-                    float iw = lambda0 * iw0 + lambda1 * iw1 + lambda2 * iw2;
-                    if (!std::isfinite(iw) || iw <= 0.0f) continue;
+            const float depth = lambda0 * z0 + lambda1 * z1 + lambda2 * z2;
 
-                    float inv_iw = 1.0f / iw;
-                    
-                    float u = (lambda0 * u0w + lambda1 * u1w + lambda2 * u2w) * inv_iw;
-                    float v = (lambda0 * v0w + lambda1 * v1w + lambda2 * v2w) * inv_iw;
-                    
-                    MathsSIMD::Vec3_SIMD interpolatedN = (n0w * lambda0 + n1w * lambda1 + n2w * lambda2) * inv_iw;
-                    MathsSIMD::Vec3_SIMD N = interpolatedN.Normalize();
-                    
-                    float ndotl = std::max(0.0f, N.Dot(L));
-                    float diffuse = light.ambient + (1.0f - light.ambient) * ndotl;
+            const float iw = lambda0 * iw0 + lambda1 * iw1 + lambda2 * iw2;
 
-                    // Blinn-Phong
-                    float ndoth = std::max(0.0f, N.Dot(halfVector));
-                    float spec = pow32(ndoth) * light.specularStrength;
-                    uint32_t texel = texture->SampleNearest(u, v);
-                    float texR = static_cast<float>((texel >> 16) & 0xFF);
-                    float texG = static_cast<float>((texel >> 8) & 0xFF);
-                    float texB = static_cast<float>(texel & 0xFF);
+            if (!std::isfinite(iw) || iw <= 0.0f)
+                continue;
 
-                    uint8_t r = static_cast<uint8_t>(std::min(255.0f, texR * diffuse + 255.0f * spec));
-                    uint8_t g = static_cast<uint8_t>(std::min(255.0f, texG * diffuse + 255.0f * spec));
-                    uint8_t b = static_cast<uint8_t>(std::min(255.0f, texB * diffuse + 255.0f * spec));
+            const float inv_iw = 1.0f / iw;
 
-                    PutPixel(x, y, r, g, b);
-                }
-            }
+            if (!m_zBuffer.TestAndApply(x, y, depth))
+                continue;
+
+            // Interpolation perspective correcte des UV
+            const float u = (lambda0 * u0w + lambda1 * u1w + lambda2 * u2w) * inv_iw;
+            const float v = (lambda0 * v0w + lambda1 * v1w + lambda2 * v2w) * inv_iw;
+
+            const Vec2 uv = { u, v };
+
+            // Interpolation perspective correcte de la position monde
+            const MathsSIMD::Vec3_SIMD position =
+                (pos0w * lambda0 + pos1w * lambda1 + pos2w * lambda2) * inv_iw;
+
+            // Interpolation perspective correcte de la normale
+            const MathsSIMD::Vec3_SIMD interpolatedN =
+                (n0w * lambda0 + n1w * lambda1 + n2w * lambda2) * inv_iw;
+
+            const MathsSIMD::Vec3_SIMD normal = interpolatedN.Normalize();
+
+            // Appel du shader pour calculer la couleur du fragment
+            const uint32_t color = m_Shader->ShaderFragment(
+                cameraPosition,
+                position,
+                normal,
+                light,
+                uv,
+                *texture
+            );
+
+            // Conversion ARGB vers RGBA
+            const uint8_t a = (color >> 24) & 0xFF;
+            const uint8_t r = (color >> 16) & 0xFF;
+            const uint8_t g = (color >> 8) & 0xFF;
+            const uint8_t b = color & 0xFF;
+
+            PutPixel(x, y, r, g, b, a);
         }
     }
 }
