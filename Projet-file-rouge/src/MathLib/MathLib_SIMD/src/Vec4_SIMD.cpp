@@ -173,13 +173,9 @@ namespace MathsSIMD
 
     Vec4_SIMD Vec4_SIMD::Normalize() const
     {
-        // Vérifie que les 4 composantes sont finies
-        const __m128 absData = _mm_andnot_ps(_mm_set1_ps(-0.0f), data);
-        const __m128 maxFinite = _mm_set1_ps(std::numeric_limits<float>::max());
+        const __m128 finiteMask = _mm_cmpord_ps(data, data);
 
-        const __m128 nonFinite = _mm_cmpgt_ps(absData, maxFinite);
-
-        if (_mm_movemask_ps(nonFinite) != 0)
+        if (_mm_movemask_ps(finiteMask) != 0xF)
         {
             throw std::domain_error("Cannot normalize non-finite components");
         }
@@ -198,56 +194,23 @@ namespace MathsSIMD
 
     float Vec4_SIMD::DistanceSquared(const Vec4_SIMD& rhs) const
     {
-        const __m128 diff = _mm_sub_ps (this->data, rhs.data);
-        const __m128 squaredDiff = _mm_mul_ps (diff, diff);
-        
-        // only y²
-        const __m128 squaredDiff_y = _mm_shuffle_ps(squaredDiff, squaredDiff, _MM_SHUFFLE(1, 1, 1, 1));
-        // only z²
-        const __m128 squaredDiff_z = _mm_shuffle_ps(squaredDiff, squaredDiff, _MM_SHUFFLE(2, 2, 2, 2));
-        // only w²
-        const __m128 squaredDiff_w = _mm_shuffle_ps(squaredDiff, squaredDiff, _MM_SHUFFLE(3, 3, 3, 3));
-        
-        // x² + y²
-        const __m128 squaredDiff_withY = _mm_add_ps(squaredDiff, squaredDiff_y);
-        
-        // (x² + y²) + z²
-        const __m128 squaredDiff_withZ = _mm_add_ps(squaredDiff_withY, squaredDiff_z);
-        
-        // (x² + y² + z²)
-        const __m128 squaredDiff_withW = _mm_add_ps(squaredDiff_withZ, squaredDiff_w);
-        
-        return _mm_cvtss_f32(squaredDiff_withW);
+        const __m128 diff = _mm_sub_ps(data, rhs.data);
+        const __m128 squared = _mm_mul_ps(diff, diff);
+
+        const __m128 sum1 = _mm_hadd_ps(squared, squared);
+        const __m128 sum2 = _mm_hadd_ps(sum1, sum1);
+
+        return _mm_cvtss_f32(sum2);
     }
 
     float Vec4_SIMD::Distance(const Vec4_SIMD& rhs) const
     {
-        const __m128 diff = _mm_sub_ps (this->data, rhs.data);
-        const __m128 squaredDiff = _mm_mul_ps (diff, diff);
-        
-        // only y²
-        const __m128 squaredDiff_y = _mm_shuffle_ps(squaredDiff, squaredDiff, _MM_SHUFFLE(1, 1, 1, 1));
-        // only z²
-        const __m128 squaredDiff_z = _mm_shuffle_ps(squaredDiff, squaredDiff, _MM_SHUFFLE(2, 2, 2, 2));
-        // only w²
-        const __m128 squaredDiff_w = _mm_shuffle_ps(squaredDiff, squaredDiff, _MM_SHUFFLE(3, 3, 3, 3));
-        
-        
-        // x² + y²
-        const __m128 squaredDiff_withY = _mm_add_ps(squaredDiff, squaredDiff_y);
-        // (x² + y²) + z²
-        const __m128 squaredDiff_withZ = _mm_add_ps(squaredDiff_withY, squaredDiff_z);
-        // (x² + y² + z²)
-        const __m128 squaredDiff_withW = _mm_add_ps(squaredDiff_withZ, squaredDiff_w);
-        
-        const __m128 result = _mm_sqrt_ps(squaredDiff_withW);
-        
-        return _mm_cvtss_f32(result);
+        return std::sqrt(DistanceSquared(rhs));
     }
-
+    
     float Vec4_SIMD::Angle(const Vec4_SIMD& rhs) const
     {
-        const Vec4_SIMD normalizedA = this->Normalize();
+        const Vec4_SIMD normalizedA = Normalize();
         const Vec4_SIMD normalizedB = rhs.Normalize();
 
         const float cosine = normalizedA.Dot(normalizedB);
@@ -257,12 +220,9 @@ namespace MathsSIMD
             throw std::domain_error("Cannot calculate angle with non-finite cosine");
         }
 
-        if (cosine < -1.0f || cosine > 1.0f)
-        {
-            throw std::domain_error("Cosine must be in the range [-1, 1]");
-        }
+        const float clampedCosine = std::clamp(cosine, -1.0f, 1.0f);
 
-        return std::acos(cosine);
+        return std::acos(clampedCosine);
     }
 
     Vec4_SIMD Vec4_SIMD::Lerp(const Vec4_SIMD& a, const Vec4_SIMD& b, float t)
