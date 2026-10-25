@@ -54,9 +54,22 @@ void ParticleGenerator::respawnParticle(Particle& particle,
             particle.velocity = { velU, velV };
             
             particle.color = MathsSIMD::Vec4_SIMD(_mm_setr_ps(1.0f, 1.0f, 1.0f, 1.0f));
-            particle.lifetime = 5.0f; 
+            particle.lifetime = 10.0f; 
             break;
         }
+    case ParticleType::firework:
+        {
+            particle.position = { static_cast<float>(emitterPos.u), static_cast<float>(emitterPos.v) };
+            
+            float angle = (static_cast<float>(rand()) / RAND_MAX) * 2.0f * 3.14159265359f;
+            float speed = static_cast<float>((rand() % 150) + 50);
+            
+            particle.velocity = { std::cos(angle) * speed, std::sin(angle) * speed };
+            particle.color = MathsSIMD::Vec4_SIMD(_mm_setr_ps(86.0f, 27.0f, 175.0f, 0.0f));
+            particle.lifetime = 5.0f;
+            break;
+        }
+    
     }
 }
 

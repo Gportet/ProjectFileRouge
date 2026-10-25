@@ -8,7 +8,8 @@ class Pipeline;
 
 enum class ParticleType
 {
-    Snow
+    Snow,
+    firework
 };
 
 struct Particle
