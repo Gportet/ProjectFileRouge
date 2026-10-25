@@ -193,6 +193,8 @@ add_executable(Affichage_test
         src/Engine/DisplayWindow.cpp
         src/Engine/ObjLoader.cpp
         src/Engine/Pipeline.cpp
+        src/Engine/ParticleGenerator.cpp
+        include/Engine/ParticleGenerator.h
         main.cpp
         src/Engine/Mesh.cpp
         include/Engine/Light.h

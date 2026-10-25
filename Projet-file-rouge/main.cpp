@@ -6,10 +6,10 @@
 #include "MathLib/MathLib_SIMD/include/Vec4_SIMD.h"
 #include "MathLib/MathLib_SIMD/include/Matrix4x4_SIMD.h"
 #include <iostream>
+#include "Engine/ParticleGenerator.h"
 
 // Resolution de la fenetre d'affichage
-const int WIDTH = 800;
-const int HEIGHT = 800;
+
 
 int main() {
     // =========================================================================
@@ -47,6 +47,9 @@ int main() {
         MathsSIMD::Vec3_SIMD(0.0f, 0.0f, 0.0f),
         MathsSIMD::Vec3_SIMD(0.0f, 1.0f, 0.0f)
     );
+    
+    ParticleGenerator particleGenerator(500);
+    double lastFrameTime = glfwGetTime();
 
     // =========================================================================
     // 2. BOUCLE PRINCIPALE DE RENDU (RENDER LOOP)
@@ -55,6 +58,11 @@ int main() {
         window.PollEvents();
         pipeline.Clear(); // Reinitialise les buffers de couleur et de profondeur
 
+        //Delta
+        double currentFrameTime = glfwGetTime();
+        float dt = currentFrameTime - lastFrameTime;
+        lastFrameTime = currentFrameTime;
+        
         // Temps ecoule pour l'animation temporelle
         float time = static_cast<float>(window.GetTime());
 
@@ -160,6 +168,17 @@ int main() {
             }
         }
         pipeline.StartFramSync();
+        
+        float centerX = static_cast<float>(WIDTH) * 0.5f;
+        float centerY = static_cast<float>(HEIGHT) * 0.5f;
+
+        float offsetX = static_cast<float>((rand() % 300) - 50);
+        float offsetY = static_cast<float>((rand() % 300) - 50);
+
+        Vec2 emitterPos{centerX + offsetX, centerY + offsetY};
+        
+        particleGenerator.Update(dt, ParticleType::Snow);
+        particleGenerator.Draw(pipeline);
         // Transfert du Framebuffer vers la fenêtre et affichage
         window.RenderBuffer(pipeline.GetColorBuffer());
     }
