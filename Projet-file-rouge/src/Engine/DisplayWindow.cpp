@@ -8,6 +8,7 @@ DisplayWindow::DisplayWindow(int width, int height, const std::string& title)
 bool DisplayWindow::Init() {
     if (!glfwInit()) return false;
     
+
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -16,6 +17,7 @@ bool DisplayWindow::Init() {
     if (!m_window) { glfwTerminate(); return false; }
 
     glfwMakeContextCurrent(m_window);
+    
     glfwSwapInterval(0);
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) return false;
@@ -54,7 +56,7 @@ void DisplayWindow::RenderBuffer(const uint8_t* colorBuffer) {
 
     glBindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-    glBlitFramebuffer(0, 0, m_width, m_height, 0, 0, display_w, display_h, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+    glBlitFramebuffer(0, 0, m_width, m_height, 0, display_h, display_w, 0, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
     glfwSwapBuffers(m_window);
     UpdateFPS();

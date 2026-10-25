@@ -2,12 +2,92 @@
 #include <algorithm>
 #include <cmath>
 
+Pipeline::~Pipeline() {
+    stopThreads();
+}
+
+void Pipeline::initThreads()
+{
+    stopThreads();
+    
+    m_threads.reserve(4);
+    for (size_t i = 0; i < 4; ++i)
+    {
+        m_threads.emplace_back([this, i](std::stop_token stopToken) {
+            WorkerThread(stopToken, i);
+        });
+    }
+}
+
+void Pipeline::WorkerThread(std::stop_token stopToken, size_t threadIndex)
+{
+    int sliceHeight = m_height / 4;
+    int minY = static_cast<int>(threadIndex) * sliceHeight;
+    int maxY = (threadIndex == 3) ? (m_height - 1) : (minY + sliceHeight - 1);
+
+    while (!stopToken.stop_requested())
+    {
+        m_workerStart[threadIndex].acquire();
+        
+        if (stopToken.stop_requested()) break;
+        
+        for (const auto& job : m_jobs)
+        {
+            DrawTrianglePhong(
+                job.p0, job.p1, job.p2,
+                job.z0, job.z1, job.z2,
+                job.iw0, job.iw1, job.iw2,
+                job.uv0, job.uv1, job.uv2,
+                job.n0, job.n1, job.n2,
+                job.texture, job.light, job.halfVector,
+                minY, maxY
+            );
+        }
+
+        m_endSemaphore.release(1);
+    }
+}
+
+void Pipeline::StartFramSync()
+{
+    for (int i = 0; i < 4; ++i)
+    {
+        m_workerStart[i].release();
+    }
+
+    for (int i = 0; i < 4; ++i)
+    {
+        m_endSemaphore.acquire();
+    }
+
+    m_jobs.clear();
+}
+
+void Pipeline::stopThreads()
+{
+    if (m_threads.empty()) return;
+
+    for (auto& thread : m_threads)
+    {
+        thread.request_stop();
+    }
+    for (int i = 0; i < 4; ++i)
+    {
+        m_workerStart[i].release();
+    }
+    m_threads.clear();
+}
+
 Pipeline::Pipeline(int width, int height) 
     : m_width(width), m_height(height), 
       m_pixels(width * height * 4, 0), 
       m_zBuffer(width, height),
       m_Shader(std::make_unique<PhongShader>())
 {}
+{
+    m_jobs.reserve(1000);
+    initThreads(); 
+}
 
 void Pipeline::Clear() {
     for (size_t i = 0; i < m_pixels.size(); i += 4) {
@@ -49,7 +129,9 @@ void Pipeline::DrawTriangle(
     MathsSIMD::Vec3_SIMD n2,
     Texture* texture,
     const DirectionalLight& light,
-    const MathsSIMD::Vec3_SIMD& cameraPosition
+    const MathsSIMD::Vec3_SIMD& cameraPosition,
+    int bandMinY,
+    int bandMaxY
 )
 {
     int area = Edge(v0, v1, v2);
@@ -57,6 +139,7 @@ void Pipeline::DrawTriangle(
     if (area == 0)
         return;
 
+    // Garantit une orientation positive du triangle
     if (area < 0)
     {
         std::swap(v1, v2);
@@ -65,22 +148,29 @@ void Pipeline::DrawTriangle(
         std::swap(uv1, uv2);
         std::swap(pos1, pos2);
         std::swap(n1, n2);
+
         area = -area;
     }
 
-    const int minX = std::max(0, std::min({v0.x, v1.x, v2.x}));
-    const int minY = std::max(0, std::min({v0.y, v1.y, v2.y}));
-    const int maxX = std::min(m_width - 1, std::max({v0.x, v1.x, v2.x}));
-    const int maxY = std::min(m_height - 1, std::max({v0.y, v1.y, v2.y}));
+    // Bounding box
+    const int minX = std::max(0, std::min({ v0.x, v1.x, v2.x }));
+    const int maxX = std::min(m_width - 1, std::max({ v0.x, v1.x, v2.x }));
+
+    const int minY = std::max({ 0, std::min({ v0.y, v1.y, v2.y }), bandMinY });
+    const int maxY = std::min({ m_height - 1, std::max({ v0.y, v1.y, v2.y }), bandMaxY });
+
+    if (minX > maxX || minY > maxY)
+        return;
 
     const float inv_area = 1.0f / static_cast<float>(area);
 
-    // Préparation des UV pour l'interpolation perspective correcte
+    // Préparation des UV
     const float u0w = uv0.u * iw0;
-    const float v0w = uv0.v * iw0;
     const float u1w = uv1.u * iw1;
-    const float v1w = uv1.v * iw1;
     const float u2w = uv2.u * iw2;
+
+    const float v0w = uv0.v * iw0;
+    const float v1w = uv1.v * iw1;
     const float v2w = uv2.v * iw2;
 
     // Préparation des positions et normales
@@ -109,9 +199,11 @@ void Pipeline::DrawTriangle(
             const float lambda1 = static_cast<float>(w1) * inv_area;
             const float lambda2 = static_cast<float>(w2) * inv_area;
 
-            const float depth = lambda0 * z0 + lambda1 * z1 + lambda2 * z2;
+            const float depth =
+                lambda0 * z0 + lambda1 * z1 + lambda2 * z2;
 
-            const float iw = lambda0 * iw0 + lambda1 * iw1 + lambda2 * iw2;
+            const float iw =
+                lambda0 * iw0 + lambda1 * iw1 + lambda2 * iw2;
 
             if (!std::isfinite(iw) || iw <= 0.0f)
                 continue;
@@ -122,8 +214,11 @@ void Pipeline::DrawTriangle(
                 continue;
 
             // Interpolation perspective correcte des UV
-            const float u = (lambda0 * u0w + lambda1 * u1w + lambda2 * u2w) * inv_iw;
-            const float v = (lambda0 * v0w + lambda1 * v1w + lambda2 * v2w) * inv_iw;
+            const float u =
+                (lambda0 * u0w + lambda1 * u1w + lambda2 * u2w) * inv_iw;
+
+            const float v =
+                (lambda0 * v0w + lambda1 * v1w + lambda2 * v2w) * inv_iw;
 
             const Vec2 uv = { u, v };
 
@@ -137,7 +232,7 @@ void Pipeline::DrawTriangle(
 
             const MathsSIMD::Vec3_SIMD normal = interpolatedN.Normalize();
 
-            // Appel du shader pour calculer la couleur du fragment
+            // Calcul de la couleur par le shader
             const uint32_t color = m_Shader->ShaderFragment(
                 cameraPosition,
                 position,

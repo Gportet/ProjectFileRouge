@@ -3,6 +3,9 @@
 #include "MathLib/MathLib_SIMD/include/Vec3_SIMD.h"
 #include "Engine/Ressources/Texture.h"
 
+const int WIDTH = 800;
+const int HEIGHT = 800;
+
 struct Point {
     int x;
     int y;
