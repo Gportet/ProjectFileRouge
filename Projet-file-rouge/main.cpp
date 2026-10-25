@@ -175,9 +175,10 @@ int main() {
         float offsetX = static_cast<float>((rand() % 300) - 50);
         float offsetY = static_cast<float>((rand() % 300) - 50);
 
-        Vec2 emitterPos{centerX + offsetX, centerY + offsetY};
+        Vec2 emitterPos{centerX, centerY };
         
         particleGenerator.Update(dt, ParticleType::Snow);
+        particleGenerator.Update(dt, ParticleType::firework,emitterPos);
         particleGenerator.Draw(pipeline);
         // Transfert du Framebuffer vers la fenêtre et affichage
         window.RenderBuffer(pipeline.GetColorBuffer());
