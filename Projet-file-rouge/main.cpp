@@ -9,31 +9,7 @@
 #include <iostream>
 #include "Engine/ParticleGenerator.h"
 
-// Resolution de la fenetre d'affichage
-
-
-/* Appel avant le return
-void testFont()
-{
-    Font font(
-        FontTag("Arial"),
-        Filepath("C:/Users/aponce/Documents/GitHub/ProjectFileRouge/Projet-file-rouge/assets/arial/ARIAL.TTF")
-    );
-
-    FT_Face face = font.getFont(16);
-
-    if (!face)
-    {
-        std::cerr << "Impossible de charger la police\n";
-        return;
-    }
-
-    auto [width, height] = font.getTextSize("Bonjour", 16);
-
-    std::cout << "Largeur : " << width << " px\n";
-    std::cout << "Hauteur : " << height << " px\n";
-}
-*/
+#include "Engine/Rendering/TextRendering.h"
 
 
 
@@ -83,6 +59,15 @@ int main() {
     ParticleGenerator particleGenerator(500);
     double lastFrameTime = glfwGetTime();
 
+    // Chargement de la police
+    auto font = std::make_shared<Font>(
+        FontTag("Arial"),
+        Filepath("C:/Users/jcrap/Documents/GitHub/ProjectFileRouge/Projet-file-rouge/assets/arial/ARIAL.TTF")
+    );
+
+    // Système de rendu de texte
+    TextRendering textRenderer(font);
+    
     // =========================================================================
     // 2. BOUCLE PRINCIPALE DE RENDU (RENDER LOOP)
     // =========================================================================
@@ -94,6 +79,8 @@ int main() {
         double currentFrameTime = glfwGetTime();
         float dt = currentFrameTime - lastFrameTime;
         lastFrameTime = currentFrameTime;
+        
+        const int fps = (dt > 0.0f)? static_cast<int>(1.0f / dt): 0;
         
         // Temps ecoule pour l'animation temporelle
         float time = static_cast<float>(window.GetTime());
@@ -230,6 +217,14 @@ int main() {
         particleGenerator.Update(dt, ParticleType::Snow);
         particleGenerator.Update(dt, ParticleType::firework,emitterPos);
         particleGenerator.Draw(pipeline);
+        
+        textRenderer.DrawText(
+            pipeline,
+            "FPS: " + std::to_string(fps),
+            10, 20,
+            0xFFFFFFFF
+        );
+        
         // Transfert du Framebuffer vers la fenêtre et affichage
         window.RenderBuffer(pipeline.GetColorBuffer());
     }

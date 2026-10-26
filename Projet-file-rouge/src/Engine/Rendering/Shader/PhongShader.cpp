@@ -1,4 +1,4 @@
-#include "Engine/Rendering/PhongShader.h"
+#include "Engine/Rendering/Shader/PhongShader.h"
 
 uint32_t PhongShader::ShaderFragment(const MathsSIMD::Vec3_SIMD& cameraPosition, const MathsSIMD::Vec3_SIMD& position, const MathsSIMD::Vec3_SIMD& normals, const DirectionalLight& light, const Vec2& UV, const Texture& texture) const
 {

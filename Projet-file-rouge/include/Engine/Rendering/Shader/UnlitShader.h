@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Engine/Rendering/Shader.h"
+#include "Shader.h"
 
 class UnlitShader : public Shader
 {

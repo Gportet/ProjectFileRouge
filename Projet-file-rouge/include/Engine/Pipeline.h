@@ -11,10 +11,11 @@
 #include <semaphore> 
 
 #include <memory>
-#include "Engine/Rendering/BlinnPhongShader.h"
-#include "Engine/Rendering/LambertShader.h"
-#include "Engine/Rendering/PhongShader.h"
-#include "Engine/Rendering/UnlitShader.h"
+#include "Engine/Rendering/Shader/BlinnPhongShader.h"
+#include "Engine/Rendering/Shader/LambertShader.h"
+#include "Engine/Rendering/Shader/PhongShader.h"
+#include "Engine/Rendering/Shader/UnlitShader.h"
+
 
 
 struct ClipVertex {

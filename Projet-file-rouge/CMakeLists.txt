@@ -219,19 +219,21 @@ add_executable(Affichage_test
         include/Engine/Ressources/Texture.h
         src/Engine/Ressources/Texture.cpp
         
-        include/Engine/Rendering/Shader.h
+        include/Engine/Rendering/Shader/Shader.h
         
-        include/Engine/Rendering/UnlitShader.h
-        src/Engine/Rendering/UnlitShader.cpp
+        include/Engine/Rendering/Shader/UnlitShader.h
+        src/Engine/Rendering/Shader/UnlitShader.cpp
         
-        include/Engine/Rendering/LambertShader.h
-        src/Engine/Rendering/LambertShader.cpp
+        include/Engine/Rendering/Shader/LambertShader.h
+        src/Engine/Rendering/Shader/LambertShader.cpp
         
-        include/Engine/Rendering/PhongShader.h
-        src/Engine/Rendering/PhongShader.cpp
+        include/Engine/Rendering/Shader/PhongShader.h
+        src/Engine/Rendering/Shader/PhongShader.cpp
  
-        include/Engine/Rendering/BlinnPhongShader.h
-        src/Engine/Rendering/BlinnPhongShader.cpp
+        include/Engine/Rendering/Shader/BlinnPhongShader.h
+        src/Engine/Rendering/Shader/BlinnPhongShader.cpp
+        include/Engine/Rendering/TextRendering.h
+        src/Engine/Rendering/TextRendering.cpp
 )
 
 target_include_directories(Affichage_test PRIVATE
