@@ -234,6 +234,12 @@ add_executable(Affichage_test
         src/Engine/Rendering/Shader/BlinnPhongShader.cpp
         include/Engine/Rendering/TextRendering.h
         src/Engine/Rendering/TextRendering.cpp
+        
+        include/Engine/Ressources/Material.h
+        src/Engine/Ressources/Material.cpp
+        
+        include/Engine/Ressources/MaterialLoader.h
+        src/Engine/Ressources/MaterialLoader.cpp
 )
 
 target_include_directories(Affichage_test PRIVATE
