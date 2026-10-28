@@ -23,8 +23,4 @@ public:
     int getWidth() const { return width; }
     int getHeight() const { return height; }
     const Filepath& getPath() const { return path; };
-    
-
-
-
 };

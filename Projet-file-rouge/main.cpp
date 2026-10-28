@@ -27,7 +27,7 @@ int main() {
     }
 
     // Chargement du maillage 3D (.obj)
-    Mesh mesh = ObjLoader::Load("C:/Users/jcrap/Documents/GitHub/ProjectFileRouge/spot.obj");
+    Mesh mesh = ObjLoader::Load("C:/Users/aponce/Documents/GitHub/ProjectFileRouge/spot.obj");
     if (mesh.vertices.empty()) {
         std::cerr << "Erreur : Maillage vide ou chemin introuvable." << std::endl;
         return -1;
@@ -39,9 +39,9 @@ int main() {
     // Chargement de la texture (Albedo)
     Texture texture;
 
-    if (!texture.Load(Filepath("C:/Users/jcrap/Documents/GitHub/ProjectFileRouge/spot_texture.png"))) {
+    if (!texture.Load(Filepath("C:/Users/aponce/Documents/GitHub/ProjectFileRouge/Projet-file-rouge/assets/spot_texture.png"))) {
         std::cerr << "Erreur : Impossible de charger la texture." << std::endl;
-        return 1;
+        return -1;
     }
     
     // Pipeline de rendu logiciel (Color Buffer & Z-Buffer)
@@ -62,7 +62,7 @@ int main() {
     // Chargement de la police
     auto font = std::make_shared<Font>(
         FontTag("Arial"),
-        Filepath("C:/Users/jcrap/Documents/GitHub/ProjectFileRouge/Projet-file-rouge/assets/arial/ARIAL.TTF")
+        Filepath("C:/Users/aponce/Documents/GitHub/ProjectFileRouge/Projet-file-rouge/assets/arial/ARIAL.TTF")
     );
 
     // Système de rendu de texte
