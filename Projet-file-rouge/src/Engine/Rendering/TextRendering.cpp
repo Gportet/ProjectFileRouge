@@ -1,6 +1,8 @@
 #include "Engine/Rendering/TextRendering.h"
 #include "Engine/Pipeline.h"
 
+#include <iostream>
+
 TextRendering::TextRendering(std::shared_ptr<Font> font) : m_Font(std::move(font))
 {}
 
@@ -8,7 +10,11 @@ int TextRendering::DrawGlyph(Pipeline& pipeline, FT_Face font, char character, f
 {
     FT_Error error = FT_Load_Char(font, character, FT_LOAD_RENDER);
     if (error != 0)
+    {
+        std::cerr << "Erreur FreeType : impossible de charger le caractère '"
+                  << character << "' (code : " << error << ")\n";
         return 0;
+    }
     
     FT_GlyphSlot glyph = font->glyph;
     FT_Bitmap& bitmap = glyph->bitmap;

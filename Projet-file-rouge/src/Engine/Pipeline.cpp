@@ -59,7 +59,7 @@ void Pipeline::WorkerThread(std::stop_token stopToken, size_t threadIndex)
                 job.pos0, job.pos1, job.pos2,
                 job.n0, job.n1, job.n2,
 
-                job.texture,
+                job.material,
                 job.light,
                 job.cameraPosition,
 
@@ -142,7 +142,7 @@ void Pipeline::DrawTriangle(
     MathsSIMD::Vec3_SIMD n0,
     MathsSIMD::Vec3_SIMD n1,
     MathsSIMD::Vec3_SIMD n2,
-    Texture* texture,
+    Material* material,
     const DirectionalLight& light,
     const MathsSIMD::Vec3_SIMD& cameraPosition,
     int bandMinY,
@@ -254,7 +254,7 @@ void Pipeline::DrawTriangle(
                 normal,
                 light,
                 uv,
-                *texture
+                *material
             );
 
             // Conversion ARGB vers RGBA

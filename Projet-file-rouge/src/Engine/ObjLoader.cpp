@@ -3,6 +3,9 @@
 #include <fstream>
 #include <sstream>
 
+#include <limits>
+#include <algorithm>
+
 Mesh ObjLoader::Load(const std::string& filename) {
     Mesh mesh;
     std::ifstream file(filename);
@@ -12,6 +15,8 @@ Mesh ObjLoader::Load(const std::string& filename) {
         return mesh;
     }
 
+    uint32_t currentMaterialIndex = std::numeric_limits<uint32_t>::max();
+    
     std::string line;
     while (std::getline(file, line)) {
         std::stringstream ss(line);
@@ -31,7 +36,9 @@ Mesh ObjLoader::Load(const std::string& filename) {
             }
         }
         else if (type == "f") {
-            Face face;
+            Face face{};
+            face.materialIndex = currentMaterialIndex;
+
             bool valid = true;
 
             for (int i = 0; i < 3; ++i) {
@@ -60,6 +67,31 @@ Mesh ObjLoader::Load(const std::string& filename) {
 
             if (valid) {
                 mesh.faces.push_back(face);
+            }
+        }
+        
+        else if (type == "usemtl") {
+            std::string materialName;
+            ss >> materialName;
+
+            MaterialTag tag(materialName);
+
+            auto it = std::find(
+                mesh.materialTags.begin(),
+                mesh.materialTags.end(),
+                tag
+            );
+
+            if (it == mesh.materialTags.end()) {
+                mesh.materialTags.push_back(tag);
+                currentMaterialIndex =
+                    static_cast<uint32_t>(mesh.materialTags.size() - 1);
+            }
+            else {
+                currentMaterialIndex =
+                    static_cast<uint32_t>(
+                        std::distance(mesh.materialTags.begin(), it)
+                    );
             }
         }
     }

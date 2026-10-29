@@ -10,5 +10,5 @@ public:
     const MathsSIMD::Vec3_SIMD& normals,  
     const DirectionalLight& light, 
     const Vec2& UV, 
-    const Texture& texture) const override; 
+    const Material& material) const override; 
 };

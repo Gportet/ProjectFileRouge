@@ -44,9 +44,9 @@ private:
 public:
     Material(const MaterialTag& _tag, 
         std::shared_ptr<Texture> _texture, 
-        const MathsSIMD::Vec4_SIMD& _ambient =  MathsSIMD::Vec4_SIMD(_mm_setr_ps(0.0f, 0.0f, 0.0f, 1.0f)),
-        const MathsSIMD::Vec4_SIMD& _diffuse = MathsSIMD::Vec4_SIMD(_mm_setr_ps(0.0f, 0.0f, 0.0f, 1.0f)),
-        const MathsSIMD::Vec4_SIMD& _specular = MathsSIMD::Vec4_SIMD(_mm_setr_ps(0.0f, 0.0f, 0.0f, 1.0f)),
+        const MathsSIMD::Vec4_SIMD& _ambient =  MathsSIMD::Vec4_SIMD(_mm_setr_ps(1.0f, 1.0f, 1.0f, 1.0f)),
+        const MathsSIMD::Vec4_SIMD& _diffuse = MathsSIMD::Vec4_SIMD(_mm_setr_ps(1.0f, 1.0f, 1.0f, 1.0f)),
+        const MathsSIMD::Vec4_SIMD& _specular = MathsSIMD::Vec4_SIMD(_mm_setr_ps(1.0f, 1.0f, 1.0f, 1.0f)),
         uint16_t _illum = 1,
         float _opacity = 1.0);
     

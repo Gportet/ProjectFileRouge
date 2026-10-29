@@ -47,7 +47,7 @@ struct TriangleJob {
     MathsSIMD::Vec3_SIMD pos0, pos1, pos2;
     MathsSIMD::Vec3_SIMD n0, n1, n2;
 
-    Texture* texture;
+    Material* material;
     DirectionalLight light;
     MathsSIMD::Vec3_SIMD cameraPosition;
 };
@@ -98,7 +98,7 @@ public:
         MathsSIMD::Vec3_SIMD n0,
         MathsSIMD::Vec3_SIMD n1,
         MathsSIMD::Vec3_SIMD n2,
-        Texture* texture,
+        Material* material,
         const DirectionalLight& light,
         const MathsSIMD::Vec3_SIMD& cameraPosition,
         int bandMinY,
@@ -127,7 +127,7 @@ public:
         MathsSIMD::Vec3_SIMD n0,
         MathsSIMD::Vec3_SIMD n1,
         MathsSIMD::Vec3_SIMD n2,
-        Texture* texture,
+        Material* material,
         const DirectionalLight& light,
         const MathsSIMD::Vec3_SIMD& cameraPosition
     )
@@ -139,7 +139,7 @@ public:
             uv0, uv1, uv2,
             pos0, pos1, pos2,
             n0, n1, n2,
-            texture,
+            material,
             light,
             cameraPosition
         });

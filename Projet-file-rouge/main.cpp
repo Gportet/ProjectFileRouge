@@ -10,6 +10,7 @@
 #include "Engine/ParticleGenerator.h"
 
 #include "Engine/Rendering/TextRendering.h"
+#include "Engine/Ressources/MaterialLoader.h"
 
 
 
@@ -27,7 +28,7 @@ int main() {
     }
 
     // Chargement du maillage 3D (.obj)
-    Mesh mesh = ObjLoader::Load("C:/Users/aponce/Documents/GitHub/ProjectFileRouge/spot.obj");
+    Mesh mesh = ObjLoader::Load("C:/Users/jcrap/Documents/GitHub/ProjectFileRouge/Projet-file-rouge/assets/mimic-chest/mimic-chest.obj");
     if (mesh.vertices.empty()) {
         std::cerr << "Erreur : Maillage vide ou chemin introuvable." << std::endl;
         return -1;
@@ -36,19 +37,37 @@ int main() {
     // Configuration de la source lumineuse directionnelle
     DirectionalLight sunLight;
 
-    // Chargement de la texture (Albedo)
-    Texture texture;
+    
+    // Chargement des matériaux (.mtl)
+    auto materialsMap = MaterialLoader::Load(
+        Filepath("C:/Users/jcrap/Documents/GitHub/ProjectFileRouge/Projet-file-rouge/assets/mimic-chest/mimic-chest.mtl")
+    );
 
-    if (!texture.Load(Filepath("C:/Users/aponce/Documents/GitHub/ProjectFileRouge/Projet-file-rouge/assets/spot_texture.png"))) {
-        std::cerr << "Erreur : Impossible de charger la texture." << std::endl;
+    if (materialsMap.empty())
+    {
+        std::cerr << "Erreur lors du chargement des matériaux." << std::endl;
         return -1;
+    }
+    
+    std::vector<Material*> materialPointers;
+    materialPointers.reserve(mesh.materialTags.size());
+
+    for (const auto& tag : mesh.materialTags) {
+        const auto it = materialsMap.find(tag);
+
+        if (it == materialsMap.end()) {
+            std::cerr << "Erreur : matériau introuvable dans le MTL." << std::endl;
+            return -1;
+        }
+
+        materialPointers.push_back(it->second.get());
     }
     
     // Pipeline de rendu logiciel (Color Buffer & Z-Buffer)
     Pipeline pipeline(WIDTH, HEIGHT);
     
     // Configuration de la camera virtuelle (Position Eye, Target, Up Vector)
-    const MathsSIMD::Vec3_SIMD cameraPosition(0.0f, 0.0f, 3.0f);
+    const MathsSIMD::Vec3_SIMD cameraPosition(0.0f, 1.0f, 2.0f);
 
     Camera camera(
         cameraPosition,
@@ -62,9 +81,9 @@ int main() {
     // Chargement de la police
     auto font = std::make_shared<Font>(
         FontTag("Arial"),
-        Filepath("C:/Users/aponce/Documents/GitHub/ProjectFileRouge/Projet-file-rouge/assets/arial/ARIAL.TTF")
+        Filepath("C:/Users/jcrap/Documents/GitHub/ProjectFileRouge/Projet-file-rouge/assets/arial/ARIAL.TTF")
     );
-
+    
     // Système de rendu de texte
     TextRendering textRenderer(font);
     
@@ -97,6 +116,14 @@ int main() {
         // ---------------------------------------------------------------------
         for (size_t fidx = 0; fidx < mesh.faces.size(); ++fidx) {
             const auto& face = mesh.faces[fidx];
+            
+            if (face.materialIndex >= materialPointers.size()) {
+                std::cerr << "Index de matériau invalide pour la face "
+                          << fidx << std::endl;
+                continue;
+            }
+
+            Material* material = materialPointers[face.materialIndex];
 
             // Récupération des positions locales des sommets du triangle
             const auto& v0_pos = mesh.vertices[face.v0];
@@ -198,7 +225,7 @@ int main() {
                     tri.v1.normal,
                     tri.v2.normal,
 
-                    &texture,
+                    material,
                     sunLight,
                     cameraPosition
                 );

@@ -4,6 +4,7 @@
 #include "Engine/Light.h"
 #include "Engine/Mesh.h"
 #include "Engine/Ressources/Texture.h"
+#include "Engine/Ressources/Material.h"
 #include "MathLib_SIMD/include/Vec3_SIMD.h"
 
 class Shader
@@ -15,6 +16,6 @@ public:
         const MathsSIMD::Vec3_SIMD& normals,  
         const DirectionalLight& light, 
         const Vec2& UV, 
-        const Texture& texture) const = 0;
+        const Material& material) const = 0;
 };
 
