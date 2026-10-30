@@ -242,6 +242,10 @@ add_executable(Affichage_test
         src/Engine/Ressources/MaterialLoader.cpp
 )
 
+set_property(TARGET Affichage_test PROPERTY
+        VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+)
+
 target_include_directories(Affichage_test PRIVATE
         ${stb_SOURCE_DIR}
 )

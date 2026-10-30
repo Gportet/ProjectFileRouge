@@ -1,11 +1,13 @@
 ﻿#pragma once
 
 #include <filesystem>
+#include <string>
 
 class Filepath final
 {
 private:
     std::filesystem::path _path;
+    static std::filesystem::path rootPath;
 public:
     explicit Filepath(const std::string& name = "");
     Filepath(const std::string& path, const std::string& name); 

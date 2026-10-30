@@ -1,7 +1,8 @@
 ﻿#include "Engine/utils/Filepath.h"
 
+std::filesystem::path Filepath::rootPath = std::filesystem::current_path();
 
-Filepath::Filepath(const std::string& path) : _path(path)
+Filepath::Filepath(const std::string& path) : _path(rootPath / path)
 {
     
 }

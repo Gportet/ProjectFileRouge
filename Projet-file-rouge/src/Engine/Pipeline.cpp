@@ -8,7 +8,7 @@ Pipeline::Pipeline(int width, int height)
     : m_width(width), m_height(height), 
       m_pixels(width * height * 4, 0), 
       m_zBuffer(width, height),
-      m_Shader(std::make_unique<BlinnPhongShader>())
+      m_Shader(std::make_unique<LambertShader>())
 {
     m_jobs.reserve(1000);
     initThreads(); 

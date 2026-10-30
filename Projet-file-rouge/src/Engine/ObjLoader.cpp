@@ -6,12 +6,12 @@
 #include <limits>
 #include <algorithm>
 
-Mesh ObjLoader::Load(const std::string& filename) {
+Mesh ObjLoader::Load(const Filepath& filepath) {
     Mesh mesh;
-    std::ifstream file(filename);
+    std::ifstream file(filepath.str());
 
     if (!file.is_open()) {
-        std::cerr << "Impossible d'ouvrir le fichier : " << filename << std::endl;
+        std::cerr << "Impossible d'ouvrir le fichier : " << filepath.str() << std::endl;
         return mesh;
     }
 

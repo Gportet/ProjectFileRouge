@@ -28,7 +28,7 @@ int main() {
     }
 
     // Chargement du maillage 3D (.obj)
-    Mesh mesh = ObjLoader::Load("C:/Users/jcrap/Documents/GitHub/ProjectFileRouge/Projet-file-rouge/assets/mimic-chest/mimic-chest.obj");
+    Mesh mesh = ObjLoader::Load(Filepath("assets/mimic-chest/mimic-chest.obj"));
     if (mesh.vertices.empty()) {
         std::cerr << "Erreur : Maillage vide ou chemin introuvable." << std::endl;
         return -1;
@@ -40,7 +40,7 @@ int main() {
     
     // Chargement des matériaux (.mtl)
     auto materialsMap = MaterialLoader::Load(
-        Filepath("C:/Users/jcrap/Documents/GitHub/ProjectFileRouge/Projet-file-rouge/assets/mimic-chest/mimic-chest.mtl")
+        Filepath("assets/mimic-chest/mimic-chest.mtl")
     );
 
     if (materialsMap.empty())
@@ -81,7 +81,7 @@ int main() {
     // Chargement de la police
     auto font = std::make_shared<Font>(
         FontTag("Arial"),
-        Filepath("C:/Users/jcrap/Documents/GitHub/ProjectFileRouge/Projet-file-rouge/assets/arial/ARIAL.TTF")
+        Filepath("assets/arial/ARIAL.TTF")
     );
     
     // Système de rendu de texte
