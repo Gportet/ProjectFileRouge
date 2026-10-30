@@ -3,6 +3,7 @@
 #include <vector>
 #include "Engine/Mesh.h" 
 #include "MathLib/MathLib_SIMD/include/Vec4_SIMD.h"
+#include "Engine/utils/RandomGenerator.h"
 
 class Pipeline;
 
@@ -30,6 +31,7 @@ public:
     void Draw(Pipeline& pipeline);
 
 private:
+    RandomGenerator m_randomGenerator;
     std::vector<Particle> m_particles;
     unsigned int m_amount;
     unsigned int m_lastUsedParticle{0};
