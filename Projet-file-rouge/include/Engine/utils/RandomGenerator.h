@@ -1,6 +1,8 @@
 #pragma once
 #include <cstdint>
 
+
+// PCG32 (Permuted Congruential Generator, 32 bits)
 class RandomGenerator
 {
 private:
