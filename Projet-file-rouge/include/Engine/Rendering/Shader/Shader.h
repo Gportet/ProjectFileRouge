@@ -5,7 +5,7 @@
 #include "Engine/Mesh.h"
 #include "Engine/Ressources/Texture.h"
 #include "Engine/Ressources/Material.h"
-#include "MathLib_SIMD/include/Vec3_SIMD.h"
+#include "MathLib_SIMD/Vec3_SIMD.h"
 
 class Shader
 {

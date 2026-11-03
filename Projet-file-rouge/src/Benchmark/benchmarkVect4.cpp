@@ -6,7 +6,7 @@
 #include <random>
 #include <cstdint>
 #include "benchmarkUtils.h"
-#include "MathLib_SIMD/include/Vec4_SIMD.h"
+#include "MathLib_SIMD/Vec4_SIMD.h"
 
 #define REGISTER_VEC4_BENCHMARK(func) \
     BENCHMARK(func) \

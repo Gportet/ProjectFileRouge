@@ -2,7 +2,7 @@
 
 #include <vector>
 #include "Engine/Mesh.h" 
-#include "MathLib/MathLib_SIMD/include/Vec4_SIMD.h"
+#include "MathLib/MathLib_SIMD/Vec4_SIMD.h"
 #include "Engine/utils/RandomGenerator.h"
 
 class Pipeline;

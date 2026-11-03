@@ -3,8 +3,8 @@
 #include "Engine/ObjLoader.h"
 #include "Engine/Camera.h"
 #include "Engine/Light.h"
-#include "MathLib/MathLib_SIMD/include/Vec4_SIMD.h"
-#include "MathLib/MathLib_SIMD/include/Matrix4x4_SIMD.h"
+#include "MathLib/MathLib_SIMD/Vec4_SIMD.h"
+#include "MathLib/MathLib_SIMD/Matrix4x4_SIMD.h"
 #include "Engine/utils/Font.h"
 #include <iostream>
 #include "Engine/ParticleGenerator.h"

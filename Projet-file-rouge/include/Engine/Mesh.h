@@ -1,6 +1,6 @@
 #pragma once
 #include <vector>
-#include "MathLib/MathLib_SIMD/include/Vec3_SIMD.h"
+#include "MathLib/MathLib_SIMD/Vec3_SIMD.h"
 #include "Engine/Ressources/Texture.h"
 #include "Engine/Ressources/Material.h"
 

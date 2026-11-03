@@ -28,17 +28,18 @@ add_library(MathLib STATIC
         include/MathLib/Matrix3x3.h
         include/MathLib/Matrix4x4.h
         include/Platform/CpuFeatures.h
-        src/MathLib/MathLib_SIMD/src/Vec3_SIMD.cpp
-        include/MathLib/MathLib_SIMD/include/Vec3_SIMD.h
-        src/MathLib/MathLib_SIMD/src/Matrix3x3_SIMD.cpp
-        include/MathLib/MathLib_SIMD/include/Matrix3x3_SIMD.h
-        src/MathLib/MathLib_SIMD/src/Matrix4x4_SIMD.cpp
-        include/MathLib/MathLib_SIMD/include/Matrix4x4_SIMD.h
-        src/MathLib/MathLib_SIMD/src/Vec4_SIMD.cpp
-        include/MathLib/MathLib_SIMD/include/Vec4_SIMD.h
-        include/MathLib/MathLib_SIMD/include/Vec3_ASM.h
-        include/MathLib/MathLib_SIMD/include/Vec3_ASM.asm
+        src/MathLib/MathLib_SIMD/Vec3_SIMD.cpp
+        include/MathLib/MathLib_SIMD/Vec3_SIMD.h
+        src/MathLib/MathLib_SIMD/Matrix3x3_SIMD.cpp
+        include/MathLib/MathLib_SIMD/Matrix3x3_SIMD.h
+        src/MathLib/MathLib_SIMD/Matrix4x4_SIMD.cpp
+        include/MathLib/MathLib_SIMD/Matrix4x4_SIMD.h
+        src/MathLib/MathLib_SIMD/Vec4_SIMD.cpp
+        include/MathLib/MathLib_SIMD/Vec4_SIMD.h
+        include/MathLib/MathLib_SIMD/Vec3_ASM.h
+        include/MathLib/MathLib_SIMD/Vec3_ASM.asm
 )
+
 target_include_directories(MathLib PUBLIC
         include
         include/MathLib
@@ -63,7 +64,6 @@ FetchContent_Declare(
         GIT_TAG        docking
 )
 FetchContent_MakeAvailable(imgui)
-
 
 FetchContent_Declare(
         stb
@@ -135,6 +135,7 @@ FetchContent_MakeAvailable(glfw)
 # ------------------------------------------------------------------------------
 # Executables
 # ------------------------------------------------------------------------------
+
 add_executable(BenchmarkApp
         src/Benchmark/main.cpp
         include/benchmarkUtils.h
@@ -142,19 +143,21 @@ add_executable(BenchmarkApp
         src/Benchmark/benchmarkMatrix3x3.cpp
         src/Benchmark/benchmarkMatrix4x4.cpp
         src/Benchmark/benchmarkVect4.cpp
-        include/MathLib/MathLib_SIMD/include/Vec4_SIMD.h
-        src/MathLib/MathLib_SIMD/src/Vec4_SIMD.cpp
-        include/MathLib/MathLib_SIMD/include/Matrix4x4_SIMD.h
-        src/MathLib/MathLib_SIMD/src/Matrix4x4_SIMD.cpp
-        src/MathLib/MathLib_SIMD/src/Matrix3x3_SIMD.cpp
-        src/MathLib/MathLib_SIMD/src/Vec3_SIMD.cpp
-        include/MathLib/MathLib_SIMD/include/Vec3_ASM.h
+        include/MathLib/MathLib_SIMD/Vec4_SIMD.h
+        src/MathLib/MathLib_SIMD/Vec4_SIMD.cpp
+        include/MathLib/MathLib_SIMD/Matrix4x4_SIMD.h
+        src/MathLib/MathLib_SIMD/Matrix4x4_SIMD.cpp
+        src/MathLib/MathLib_SIMD/Matrix3x3_SIMD.cpp
+        src/MathLib/MathLib_SIMD/Vec3_SIMD.cpp
+        include/MathLib/MathLib_SIMD/Vec3_ASM.h
         src/Benchmark/benchmarkBatch.cpp
 )
+
 target_link_libraries(BenchmarkApp PRIVATE MathLib benchmark::benchmark)
 
 enable_testing()
 include(GoogleTest)
+
 add_executable(UnitTests
         src/Tests/CpuFeaturesTests.cpp
         src/Tests/Matrix3x3Tests.cpp
@@ -162,8 +165,9 @@ add_executable(UnitTests
         src/Tests/Vec3Tests.cpp
         src/Tests/Vec4Tests.cpp
         src/Tests/TestHelpers.h
-        src/MathLib/MathLib_SIMD/src/Matrix3x3_SIMD.cpp
+        src/MathLib/MathLib_SIMD/Matrix3x3_SIMD.cpp
 )
+
 target_include_directories(UnitTests PRIVATE src/Tests)
 target_link_libraries(UnitTests PRIVATE MathLib gtest_main)
 gtest_discover_tests(UnitTests)
@@ -175,12 +179,14 @@ add_executable(ViewerApp
         ${imgui_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp
         include/Viewer/BenchmarkResult.h
         include/Viewer/BenchmarkParser.h
-        src/MathLib/MathLib_SIMD/src/Matrix3x3_SIMD.cpp
+        src/MathLib/MathLib_SIMD/Matrix3x3_SIMD.cpp
 )
+
 target_include_directories(ViewerApp PRIVATE
         ${imgui_SOURCE_DIR}
         ${imgui_SOURCE_DIR}/backends
 )
+
 target_link_libraries(ViewerApp PRIVATE
         MathLib
         nlohmann_json::nlohmann_json
@@ -209,35 +215,35 @@ add_executable(Affichage_test
 
         # ----------------------------
         # Utils / Rendering
-        # ----------------------------  
+        # ----------------------------
         include/Engine/utils/Filepath.h
         src/Engine/utils/Filepath.cpp
-        
+
         include/Engine/utils/Font.h
         src/Engine/utils/Font.cpp
-        
+
         include/Engine/Ressources/Texture.h
         src/Engine/Ressources/Texture.cpp
-        
+
         include/Engine/Rendering/Shader/Shader.h
-        
+
         include/Engine/Rendering/Shader/UnlitShader.h
         src/Engine/Rendering/Shader/UnlitShader.cpp
-        
+
         include/Engine/Rendering/Shader/LambertShader.h
         src/Engine/Rendering/Shader/LambertShader.cpp
-        
+
         include/Engine/Rendering/Shader/PhongShader.h
         src/Engine/Rendering/Shader/PhongShader.cpp
- 
+
         include/Engine/Rendering/Shader/BlinnPhongShader.h
         src/Engine/Rendering/Shader/BlinnPhongShader.cpp
         include/Engine/Rendering/TextRendering.h
         src/Engine/Rendering/TextRendering.cpp
-        
+
         include/Engine/Ressources/Material.h
         src/Engine/Ressources/Material.cpp
-        
+
         include/Engine/Ressources/MaterialLoader.h
         src/Engine/Ressources/MaterialLoader.cpp
         include/Engine/utils/RandomGenerator.h
@@ -263,4 +269,3 @@ target_link_libraries(Affichage_test PRIVATE
         OpenGL::GL
         freetype
 )
-

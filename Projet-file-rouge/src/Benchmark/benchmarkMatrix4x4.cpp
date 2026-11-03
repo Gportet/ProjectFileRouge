@@ -6,9 +6,9 @@
 #include <random>
 #include <cstdint>
 #include "benchmarkUtils.h"
-#include "MathLib_SIMD/include/Matrix4x4_SIMD.h"
-#include "MathLib_SIMD/include/Matrix3x3_SIMD.h"
-#include "MathLib_SIMD/include/Vec4_SIMD.h"
+#include "MathLib_SIMD/Matrix4x4_SIMD.h"
+#include "MathLib_SIMD/Matrix3x3_SIMD.h"
+#include "MathLib_SIMD/Vec4_SIMD.h"
 
 
 #define REGISTER_MAT4_BENCHMARK(func) \

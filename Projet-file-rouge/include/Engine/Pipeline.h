@@ -6,7 +6,7 @@
 #include "Mesh.h"
 #include "Engine/ZBuffer.h"
 #include "Engine/Light.h"
-#include "MathLib_SIMD/include/Vec4_SIMD.h"
+#include "MathLib_SIMD/Vec4_SIMD.h"
 #include <stop_token>
 #include <semaphore> 
 
