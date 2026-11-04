@@ -2,7 +2,6 @@
 
 #include <iostream>
 #include <fstream>
-#include <sstream>
 
 // Observe les token sans copier les caractère
 #include <string_view>
@@ -119,9 +118,6 @@ Mesh ObjLoader::Load(const Filepath& filepath) {
     std::string line;
     while (std::getline(file, line))
     {
-        //std::stringstream ss(line);
-        //std::string type;
-        //ss >> type;
         std::string_view lineView(line);
         std::string_view type;
         

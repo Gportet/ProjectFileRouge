@@ -248,6 +248,8 @@ add_executable(Affichage_test
         src/Engine/Ressources/MaterialLoader.cpp
         include/Engine/utils/RandomGenerator.h
         src/Engine/utils/RandomGenerator.cpp
+        include/Engine/Input/Input.h
+        src/Engine/Input/Input.cpp
 )
 
 set_property(TARGET Affichage_test PROPERTY
