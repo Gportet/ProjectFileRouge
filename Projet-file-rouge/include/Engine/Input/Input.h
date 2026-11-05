@@ -6,7 +6,11 @@
 class Input
 {
 private:
-    GLFWwindow* window;
+    GLFWwindow* m_window;
+    bool m_keys[GLFW_KEY_LAST + 1]{};
 public:
+    Input(GLFWwindow* window);
     
+    void UpdateKeysPress();
+    bool IsKeyPressed(int key) const;
 };

@@ -198,7 +198,9 @@ target_link_libraries(ViewerApp PRIVATE
 
 add_executable(Affichage_test
         include/Engine/ZBuffer.h
+        
         include/Engine/Camera.h
+        src/Camera.cpp
         include/Engine/DisplayWindow.h
         include/Engine/Mesh.h
         include/Engine/ObjLoader.h
@@ -250,6 +252,7 @@ add_executable(Affichage_test
         src/Engine/utils/RandomGenerator.cpp
         include/Engine/Input/Input.h
         src/Engine/Input/Input.cpp
+
 )
 
 set_property(TARGET Affichage_test PROPERTY

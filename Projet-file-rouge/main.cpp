@@ -8,6 +8,7 @@
 #include "Engine/utils/Font.h"
 #include <iostream>
 #include "Engine/ParticleGenerator.h"
+#include "Engine/Input/Input.h"
 
 #include "Engine/Rendering/TextRendering.h"
 #include "Engine/Ressources/MaterialLoader.h"
@@ -26,7 +27,9 @@ int main() {
         std::cerr << "Erreur : Impossible d'initialiser la fenetre OpenGL/GLFW." << std::endl;
         return -1;
     }
-
+    
+    Input input(window.GetWindow());
+    
     // Chargement du maillage 3D (.obj)
     Mesh mesh = ObjLoader::Load(Filepath("assets/mimic-chest/mimic-chest.obj"));
     if (mesh.vertices.empty()) {
@@ -91,13 +94,15 @@ int main() {
     // 2. BOUCLE PRINCIPALE DE RENDU (RENDER LOOP)
     // =========================================================================
     while (!window.ShouldClose()) {
-        window.PollEvents();
-        pipeline.Clear(); // Reinitialise les buffers de couleur et de profondeur
-
         //Delta
         double currentFrameTime = glfwGetTime();
         float dt = currentFrameTime - lastFrameTime;
         lastFrameTime = currentFrameTime;
+        
+        window.PollEvents();
+        input.UpdateKeysPress();
+        camera.UpdateCamera(input, dt);
+        pipeline.Clear(); // Reinitialise les buffers de couleur et de profondeur
         
         const int fps = (dt > 0.0f)? static_cast<int>(1.0f / dt): 0;
         
