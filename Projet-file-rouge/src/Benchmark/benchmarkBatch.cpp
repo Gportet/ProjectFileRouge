@@ -5,11 +5,11 @@
 #include <cstdint>
 #include <array>
 
-#include "MathLib_SIMD/include/Vec3_SIMD.h"
-#include "MathLib_SIMD/include/Vec4_SIMD.h"
-#include "MathLib_SIMD/include/Matrix3x3_SIMD.h"
-#include "MathLib_SIMD/include/Matrix4x4_SIMD.h"
-#include "MathLib_SIMD/include/Vec3_ASM.h"
+#include "MathLib_SIMD/Vec3_SIMD.h"
+#include "MathLib_SIMD/Vec4_SIMD.h"
+#include "MathLib_SIMD/Matrix3x3_SIMD.h"
+#include "MathLib_SIMD/Matrix4x4_SIMD.h"
+#include "MathLib_SIMD/Vec3_ASM.h"
 #include "benchmarkUtils.h"
 
 // ----------------------------------------------------------------------------

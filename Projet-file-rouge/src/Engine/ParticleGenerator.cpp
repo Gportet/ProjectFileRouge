@@ -1,11 +1,41 @@
 ﻿#include "Engine/ParticleGenerator.h"
 #include "Engine/Pipeline.h"
-#include <cstdlib>
 
+#include <array>
+#include <cmath>
 
+namespace ParticleDirection
+{
+    // Need to be a pow of 2
+    constexpr uint32_t DIRECTION_COUNT = 256;
+    constexpr float PI = 3.14159265359f;
+
+    const std::array<Vec2, DIRECTION_COUNT>& GetDirections()
+    {
+        static const std::array<Vec2, DIRECTION_COUNT> directions = []
+        {
+            std::array<Vec2, DIRECTION_COUNT> result{};
+
+            for (uint32_t i = 0; i < DIRECTION_COUNT; ++i)
+            {
+                const float angle =
+                    (2.0f * PI * static_cast<float>(i)) / DIRECTION_COUNT;
+
+                result[i] = {
+                    std::cos(angle),
+                    std::sin(angle)
+                };
+            }
+
+            return result;
+        }();
+
+        return directions;
+    }
+}
 
 ParticleGenerator::ParticleGenerator(unsigned int amount)
-    : m_amount(amount)
+    : m_amount(amount), m_randomGenerator(12345)
 {
     m_particles.resize(amount);
 }
@@ -44,13 +74,13 @@ void ParticleGenerator::respawnParticle(Particle& particle,
     {
     case ParticleType::Snow:
         {
-            float randomU = static_cast<float>(rand() % maxWIDTH);
-            float randomV = static_cast<float>(rand() % maxHEIGHT);
+            float randomU = static_cast<float>(m_randomGenerator.NextUInt() % maxWIDTH);
+            float randomV = static_cast<float>(m_randomGenerator.NextUInt() % maxHEIGHT);
                         
             particle.position = { randomU, randomV };
             
-            float velU = static_cast<float>((rand() % 40) - 20) / 10.0f; 
-            float velV = static_cast<float>((rand() % 50) + 20) / 10.0f; 
+            float velU = static_cast<float>(static_cast<int>(m_randomGenerator.NextUInt() % 40) - 20) / 10.0f;
+            float velV = static_cast<float>(static_cast<int>(m_randomGenerator.NextUInt() % 50) + 20) / 10.0f; 
             particle.velocity = { velU, velV };
             
             particle.color = MathsSIMD::Vec4_SIMD(_mm_setr_ps(1.0f, 1.0f, 1.0f, 1.0f));
@@ -59,13 +89,30 @@ void ParticleGenerator::respawnParticle(Particle& particle,
         }
     case ParticleType::firework:
         {
-            particle.position = { static_cast<float>(emitterPos.u), static_cast<float>(emitterPos.v) };
-            
-            float angle = (static_cast<float>(rand()) / RAND_MAX) * 2.0f * 3.14159265359f;
-            float speed = static_cast<float>((rand() % 150) + 50);
-            
-            particle.velocity = { std::cos(angle) * speed, std::sin(angle) * speed };
-            particle.color = MathsSIMD::Vec4_SIMD(_mm_setr_ps(86.0f, 27.0f, 175.0f, 0.0f));
+            particle.position = {
+                static_cast<float>(emitterPos.u),
+                static_cast<float>(emitterPos.v)
+            };
+
+            // Select a precomputed direction
+            const uint32_t index =
+                m_randomGenerator.NextUInt() & (ParticleDirection::DIRECTION_COUNT - 1);
+
+            const Vec2 direction = ParticleDirection::GetDirections()[index];
+
+            // Random speed
+            const float speed =
+                static_cast<float>((m_randomGenerator.NextUInt() % 150) + 50);
+
+            particle.velocity = {
+                direction.u * speed,
+                direction.v * speed
+            };
+
+            particle.color = MathsSIMD::Vec4_SIMD(
+                _mm_setr_ps(86.0f / 255.0f, 27.0f / 255.0f, 175.0f / 255.0f, 1.0f)
+            );
+
             particle.lifetime = 5.0f;
             break;
         }

@@ -1,6 +1,8 @@
 #pragma once
 #include <vector>
-#include "MathLib/MathLib_SIMD/include/Vec3_SIMD.h"
+#include "MathLib/MathLib_SIMD/Vec3_SIMD.h"
+#include "Engine/Ressources/Texture.h"
+#include "Engine/Ressources/Material.h"
 
 const int WIDTH = 800;
 const int HEIGHT = 800;
@@ -13,6 +15,8 @@ struct Point {
 struct Face {
     int v0, v1, v2;
     int vt0, vt1, vt2;
+    
+    uint32_t materialIndex;
 };
 
 struct Vec2 {
@@ -20,6 +24,7 @@ struct Vec2 {
 };
 
 struct Mesh {
+    std::vector<MaterialTag> materialTags;
     std::vector<MathsSIMD::Vec3_SIMD> vertices;
     std::vector<Face> faces;
     std::vector<Vec2> uvs;
@@ -32,18 +37,3 @@ struct Mesh {
 };
 
 
-class Texture
-{
-private:
-    std::vector<uint32_t> pixels;
-    int width = 0;
-    int height = 0;
-
-public:
-    static bool texture_load(const char* path, Texture* texture);
-    static void texture_free(Texture* texture);
-    static uint32_t texture_sample(const Texture* texture, float u, float v);
-
-    int getWidth() const { return width; }
-    int getHeight() const { return height; }
-};

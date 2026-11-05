@@ -1,6 +1,6 @@
-﻿#include "MathLib_SIMD/include/Vec4_SIMD.h"
-
-#include "Vec4.h"
+﻿#include "MathLib_SIMD/Vec4_SIMD.h"
+#include <algorithm>
+#include <cmath>
 
 namespace MathsSIMD
 {

@@ -1,7 +1,7 @@
 ﻿#ifndef LIGHT_H
 #define LIGHT_H
 
-#include "MathLib/MathLib_SIMD/include/Vec3_SIMD.h"
+#include "MathLib/MathLib_SIMD/Vec3_SIMD.h"
 #include <algorithm>
 
 inline float pow32(float x) {

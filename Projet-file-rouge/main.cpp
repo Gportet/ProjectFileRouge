@@ -3,15 +3,22 @@
 #include "Engine/ObjLoader.h"
 #include "Engine/Camera.h"
 #include "Engine/Light.h"
-#include "MathLib/MathLib_SIMD/include/Vec4_SIMD.h"
-#include "MathLib/MathLib_SIMD/include/Matrix4x4_SIMD.h"
+#include "MathLib/MathLib_SIMD/Vec4_SIMD.h"
+#include "MathLib/MathLib_SIMD/Matrix4x4_SIMD.h"
+#include "Engine/utils/Font.h"
 #include <iostream>
 #include "Engine/ParticleGenerator.h"
+#include "Engine/Input/Input.h"
 
-// Resolution de la fenetre d'affichage
+#include "Engine/Rendering/TextRendering.h"
+#include "Engine/Ressources/MaterialLoader.h"
+
 
 
 int main() {
+    
+
+    
     // =========================================================================
     // 1. INITIALISATION DU CONTEXTE ET DU MOTOR DE RENDU
     // =========================================================================
@@ -20,9 +27,11 @@ int main() {
         std::cerr << "Erreur : Impossible d'initialiser la fenetre OpenGL/GLFW." << std::endl;
         return -1;
     }
-
+    
+    Input input(window.GetWindow());
+    
     // Chargement du maillage 3D (.obj)
-    Mesh mesh = ObjLoader::Load("C:/ProjectFileRouge/Projet-file-rouge/assets/spot.obj");
+    Mesh mesh = ObjLoader::Load(Filepath("assets/mimic-chest/mimic-chest.obj"));
     if (mesh.vertices.empty()) {
         std::cerr << "Erreur : Maillage vide ou chemin introuvable." << std::endl;
         return -1;
@@ -31,19 +40,40 @@ int main() {
     // Configuration de la source lumineuse directionnelle
     DirectionalLight sunLight;
 
-    // Chargement de la texture (Albedo)
-    Texture texture; 
-    if (!Texture::texture_load("C:/ProjectFileRouge/Projet-file-rouge/assets/spot_texture.png", &texture)) {
-        std::cerr << "Erreur : Impossible de charger la texture." << std::endl;
-        return 1;
+    
+    // Chargement des matériaux (.mtl)
+    auto materialsMap = MaterialLoader::Load(
+        Filepath("assets/mimic-chest/mimic-chest.mtl")
+    );
+
+    if (materialsMap.empty())
+    {
+        std::cerr << "Erreur lors du chargement des matériaux." << std::endl;
+        return -1;
+    }
+    
+    std::vector<Material*> materialPointers;
+    materialPointers.reserve(mesh.materialTags.size());
+
+    for (const auto& tag : mesh.materialTags) {
+        const auto it = materialsMap.find(tag);
+
+        if (it == materialsMap.end()) {
+            std::cerr << "Erreur : matériau introuvable dans le MTL." << std::endl;
+            return -1;
+        }
+
+        materialPointers.push_back(it->second.get());
     }
     
     // Pipeline de rendu logiciel (Color Buffer & Z-Buffer)
     Pipeline pipeline(WIDTH, HEIGHT);
     
     // Configuration de la camera virtuelle (Position Eye, Target, Up Vector)
+    const MathsSIMD::Vec3_SIMD cameraPosition(0.0f, 1.0f, 2.0f);
+
     Camera camera(
-        MathsSIMD::Vec3_SIMD(0.0f, 0.0f, 3.0f),
+        cameraPosition,
         MathsSIMD::Vec3_SIMD(0.0f, 0.0f, 0.0f),
         MathsSIMD::Vec3_SIMD(0.0f, 1.0f, 0.0f)
     );
@@ -51,17 +81,30 @@ int main() {
     ParticleGenerator particleGenerator(500);
     double lastFrameTime = glfwGetTime();
 
+    // Chargement de la police
+    auto font = std::make_shared<Font>(
+        FontTag("Arial"),
+        Filepath("assets/arial/ARIAL.TTF")
+    );
+    
+    // Système de rendu de texte
+    TextRendering textRenderer(font);
+    
     // =========================================================================
     // 2. BOUCLE PRINCIPALE DE RENDU (RENDER LOOP)
     // =========================================================================
     while (!window.ShouldClose()) {
-        window.PollEvents();
-        pipeline.Clear(); // Reinitialise les buffers de couleur et de profondeur
-
         //Delta
         double currentFrameTime = glfwGetTime();
         float dt = currentFrameTime - lastFrameTime;
         lastFrameTime = currentFrameTime;
+        
+        window.PollEvents();
+        input.UpdateKeysPress();
+        camera.UpdateCamera(input, dt);
+        pipeline.Clear(); // Reinitialise les buffers de couleur et de profondeur
+        
+        const int fps = (dt > 0.0f)? static_cast<int>(1.0f / dt): 0;
         
         // Temps ecoule pour l'animation temporelle
         float time = static_cast<float>(window.GetTime());
@@ -71,15 +114,21 @@ int main() {
         
         // Matrice de rotation globale pour l'orientation des normales en World Space
         MathsSIMD::Matrix4x4_SIMD rotModel = MathsSIMD::Matrix4x4_SIMD::RotationY(time * 0.7f);
-
-        // Precalcul du Half-Vector (Blinn-Phong) unique pour toute la frame
-        MathsSIMD::Vec3_SIMD halfVector = sunLight.GetHalfVector();
+        
 
         // ---------------------------------------------------------------------
         // PASSE 1 : TRAITEMENT GEOMETRIQUE ET DECOUPAGE (GEOMETRY PASS)
         // ---------------------------------------------------------------------
         for (size_t fidx = 0; fidx < mesh.faces.size(); ++fidx) {
             const auto& face = mesh.faces[fidx];
+            
+            if (face.materialIndex >= materialPointers.size()) {
+                std::cerr << "Index de matériau invalide pour la face "
+                          << fidx << std::endl;
+                continue;
+            }
+
+            Material* material = materialPointers[face.materialIndex];
 
             // Récupération des positions locales des sommets du triangle
             const auto& v0_pos = mesh.vertices[face.v0];
@@ -104,6 +153,12 @@ int main() {
             cv0.clipPos = mvp * v0_local;
             cv1.clipPos = mvp * v1_local;
             cv2.clipPos = mvp * v2_local;
+            
+            // Positions des sommets en World Space
+            cv0.worldPosition = rotModel.TransformPoint(v0_pos);
+            cv1.worldPosition = rotModel.TransformPoint(v1_pos);
+            cv2.worldPosition = rotModel.TransformPoint(v2_pos);
+            
 
             // Transformation des normales de sommets dans l'Espace Monde (World Space)
             cv0.normal = rotModel.TransformDirection(mesh.vertexNormals[face.v0]);
@@ -156,15 +211,29 @@ int main() {
                     continue;
                 }
 
-                // Dessin du triangle avec ombrage de Phong pixel par pixel
+                // Dessin du triangle sans ombrage de Phong
+                // Dessin du triangle avec le Shader
                 pipeline.SubmitTriangle(
-                                p0, p1, p2,
-                                z0, z1, z2,
-                                iw0, iw1, iw2,
-                                tri.v0.uv, tri.v1.uv, tri.v2.uv,
-                                tri.v0.normal, tri.v1.normal, tri.v2.normal,
-                                &texture, sunLight, halfVector
-                            );
+                    p0, p1, p2,
+                    z0, z1, z2,
+                    iw0, iw1, iw2,
+
+                    tri.v0.uv,
+                    tri.v1.uv,
+                    tri.v2.uv,
+
+                    tri.v0.worldPosition,
+                    tri.v1.worldPosition,
+                    tri.v2.worldPosition,
+
+                    tri.v0.normal,
+                    tri.v1.normal,
+                    tri.v2.normal,
+
+                    material,
+                    sunLight,
+                    cameraPosition
+                );
             }
         }
         pipeline.StartFramSync();
@@ -180,9 +249,16 @@ int main() {
         particleGenerator.Update(dt, ParticleType::Snow);
         particleGenerator.Update(dt, ParticleType::firework,emitterPos);
         particleGenerator.Draw(pipeline);
+        
+        textRenderer.DrawText(
+            pipeline,
+            "FPS: " + std::to_string(fps),
+            10, 20,
+            0xFFFFFFFF
+        );
+        
         // Transfert du Framebuffer vers la fenêtre et affichage
         window.RenderBuffer(pipeline.GetColorBuffer());
     }
-
     return 0;
 }

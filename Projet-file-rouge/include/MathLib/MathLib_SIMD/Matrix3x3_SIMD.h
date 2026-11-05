@@ -1,7 +1,7 @@
 ﻿#pragma once
 
 
-#include "MathLib_SIMD/include/Vec3_SIMD.h"
+#include "MathLib_SIMD/Vec3_SIMD.h"
 #include <array>
 #include <immintrin.h>
 

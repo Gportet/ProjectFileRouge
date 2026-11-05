@@ -26,4 +26,5 @@ public:
     void UpdateFPS();
     
     double GetTime() const { return glfwGetTime(); }
+    GLFWwindow* GetWindow() const { return m_window; }
 };
