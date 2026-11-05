@@ -198,6 +198,21 @@ add_executable(Affichage_test
         main.cpp
         src/Engine/Mesh.cpp
         include/Engine/Light.h
+        include/ECS/Component.h
+        include/ECS/Component/CameraComponent.h
+        include/ECS/Component/LightComponent.h
+        include/ECS/Component/MeshComponent.h
+        include/ECS/Registry.h
+        include/ECS/EntityManager.h
+        include/ECS/ComponentArray.h
+        include/ECS/ComponentManager.h
+        include/ECS/Entity.h
+        include/ECS/Component/TransformComponent.h
+        include/ECS/Component/SpinComponent.h
+        include/ECS/System/SpinSystem.h
+        include/ECS/System/RenderSystem.h
+        src/System/RenderSystem.cpp
+        src/System/ComponentManager.cpp
 )
 
 target_include_directories(Affichage_test PRIVATE

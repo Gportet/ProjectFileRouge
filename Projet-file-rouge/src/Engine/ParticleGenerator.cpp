@@ -45,16 +45,17 @@ void ParticleGenerator::respawnParticle(Particle& particle,
     case ParticleType::Snow:
         {
             float randomU = static_cast<float>(rand() % maxWIDTH);
-            float randomV = static_cast<float>(rand() % maxHEIGHT);
-                        
+
+            float randomV = static_cast<float>(rand() % maxHEIGHT); 
+                
             particle.position = { randomU, randomV };
-            
+
             float velU = static_cast<float>((rand() % 40) - 20) / 10.0f; 
-            float velV = static_cast<float>((rand() % 50) + 20) / 10.0f; 
+            float velV = static_cast<float>((rand() % 60) + 30); 
             particle.velocity = { velU, velV };
-            
+    
             particle.color = MathsSIMD::Vec4_SIMD(_mm_setr_ps(1.0f, 1.0f, 1.0f, 1.0f));
-            particle.lifetime = 10.0f; 
+            particle.lifetime = 999.0f; 
             break;
         }
     case ParticleType::firework:
@@ -80,12 +81,18 @@ void ParticleGenerator::respawnParticle(Particle& particle,
             unsigned int unused = firstUnusedParticle();
             respawnParticle(m_particles[unused], type, emitterPos, WIDTH, HEIGHT);
         }
+        
+        float gravity = 150.0f;
+        float maxVelocity = 300.0f;
     
         for (auto& p : m_particles)
         {
             p.lifetime -= dt;
             if (p.lifetime > 0.0f)
             {
+                p.velocity.v += gravity * dt;
+                p.velocity.v = std::clamp(p.velocity.v, -maxVelocity, maxVelocity);
+                
                 p.position.u += p.velocity.u * dt;
                 p.position.v += p.velocity.v * dt;
             }
