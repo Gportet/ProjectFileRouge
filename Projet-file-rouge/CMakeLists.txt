@@ -274,3 +274,9 @@ target_link_libraries(Affichage_test PRIVATE
         OpenGL::GL
         freetype
 )
+
+add_custom_command(TARGET Affichage_test POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${CMAKE_SOURCE_DIR}/assets"
+        "$<TARGET_FILE_DIR:Affichage_test>/assets"
+)
