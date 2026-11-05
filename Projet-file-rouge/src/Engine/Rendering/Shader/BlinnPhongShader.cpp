@@ -20,7 +20,7 @@ uint32_t BlinnPhongShader::ShaderFragment(const MathsSIMD::Vec3_SIMD& cameraPosi
     const auto shininess = material.getShininess();
 
     
-    const float specularFactor = std::pow(std::max(0.0f, N.Dot(H)),shininess);
+    const float specularFactor = pow32(std::max(0.0f, N.Dot(H)));
     
     const auto specular = material.getSpecular() * light.specularStrength * specularFactor;
 

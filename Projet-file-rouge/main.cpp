@@ -1,23 +1,24 @@
-﻿#include "Engine/DisplayWindow.h"
-#include "Engine/Pipeline.h"
-#include "Engine/ObjLoader.h"
-#include "Engine/Camera.h"
-#include "Engine/Light.h"
+﻿#include <iostream>
 #include "MathLib/MathLib_SIMD/Vec4_SIMD.h"
 #include "MathLib/MathLib_SIMD/Matrix4x4_SIMD.h"
-#include "Engine/utils/Font.h"
-#include <iostream>
-#include "Engine/ParticleGenerator.h"
+
+#include "Engine/DisplayWindow.h"
+#include "Engine/Pipeline.h"
+
+#include "Engine/Camera.h"
+#include "Engine/Light.h"
+
 #include "Engine/Input/Input.h"
 
+#include "Engine/utils/Font.h"
+#include "Engine/ParticleGenerator.h"
 #include "Engine/Rendering/TextRendering.h"
+#include "Engine/ObjLoader.h"
 #include "Engine/Ressources/MaterialLoader.h"
 
 
 
 int main() {
-    
-
     
     // =========================================================================
     // 1. INITIALISATION DU CONTEXTE ET DU MOTOR DE RENDU
