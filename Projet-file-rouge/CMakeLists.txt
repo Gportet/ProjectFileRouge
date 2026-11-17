@@ -255,6 +255,12 @@ add_executable(Affichage_test
 
 )
 
+add_custom_command(TARGET Affichage_test POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${CMAKE_SOURCE_DIR}/assets"
+        "${CMAKE_BINARY_DIR}/assets"
+)
+
 set_property(TARGET Affichage_test PROPERTY
         VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
 )
