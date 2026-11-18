@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include "MathLib/MathLib_SIMD/include/Vec3_SIMD.h"
+#include "MathLib/MathLib_SIMD/Vec3_SIMD.h"
 
 namespace ECS
 {

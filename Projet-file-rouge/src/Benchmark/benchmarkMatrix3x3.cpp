@@ -6,7 +6,7 @@
 #include <random>
 #include <cstdint>
 #include "benchmarkUtils.h"
-#include "MathLib_SIMD/include/Matrix3x3_SIMD.h"
+#include "MathLib_SIMD/Matrix3x3_SIMD.h"
 
 #define REGISTER_MAT3_BENCHMARK(func) \
     BENCHMARK(func) \

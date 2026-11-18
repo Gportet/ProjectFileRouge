@@ -8,6 +8,9 @@
 #include "ECS/System/RenderSystem.h"
 #include "ECS/System/SpinSystem.h"
 
+#include "Engine/Rendering/TextRendering.h"
+#include "Engine/Ressources/MaterialLoader.h"
+
 #include <iostream>
 
 int main() {
@@ -44,14 +47,35 @@ int main() {
     {
         ECS::MeshComponent& meshComp = registry.GetComponent<ECS::MeshComponent>(spot);
 
-        meshComp.mesh = ObjLoader::Load("C:/ProjectFileRouge/Projet-file-rouge/assets/spot.obj");
-        if (meshComp.mesh.vertices.empty()) {
+        // Chargement du mesh
+        meshComp.mesh = ObjLoader::Load(Filepath("assets/mimic-chest/mimic-chest.obj"));
+
+        if (meshComp.mesh.vertices.empty())
+        {
             std::cerr << "Erreur : Maillage vide ou chemin introuvable." << std::endl;
             return -1;
         }
-        if (!Texture::texture_load("C:/ProjectFileRouge/Projet-file-rouge/assets/spot_texture.png", &meshComp.texture)) {
-            std::cerr << "Erreur : Impossible de charger la texture." << std::endl;
-            return 1;
+
+        // Chargement des matériaux (.mtl)
+        meshComp.materials = MaterialLoader::Load(
+            Filepath("assets/mimic-chest/mimic-chest.mtl")
+        );
+
+        if (meshComp.materials.empty())
+        {
+            std::cerr << "Erreur lors du chargement des matériaux." << std::endl;
+            return -1;
+        }
+
+        // Vérification des matériaux utilisés par le mesh
+        for (const auto& tag : meshComp.mesh.materialTags)
+        {
+            if (meshComp.materials.find(tag) == meshComp.materials.end())
+            {
+                std::cerr << "Erreur : matériau introuvable dans le MTL : "
+                          << tag.getName() << std::endl;
+                return -1;
+            }
         }
     }
 

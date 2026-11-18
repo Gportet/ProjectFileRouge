@@ -23,7 +23,7 @@ namespace ECS
         }
 
         // Ancienne boucle du main : géométrie, découpage near-plane, projection, culling, envoi au pipeline.
-        void SubmitMesh(Pipeline& pipeline, const Mesh& mesh, Texture* texture,
+        void SubmitMesh(Pipeline& pipeline, const Mesh& mesh,Material* material,
                         const TransformComponent& transform, const CameraComponent& camera,
                         const DirectionalLight& sunLight)
         {
@@ -60,6 +60,39 @@ namespace ECS
                 cv1.clipPos = mvp * v1_local;
                 cv2.clipPos = mvp * v2_local;
 
+                const MathsSIMD::Matrix4x4_SIMD modelMatrix = transform.GetModelMatrix();
+
+                const MathsSIMD::Vec4_SIMD world0 = modelMatrix * v0_local;
+                const MathsSIMD::Vec4_SIMD world1 = modelMatrix * v1_local;
+                const MathsSIMD::Vec4_SIMD world2 = modelMatrix * v2_local;
+
+                cv0.worldPosition = MathsSIMD::Vec3_SIMD(
+                    _mm_setr_ps(
+                        _mm_cvtss_f32(world0.data),
+                        _mm_cvtss_f32(_mm_shuffle_ps(world0.data, world0.data, _MM_SHUFFLE(1, 1, 1, 1))),
+                        _mm_cvtss_f32(_mm_shuffle_ps(world0.data, world0.data, _MM_SHUFFLE(2, 2, 2, 2))),
+                        0.0f
+                    )
+                );
+
+                cv1.worldPosition = MathsSIMD::Vec3_SIMD(
+                    _mm_setr_ps(
+                        _mm_cvtss_f32(world1.data),
+                        _mm_cvtss_f32(_mm_shuffle_ps(world1.data, world1.data, _MM_SHUFFLE(1, 1, 1, 1))),
+                        _mm_cvtss_f32(_mm_shuffle_ps(world1.data, world1.data, _MM_SHUFFLE(2, 2, 2, 2))),
+                        0.0f
+                    )
+                );
+
+                cv2.worldPosition = MathsSIMD::Vec3_SIMD(
+                    _mm_setr_ps(
+                        _mm_cvtss_f32(world2.data),
+                        _mm_cvtss_f32(_mm_shuffle_ps(world2.data, world2.data, _MM_SHUFFLE(1, 1, 1, 1))),
+                        _mm_cvtss_f32(_mm_shuffle_ps(world2.data, world2.data, _MM_SHUFFLE(2, 2, 2, 2))),
+                        0.0f
+                    )
+                );
+                
                 cv0.normal = rotModel.TransformDirection(mesh.vertexNormals[face.v0]);
                 cv1.normal = rotModel.TransformDirection(mesh.vertexNormals[face.v1]);
                 cv2.normal = rotModel.TransformDirection(mesh.vertexNormals[face.v2]);
@@ -93,19 +126,32 @@ namespace ECS
                     Point p0 = { static_cast<int>((x0 + 1.0f) * 0.5f * width), static_cast<int>((1.0f - y0) * 0.5f * height) };
                     Point p1 = { static_cast<int>((x1 + 1.0f) * 0.5f * width), static_cast<int>((1.0f - y1) * 0.5f * height) };
                     Point p2 = { static_cast<int>((x2 + 1.0f) * 0.5f * width), static_cast<int>((1.0f - y2) * 0.5f * height) };
+                    
 
                     if (pipeline.BackCulling(p0, p1, p2)) {
                         continue;
                     }
-
                     pipeline.SubmitTriangle(
-                                    p0, p1, p2,
-                                    z0, z1, z2,
-                                    iw0, iw1, iw2,
-                                    tri.v0.uv, tri.v1.uv, tri.v2.uv,
-                                    tri.v0.normal, tri.v1.normal, tri.v2.normal,
-                                    texture, sunLight, halfVector
-                                );
+                        p0, p1, p2,
+
+                        z0, z1, z2,
+                        iw0, iw1, iw2,
+
+                        // UV provenant du triangle après clipping
+                        tri.v0.uv, tri.v1.uv, tri.v2.uv,
+
+                        // Positions monde
+                        tri.v0.worldPosition,
+                        tri.v1.worldPosition,
+                        tri.v2.worldPosition,
+
+                        // Normales
+                        tri.v0.normal, tri.v1.normal, tri.v2.normal,
+
+                        material,
+                        sunLight,
+                        camera.eye
+                    );
                 }
             }
         }
@@ -139,7 +185,7 @@ namespace ECS
             {
                 TransformComponent& transform = componentManager.getComponent<TransformComponent>(e);
                 MeshComponent&      meshComp  = componentManager.getComponent<MeshComponent>(e);
-                SubmitMesh(pipeline, meshComp.mesh, &meshComp.texture, transform, *camera, sunLight);
+                SubmitMesh(pipeline,meshComp.mesh,transform,*camera,sunLight);
             });
         }
 

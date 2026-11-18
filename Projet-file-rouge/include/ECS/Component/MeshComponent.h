@@ -2,12 +2,12 @@
 
 #include <vector>
 #include "Engine/Mesh.h"
-
+#include <map>
 namespace ECS
 {
     struct MeshComponent
     {
         Mesh mesh;
-        Texture texture;
+        std::map<MaterialTag, std::shared_ptr<Material>> materials;
     };
 }

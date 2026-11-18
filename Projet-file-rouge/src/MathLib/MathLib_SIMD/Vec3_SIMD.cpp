@@ -1,5 +1,5 @@
-﻿#include "MathLib_SIMD/include/Vec3_SIMD.h"
-#include "MathLib_SIMD/include/Vec3_ASM.h"
+﻿#include "MathLib_SIMD/Vec3_SIMD.h"
+#include "MathLib_SIMD/Vec3_ASM.h"
 
 #include <algorithm>
 #include <limits>
