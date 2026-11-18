@@ -23,10 +23,12 @@ namespace ECS
         }
 
         // Ancienne boucle du main : géométrie, découpage near-plane, projection, culling, envoi au pipeline.
-        void SubmitMesh(Pipeline& pipeline, const Mesh& mesh,Material* material,
+        void SubmitMesh(Pipeline& pipeline, const MeshComponent& meshComponent,
                         const TransformComponent& transform, const CameraComponent& camera,
                         const DirectionalLight& sunLight)
         {
+            const Mesh& mesh = meshComponent.mesh;
+            const auto& materials = meshComponent.materials;
             const int width  = pipeline.GetWidth();
             const int height = pipeline.GetHeight();
 
@@ -40,6 +42,23 @@ namespace ECS
             for (size_t fidx = 0; fidx < mesh.faces.size(); ++fidx) {
                 const auto& face = mesh.faces[fidx];
 
+                if (face.materialIndex >= mesh.materialTags.size())
+                {
+                    continue;
+                }
+
+                const MaterialTag& tag = mesh.materialTags[face.materialIndex];
+                
+                const auto it = materials.find(tag);
+
+                if (it == materials.end() || !it->second)
+                {
+                    continue;
+                }
+
+                Material* material = it->second.get();
+                
+                
                 const auto& v0_pos = mesh.vertices[face.v0];
                 const auto& v1_pos = mesh.vertices[face.v1];
                 const auto& v2_pos = mesh.vertices[face.v2];
@@ -185,7 +204,7 @@ namespace ECS
             {
                 TransformComponent& transform = componentManager.getComponent<TransformComponent>(e);
                 MeshComponent&      meshComp  = componentManager.getComponent<MeshComponent>(e);
-                SubmitMesh(pipeline,meshComp.mesh,transform,*camera,sunLight);
+                SubmitMesh(pipeline,meshComp,transform,*camera,sunLight);
             });
         }
 
