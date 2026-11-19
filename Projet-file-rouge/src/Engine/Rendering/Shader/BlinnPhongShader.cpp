@@ -1,4 +1,4 @@
-#include "Engine/Rendering/Shader/BlinnPhongShader.h"
+﻿#include "Engine/Rendering/Shader/BlinnPhongShader.h"
 
 
 uint32_t BlinnPhongShader::ShaderFragment(const MathsSIMD::Vec3_SIMD& cameraPosition,const MathsSIMD::Vec3_SIMD& position,const MathsSIMD::Vec3_SIMD& normals,const DirectionalLight& light,const Vec2& UV,const Material& material) const
@@ -20,7 +20,7 @@ uint32_t BlinnPhongShader::ShaderFragment(const MathsSIMD::Vec3_SIMD& cameraPosi
     const auto shininess = material.getShininess();
 
     
-    const float specularFactor = pow32(std::max(0.0f, N.Dot(H)));
+    const float specularFactor = std::pow(std::max(0.0f, N.Dot(H)),shininess);
     
     const auto specular = material.getSpecular() * light.specularStrength * specularFactor;
 

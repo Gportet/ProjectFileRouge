@@ -1,4 +1,4 @@
-#include "Engine/Rendering/TextRendering.h"
+﻿#include "Engine/Rendering/TextRendering.h"
 #include "Engine/Pipeline.h"
 
 #include <iostream>
