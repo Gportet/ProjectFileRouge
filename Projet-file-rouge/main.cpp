@@ -101,9 +101,6 @@ int main() {
     {
         ECS::CameraMovementSystem(em, input, dt);
     });
-
-    
-
     
     registry.AddSystem([&dt](ECS::EntityManager& em) { ECS::SpinSystem(em, dt); });
     registry.AddSystem([&pipeline](ECS::EntityManager& em) { ECS::RenderSystem(em, pipeline); });
