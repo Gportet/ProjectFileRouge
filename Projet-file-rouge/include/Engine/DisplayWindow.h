@@ -25,6 +25,7 @@ public:
     void RenderBuffer(const uint8_t* colorBuffer);
     void UpdateFPS();
     
+    GLFWwindow* GetWindow() { return m_window; };
     double GetTime() const { return glfwGetTime(); }
     GLFWwindow* GetWindow() const { return m_window; }
 };

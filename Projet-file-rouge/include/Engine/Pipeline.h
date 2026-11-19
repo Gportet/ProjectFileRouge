@@ -16,8 +16,6 @@
 #include "Engine/Rendering/Shader/PhongShader.h"
 #include "Engine/Rendering/Shader/UnlitShader.h"
 
-
-
 struct ClipVertex {
     MathsSIMD::Vec4_SIMD clipPos;
     MathsSIMD::Vec3_SIMD worldPosition;
@@ -86,8 +84,7 @@ public:
     
     void PutPixel(int x, int y, uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255);
     void Clear();
-    void DrawLine(int x0, int y0, int x1, int y1, uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255);
-    void DrawTriangle(
+    void DrawLine(int x0, int y0, int x1, int y1, uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255);    void DrawTriangle(
         Point v0, Point v1, Point v2,
         float z0, float z1, float z2,
         float iw0, float iw1, float iw2,
@@ -105,7 +102,8 @@ public:
         int bandMaxY
     );
     bool BackCulling(Point v0, Point v1, Point v2);
-
+    
+    
     const uint8_t* GetColorBuffer() const { return m_pixels.data(); }
     int GetWidth() const { return m_width; }
     int GetHeight() const { return m_height; }

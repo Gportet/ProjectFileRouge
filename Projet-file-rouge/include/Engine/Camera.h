@@ -1,7 +1,6 @@
 #pragma once
 #include "MathLib/MathLib_SIMD/Matrix4x4_SIMD.h"
 #include "MathLib/MathLib_SIMD/Vec3_SIMD.h"
-#include "Engine/Input/Input.h"
 
 class Camera {
 public:
@@ -16,6 +15,4 @@ public:
         MathsSIMD::Matrix4x4_SIMD model = MathsSIMD::Matrix4x4_SIMD::RotationY(time * 0.5f);
         return MathsSIMD::Matrix4x4_SIMD::MVP_Matrix(model, eye, target, up, 90, width, height);
     }
-    
-    void UpdateCamera(const Input& input, float deltaTime);
 };

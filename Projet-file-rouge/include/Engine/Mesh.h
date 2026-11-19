@@ -35,5 +35,3 @@ struct Mesh {
     void ComputeFaceNormals();
     void ComputeVertexNormals();
 };
-
-
