@@ -3,13 +3,15 @@
 #include "Engine/ObjLoader.h"
 #include "Engine/ParticleGenerator.h"
 
-#include "ECS/component.h"
+#include "ECS/Component.h"
 #include "ECS/Registry.h"
 #include "ECS/System/RenderSystem.h"
 #include "ECS/System/SpinSystem.h"
+#include "ECS/System/CameraMovementSystem.h"
 
 #include "Engine/Rendering/TextRendering.h"
 #include "Engine/Ressources/MaterialLoader.h"
+#include "Engine/InputDirectory/Input.h"
 
 #include <iostream>
 
@@ -23,6 +25,7 @@ int main() {
         return -1;
     }
 
+    Input input(window.GetWindow());
     // Pipeline de rendu logiciel (Color Buffer & Z-Buffer)
     Pipeline pipeline(WIDTH, HEIGHT);
     ParticleGenerator particleGenerator(500);
@@ -93,6 +96,15 @@ int main() {
 
     // --- Systèmes : exécutés dans cet ordre à chaque registry.Update() ---
     float dt = 0.0f;
+    
+    registry.AddSystem([&input, &dt](ECS::EntityManager& em)
+    {
+        ECS::CameraMovementSystem(em, input, dt);
+    });
+
+    
+
+    
     registry.AddSystem([&dt](ECS::EntityManager& em) { ECS::SpinSystem(em, dt); });
     registry.AddSystem([&pipeline](ECS::EntityManager& em) { ECS::RenderSystem(em, pipeline); });
 
@@ -103,6 +115,7 @@ int main() {
     // =========================================================================
     while (!window.ShouldClose()) {
         window.PollEvents();
+        input.UpdateKeysPress();
         pipeline.Clear(); // Reinitialise les buffers de couleur et de profondeur
 
         // Delta

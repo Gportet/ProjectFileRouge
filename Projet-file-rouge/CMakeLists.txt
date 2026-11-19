@@ -303,6 +303,10 @@ add_executable(Affichage_test
         include/Engine/utils/RandomGenerator.h
         src/Engine/utils/RandomGenerator.cpp
 
+        # Engine - Input
+        include/Engine/InputDirectory/Input.h
+        src/Engine/InputDirectory/Input.cpp
+        
         # Engine - Rendering
         include/Engine/Rendering/TextRendering.h
         src/Engine/Rendering/TextRendering.cpp
@@ -349,12 +353,15 @@ add_executable(Affichage_test
         include/ECS/System/RenderSystem.h
         src/System/RenderSystem.cpp
 
+        include/ECS/System/CameraMovementSystem.h
+        src/System/CameraMovementSystem.cpp
         # MathLib - Headers
         include/MathLib/MathLib_SIMD/Matrix3x3_SIMD.h
         include/MathLib/MathLib_SIMD/Matrix4x4_SIMD.h
         include/MathLib/MathLib_SIMD/Vec3_ASM.h
         include/MathLib/MathLib_SIMD/Vec3_SIMD.h
         include/MathLib/MathLib_SIMD/Vec4_SIMD.h
+        
 )
 
 target_include_directories(Affichage_test PRIVATE
