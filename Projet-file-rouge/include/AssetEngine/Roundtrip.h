@@ -1,6 +1,6 @@
 #pragma once 
-#include "BinaryWriter.cpp"
-#include "BinaryReader.cpp"
+#include "BinaryWriter.h"
+#include "BinaryReader.h"
 #include <vector>
 
 class Roundtrip {
