@@ -1,14 +1,22 @@
 #pragma once 
-#include "BinaryWriter.h"
-#include "BinaryReader.h"
+#include "Binary/BinaryWriter.h"
+#include "Binary/BinaryReader.h"
+#include "HeaderInit/AssetHeader.h"
 #include <vector>
 
+#include <iomanip>
+#include <iostream>
+
+#include "AssetEngine/AssetFile/AssetFileWriter.h"
+#include "AssetEngine/AssetFile/AssetFileReader.h"
+#include <filesystem>
 class Roundtrip {
 
     private : 
         BinaryWriter writer;
         BinaryReader reader;
-
+        AssetHeader header;
+    
     // all type : 
     // bool
     // int8
@@ -23,7 +31,75 @@ class Roundtrip {
     public : 
         Roundtrip() = default;
 
+    void testAssetFileWriter()
+    {
+        // 1. Préparer le chemin du fichier
+        std::filesystem::path path = "test.singe";
 
+        // 2. Préparer le Header
+        AssetHeader header;
+
+        // 3. Préparer les données binaires
+        Bytes data = {
+            std::byte{0x53},
+            std::byte{0x49},
+            std::byte{0x4E},
+            std::byte{0x47},
+            std::byte{0x45}
+        };
+
+        // 4. Créer le Writer
+        AssetFileWriter writer;
+
+        // 5. Écrire le fichier
+        writer.Write(path, header, data);
+
+        std::cout << "Asset file successfully written!" << std::endl;
+    }
+    
+    
+    void testAssetFileRoundtrip()
+    {
+        const std::filesystem::path path = "test.singe";
+
+        // 1. Préparer les données
+        AssetHeader originalHeader;
+        originalHeader.flags = 3;
+        originalHeader.assetType = 2;
+
+        Bytes originalData = {
+            std::byte{0x53},
+            std::byte{0x49},
+            std::byte{0x4E},
+            std::byte{0x47},
+            std::byte{0x45}
+        };
+
+        // 2. Écrire le fichier
+        AssetFileWriter writer;
+        writer.Write(path, originalHeader, originalData);
+
+        // 3. Lire le fichier
+        AssetHeader loadedHeader;
+        Bytes loadedData;
+
+        AssetFileReader reader;
+        reader.Read(path, loadedHeader, loadedData);
+
+        // 4. Vérifier le résultat
+        if (loadedHeader.magicNumber != originalHeader.magicNumber ||
+            loadedHeader.version != originalHeader.version ||
+            loadedHeader.flags != originalHeader.flags ||
+            loadedHeader.assetType != originalHeader.assetType ||
+            loadedHeader.fileSize != AssetHeader::HeaderSize + originalData.size() ||
+            loadedData != originalData)
+        {
+            throw std::runtime_error("Asset file roundtrip failed");
+        }
+
+        std::cout << "Asset file roundtrip successful!" << std::endl;
+    }
+    
     void verifyAll() {
 
         writer = BinaryWriter();

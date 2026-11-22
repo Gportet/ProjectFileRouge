@@ -13,8 +13,6 @@ struct AssetHeader
     std::uint32_t fileSize = 0; // Header + Data
     std::uint32_t checksum = 0; 
     static constexpr std::uint32_t HeaderSize = 25; // 25 octets au total
-    
-    
 };
 
 Bytes SerializeAssetHeader(const AssetHeader& header);

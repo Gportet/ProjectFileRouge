@@ -264,8 +264,22 @@ add_executable(AssetEngine
         include/AssetEngine/Binary/BinaryReader.h
         include/AssetEngine/Binary/BinaryWriter.h
 
+        include/AssetEngine/HeaderInit/AssetHeader.h
+        src/AssetEngine/HeaderInit/AssetHeader.cpp
+        
         include/AssetEngine/Roundtrip.h
+        
+        include/AssetEngine/AssetFile/AssetFileWriter.h
+        src/AssetEngine/AssetFile/AssetFileWriter.cpp
+        
+        include/AssetEngine/AssetFile/AssetFileReader.h
+        src/AssetEngine/AssetFile/AssetFileReader.cpp
 )
+
+target_include_directories(AssetEngine PRIVATE
+        include
+)
+
 
 # ------------------------------------------------------------------------------
 # Affichage_test
@@ -378,6 +392,12 @@ add_executable(Affichage_test
         
         include/AssetEngine/HeaderInit/AssetHeader.h
         src/AssetEngine/HeaderInit/AssetHeader.cpp
+        
+        include/AssetEngine/AssetFile/AssetFileWriter.h
+        src/AssetEngine/AssetFile/AssetFileWriter.cpp
+        
+        include/AssetEngine/AssetFile/AssetFileReader.h
+        src/AssetEngine/AssetFile/AssetFileReader.cpp
 )
 
 add_custom_command(TARGET Affichage_test POST_BUILD

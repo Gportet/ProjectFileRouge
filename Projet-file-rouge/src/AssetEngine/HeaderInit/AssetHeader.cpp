@@ -5,7 +5,7 @@
 
 
 Bytes SerializeAssetHeader(const AssetHeader& header)
-{
+{//
     BinaryWriter writer;
     for (std::size_t magicIndex = 0; magicIndex < header.magicNumber.size(); ++magicIndex)
     {
@@ -23,6 +23,9 @@ Bytes SerializeAssetHeader(const AssetHeader& header)
 
 AssetHeader DeserializeAssetHeader(const Bytes& bytes)
 {
+    if (bytes.size() < AssetHeader::HeaderSize)
+        throw std::runtime_error("Invalid asset header: insufficient data");
+    
     BinaryReader reader(bytes);
     AssetHeader header;
     for (std::size_t magicIndex = 0; magicIndex < header.magicNumber.size(); ++magicIndex)
@@ -35,11 +38,12 @@ AssetHeader DeserializeAssetHeader(const Bytes& bytes)
     header.assetType = reader.ReadU32();
     header.fileSize = reader.ReadU32();
     header.checksum = reader.ReadU32();
-
     return header;
 }
 
 bool isValidAssetHeader(const AssetHeader& header)
 {
-    
+    return header.magicNumber == std::array<std::uint8_t, 5>{'S', 'I', 'N', 'G', 'E'} 
+        && header.fileSize >= AssetHeader::HeaderSize && 
+        header.version == 1;
 }
