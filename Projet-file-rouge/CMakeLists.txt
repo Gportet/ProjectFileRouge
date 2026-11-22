@@ -261,8 +261,8 @@ add_executable(AssetEngine
 
         include/AssetEngine/main.cpp
         
-        include/AssetEngine/BinaryReader.h
-        include/AssetEngine/BinaryWriter.h
+        include/AssetEngine/Binary/BinaryReader.h
+        include/AssetEngine/Binary/BinaryWriter.h
 
         include/AssetEngine/Roundtrip.h
 )
@@ -371,7 +371,19 @@ add_executable(Affichage_test
         include/MathLib/MathLib_SIMD/Vec3_ASM.h
         include/MathLib/MathLib_SIMD/Vec3_SIMD.h
         include/MathLib/MathLib_SIMD/Vec4_SIMD.h
-        
+        include/AssetEngine/Header/AssetHeader.h
+
+        include/AssetEngine/Binary/BinaryReader.h
+        include/AssetEngine/Binary/BinaryWriter.h
+        include/AssetEngine/Binary/BinaryTypes.h
+
+)
+
+add_custom_command(TARGET Affichage_test POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${CMAKE_SOURCE_DIR}/assets"
+        "$<TARGET_FILE_DIR:Affichage_test>/assets"
+        COMMENT "Copie des assets vers le dossier de compilation..."
 )
 
 target_include_directories(Affichage_test PRIVATE

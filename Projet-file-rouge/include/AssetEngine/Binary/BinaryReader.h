@@ -9,8 +9,7 @@
 #include <limits>
 #include <iostream>
 
-typedef std::vector<std::byte> Bytes;
-    
+#include "BinaryTypes.h"
 
 class BinaryReader
 {
