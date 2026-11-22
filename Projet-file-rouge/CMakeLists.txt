@@ -371,12 +371,13 @@ add_executable(Affichage_test
         include/MathLib/MathLib_SIMD/Vec3_ASM.h
         include/MathLib/MathLib_SIMD/Vec3_SIMD.h
         include/MathLib/MathLib_SIMD/Vec4_SIMD.h
-        include/AssetEngine/Header/AssetHeader.h
 
         include/AssetEngine/Binary/BinaryReader.h
         include/AssetEngine/Binary/BinaryWriter.h
         include/AssetEngine/Binary/BinaryTypes.h
-
+        
+        include/AssetEngine/HeaderInit/AssetHeader.h
+        src/AssetEngine/HeaderInit/AssetHeader.cpp
 )
 
 add_custom_command(TARGET Affichage_test POST_BUILD
