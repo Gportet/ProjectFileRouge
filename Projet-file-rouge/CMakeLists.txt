@@ -311,6 +311,7 @@ add_executable(AssetEngine
         include/MathLib/MathLib_SIMD/Vec3_ASM.h
         include/MathLib/MathLib_SIMD/Vec3_SIMD.h
         include/MathLib/MathLib_SIMD/Vec4_SIMD.h
+        include/AssetEngine/ArchiveValidator.h
 )
 
 target_include_directories(AssetEngine PRIVATE
