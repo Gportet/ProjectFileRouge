@@ -274,6 +274,8 @@ add_executable(AssetEngine
         
         include/AssetEngine/AssetFile/AssetFileReader.h
         src/AssetEngine/AssetFile/AssetFileReader.cpp
+        src/AssetEngine/Utils/CheckSum.cpp
+        include/AssetEngine/Utils/CheckSum.h
 )
 
 target_include_directories(AssetEngine PRIVATE
@@ -398,6 +400,8 @@ add_executable(Affichage_test
         
         include/AssetEngine/AssetFile/AssetFileReader.h
         src/AssetEngine/AssetFile/AssetFileReader.cpp
+        src/AssetEngine/Utils/CheckSum.cpp
+        include/AssetEngine/Utils/CheckSum.h
 )
 
 add_custom_command(TARGET Affichage_test POST_BUILD
