@@ -256,10 +256,20 @@ target_link_libraries(ViewerApp PRIVATE
 )
 
 
+
+add_executable(AssetEngine
+
+        include/AssetEngine/main.cpp
+        
+        include/AssetEngine/BinaryReader.h
+        include/AssetEngine/BinaryWriter.h
+
+        include/AssetEngine/Roundtrip.h
+)
+
 # ------------------------------------------------------------------------------
 # Affichage_test
 # ------------------------------------------------------------------------------
-
 add_executable(Affichage_test
         main.cpp
 
