@@ -6,13 +6,14 @@
 
 struct AssetHeader
 {
-    std::array<std::uint8_t, 5> magicNumber = {'S', 'I', 'N', 'G', 'E'}; // SINGE
-    std::uint32_t version = 1;
+    std::array<char, 5> magicNumber = {'S', 'I', 'N', 'G', 'E'};
+    std::uint32_t formatVersion = 1;
     std::uint32_t flags = 0;
-    std::uint32_t assetType = 0;
-    std::uint32_t fileSize = 0; // Header + Data
-    std::uint32_t checksum = 0; 
-    static constexpr std::uint32_t HeaderSize = 25; // 25 octets au total
+    std::uint64_t totalFileSize = 0;
+    std::uint32_t checksum = 0;
+    std::uint32_t assetCount = 0;
+    std::uint32_t directoryOffset = 33;
+    static constexpr std::uint32_t HeaderSize = 33;
 };
 
 Bytes SerializeAssetHeader(const AssetHeader& header);

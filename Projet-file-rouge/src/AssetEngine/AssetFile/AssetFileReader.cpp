@@ -1,4 +1,5 @@
 ﻿#include "AssetEngine/AssetFile/AssetFileReader.h"
+#include "AssetEngine/Utils/CheckSum.h"
 
 #include <fstream>
 #include <stdexcept>
@@ -35,16 +36,16 @@ void AssetFileReader::Read(const std::filesystem::path& path, AssetHeader& heade
 
     // 4. Désérialiser et vérifier le header
     header = DeserializeAssetHeader(headerBytes);
-
+    
     if (!isValidAssetHeader(header))
         throw std::runtime_error("Invalid asset header");
 
     // 5. Vérifier que la taille annoncée correspond au fichier réel
-    if (header.fileSize != static_cast<std::uint64_t>(fileSize))
+    if (header.totalFileSize != static_cast<std::uint64_t>(fileSize))
         throw std::runtime_error("Asset file size mismatch");
 
     // 6. Lire les données après le header
-    const std::size_t dataSize = header.fileSize - AssetHeader::HeaderSize;
+    const std::size_t dataSize = header.totalFileSize - AssetHeader::HeaderSize;
 
     data.resize(dataSize);
 
@@ -57,5 +58,13 @@ void AssetFileReader::Read(const std::filesystem::path& path, AssetHeader& heade
 
         if (!file)
             throw std::runtime_error("Failed to read asset data");
+    }
+    
+    // Vérification validité du checksum
+    const std::uint32_t calculatedChecksum = CalculateChecksum(data);
+
+    if (calculatedChecksum != header.checksum)
+    {
+        throw std::runtime_error("Asset checksum mismatch");
     }
 }

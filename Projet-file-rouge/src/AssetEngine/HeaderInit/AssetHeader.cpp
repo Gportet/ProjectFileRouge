@@ -1,49 +1,54 @@
-﻿#include "AssetEngine/HeaderInit/AssetHeader.h"
+﻿
+#include "AssetEngine/HeaderInit/AssetHeader.h"
 
 #include "AssetEngine/Binary/BinaryWriter.h"
 #include "AssetEngine/Binary/BinaryReader.h"
 
+#include <stdexcept>
 
 Bytes SerializeAssetHeader(const AssetHeader& header)
-{//
+{
     BinaryWriter writer;
-    for (std::size_t magicIndex = 0; magicIndex < header.magicNumber.size(); ++magicIndex)
-    {
-        writer.Write(header.magicNumber[magicIndex]);
-    }
-    writer.Write(header.version);
-    writer.Write(header.flags);
-    writer.Write(header.assetType);
-    writer.Write(header.fileSize);
-    writer.Write(header.checksum);
     
+    for (char character : header.magicNumber)
+        writer.Write(static_cast<std::uint8_t>(character));
+
+    // Header fields
+    writer.Write(header.formatVersion);
+    writer.Write(header.flags);
+    writer.Write(header.totalFileSize);
+    writer.Write(header.checksum);
+    writer.Write(header.assetCount);
+    writer.Write(header.directoryOffset);
+
     return writer.getBuffer();
 }
-
 
 AssetHeader DeserializeAssetHeader(const Bytes& bytes)
 {
     if (bytes.size() < AssetHeader::HeaderSize)
         throw std::runtime_error("Invalid asset header: insufficient data");
-    
+
     BinaryReader reader(bytes);
     AssetHeader header;
-    for (std::size_t magicIndex = 0; magicIndex < header.magicNumber.size(); ++magicIndex)
-    {
-        header.magicNumber[magicIndex] = reader.ReadU8();
-    }
 
-    header.version = reader.ReadU32();
+    for (char& character : header.magicNumber)
+        character = static_cast<char>(reader.ReadU8());
+
+    header.formatVersion = reader.ReadU32();
     header.flags = reader.ReadU32();
-    header.assetType = reader.ReadU32();
-    header.fileSize = reader.ReadU32();
+    header.totalFileSize = reader.ReadU64();
     header.checksum = reader.ReadU32();
+    header.assetCount = reader.ReadU32();
+    header.directoryOffset = reader.ReadU32();
+
     return header;
 }
 
 bool isValidAssetHeader(const AssetHeader& header)
 {
-    return header.magicNumber == std::array<std::uint8_t, 5>{'S', 'I', 'N', 'G', 'E'} 
-        && header.fileSize >= AssetHeader::HeaderSize && 
-        header.version == 1;
+    return header.magicNumber == std::array<char, 5>{'S', 'I', 'N', 'G', 'E'}
+    && header.totalFileSize >= AssetHeader::HeaderSize
+    && header.formatVersion == 1
+    && header.directoryOffset == AssetHeader::HeaderSize;
 }

@@ -1,4 +1,5 @@
 ﻿#include "AssetEngine/AssetFile/AssetFileWriter.h"
+#include "AssetEngine/Utils/CheckSum.h"
 
 #include <fstream>
 #include <stdexcept>
@@ -15,8 +16,9 @@ void AssetFileWriter::Write(const std::filesystem::path& path, AssetHeader heade
             std::numeric_limits<std::streamsize>::max()))
         throw std::runtime_error("Data is too big for streamsize");
     
-    header.fileSize = AssetHeader::HeaderSize + data.size();
+    header.totalFileSize = AssetHeader::HeaderSize + data.size();
     
+    header.checksum = CalculateChecksum(data);
     Bytes headerBytes = SerializeAssetHeader(header);
 
     if (headerBytes.size() != AssetHeader::HeaderSize)

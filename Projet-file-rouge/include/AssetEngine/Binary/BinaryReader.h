@@ -162,4 +162,11 @@ public:
     {
         offset = 0;
     }
+    
+    
+    [[nodiscard]] bool isAtEnd() const
+    {
+        return offset == buffer.size();
+    }
+    
 };

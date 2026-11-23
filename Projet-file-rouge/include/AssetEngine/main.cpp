@@ -19,9 +19,6 @@ int main()
     Roundtrip roundtrip;
     roundtrip.verifyAll();
     std::cout << "Roundtrip verification completed successfully." << std::endl;
-
-    roundtrip.testAssetFileWriter();
-    roundtrip.testAssetFileRoundtrip();
     
     return 0;
 

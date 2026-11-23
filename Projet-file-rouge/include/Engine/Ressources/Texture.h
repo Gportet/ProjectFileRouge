@@ -22,5 +22,8 @@ public:
     
     int getWidth() const { return width; }
     int getHeight() const { return height; }
+    const std::vector<uint32_t>& getPixels() const { return pixels; }
     const Filepath& getPath() const { return path; };
+    
+    void SetData(int width, int height, std::vector<uint32_t> pixels);
 };

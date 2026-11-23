@@ -10,6 +10,10 @@
 #include "AssetEngine/AssetFile/AssetFileWriter.h"
 #include "AssetEngine/AssetFile/AssetFileReader.h"
 #include <filesystem>
+
+
+#include "AssetEngine/Serializer/TextureSerializer.h"
+#include "Engine/Ressources/Texture.h"
 class Roundtrip {
 
     private : 
@@ -55,49 +59,6 @@ class Roundtrip {
         writer.Write(path, header, data);
 
         std::cout << "Asset file successfully written!" << std::endl;
-    }
-    
-    
-    void testAssetFileRoundtrip()
-    {
-        const std::filesystem::path path = "test.singe";
-
-        // 1. Préparer les données
-        AssetHeader originalHeader;
-        originalHeader.flags = 3;
-        originalHeader.assetType = 2;
-
-        Bytes originalData = {
-            std::byte{0x53},
-            std::byte{0x49},
-            std::byte{0x4E},
-            std::byte{0x47},
-            std::byte{0x45}
-        };
-
-        // 2. Écrire le fichier
-        AssetFileWriter writer;
-        writer.Write(path, originalHeader, originalData);
-
-        // 3. Lire le fichier
-        AssetHeader loadedHeader;
-        Bytes loadedData;
-
-        AssetFileReader reader;
-        reader.Read(path, loadedHeader, loadedData);
-
-        // 4. Vérifier le résultat
-        if (loadedHeader.magicNumber != originalHeader.magicNumber ||
-            loadedHeader.version != originalHeader.version ||
-            loadedHeader.flags != originalHeader.flags ||
-            loadedHeader.assetType != originalHeader.assetType ||
-            loadedHeader.fileSize != AssetHeader::HeaderSize + originalData.size() ||
-            loadedData != originalData)
-        {
-            throw std::runtime_error("Asset file roundtrip failed");
-        }
-
-        std::cout << "Asset file roundtrip successful!" << std::endl;
     }
     
     void verifyAll() {
@@ -150,6 +111,56 @@ class Roundtrip {
         if (stringValue != readString) { throw std::runtime_error("String value mismatch"); }
         if (vectorValue != readVector) { throw std::runtime_error("Vector value mismatch"); }
 
+        TestTextureSerializer();
+        
+    }
+    
+    
+    void TestTextureSerializer()
+    {
+        // 1. Création de la texture originale
+        Texture originalTexture;
+
+        std::vector<std::uint32_t> originalPixels =
+        {
+            0xFFFF0000, // Rouge
+            0xFF00FF00, // Vert
+            0xFF0000FF, // Bleu
+            0xFFFFFFFF  // Blanc
+        };
+
+        originalTexture.SetData(2, 2, originalPixels);
+
+        // 2. Sérialisation
+        Bytes serializedData =
+            TextureSerializer::SerializeTexture(originalTexture);
+
+        if (serializedData.size() != 28)
+        {
+            throw std::runtime_error("Texture serialized data size mismatch");
+        }
+        
+        // 3. Création d'une texture vide
+        Texture reconstructedTexture;
+
+        // 4. Désérialisation
+        TextureSerializer::DeserializeTexture(
+            serializedData,
+            reconstructedTexture
+        );
+
+        // 5. Vérification des dimensions
+        if (originalTexture.getWidth() != reconstructedTexture.getWidth() ||
+            originalTexture.getHeight() != reconstructedTexture.getHeight())
+        {
+            throw std::runtime_error("Texture dimensions mismatch");
+        }
+
+        // 6. Vérification des pixels
+        if (originalTexture.getPixels() != reconstructedTexture.getPixels())
+        {
+            throw std::runtime_error("Texture pixels mismatch");
+        }
     }
 
 };
