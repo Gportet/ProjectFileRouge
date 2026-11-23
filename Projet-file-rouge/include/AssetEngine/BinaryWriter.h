@@ -1,3 +1,4 @@
+#pragma once
 #include <algorithm>
 #include <fstream>
 #include <bit>
@@ -114,18 +115,30 @@ public:
             Write(element);
         }
     }
+    
+    void Write(std::int64_t value) { Write(static_cast<std::uint64_t>(value)); }
+    void Write(std::int32_t value) { Write(static_cast<std::uint32_t>(value)); }
+    void Write(std::int16_t value) { Write(static_cast<std::uint16_t>(value)); }
+    void Write(std::int8_t value)  { Write(static_cast<std::uint8_t>(value)); }
 
     void Save(const std::string& path) const
     {
         std::ofstream file(path, std::ios::binary | std::ios::trunc);
-
         if (!file)
             throw std::runtime_error("Cannot open file");
 
-        for (std::byte byte : buffer)
+        if (!buffer.empty())
         {
-            file.put(static_cast<char>(std::to_integer<unsigned char>(byte)));
+            file.write(reinterpret_cast<const char*>(buffer.data()), static_cast<std::streamsize>(buffer.size()));
         }
+        file.flush();
+        if (!file)
+            throw std::runtime_error("Failed to write all bytes to file");
+    }
+    
+    void clear()
+    {
+        buffer.clear();
     }
 };
 

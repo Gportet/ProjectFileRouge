@@ -1,3 +1,4 @@
+#pragma once
 #include <algorithm>
 #include <fstream>
 #include <ios>
@@ -26,8 +27,6 @@ public:
         : buffer(data)
     {
     }
-
-
     template <typename T>
     T Read()
     {
@@ -35,14 +34,55 @@ public:
         else if constexpr (std::is_same_v<T, std::uint16_t>) return ReadU16();
         else if constexpr (std::is_same_v<T, std::uint32_t>) return ReadU32();
         else if constexpr (std::is_same_v<T, std::uint64_t>) return ReadU64();
+        else if constexpr (std::is_same_v<T, std::int8_t>)   return ReadI8();
+        else if constexpr (std::is_same_v<T, std::int16_t>)  return ReadI16();
+        else if constexpr (std::is_same_v<T, std::int32_t>)  return ReadI32();
+        else if constexpr (std::is_same_v<T, std::int64_t>)  return ReadI64();
         else if constexpr (std::is_same_v<T, float>)         return ReadFloat();
         else if constexpr (std::is_same_v<T, double>)        return ReadDouble();
         else if constexpr (std::is_same_v<T, bool>)          return ReadBool();
         else if constexpr (std::is_same_v<T, std::string>)   return ReadString();
         else static_assert(false, "Type non supporté par BinaryReader::Read<T>");
     }
+    
+    static constexpr std::uint32_t MaxAllocationElements = 10'000'000;
 
+    
+    std::string ReadString()
+    {
+        std::uint32_t length = ReadU32();
+        if (length > MaxAllocationElements || length > buffer.size() - offset)
+            throw std::out_of_range("EOF / Excessive string length");
 
+        std::string result;
+        result.reserve(length);
+        for (std::uint32_t i = 0; i < length; ++i)
+            result.push_back(static_cast<char>(ReadU8()));
+        return result;
+    }
+
+    template <typename T>
+    std::vector<T> ReadVector()
+    {
+        std::uint32_t length = ReadU32();
+        if (length > MaxAllocationElements || length > buffer.size() - offset)
+            throw std::out_of_range("EOF / Excessive vector length");
+
+        std::vector<T> result;
+        result.reserve(length);
+        for (std::uint32_t i = 0; i < length; ++i)
+            result.push_back(Read<T>());
+        return result;
+    }
+
+    Bytes ReadBytes(std::size_t count)
+    {
+        if (count > buffer.size() - offset) throw std::out_of_range("EOF");
+        Bytes result(buffer.begin() + offset, buffer.begin() + offset + count);
+        offset += count;
+        return result;
+    }
+    
     void readFromFile(const std::string& path)
     {
         std::ifstream file(path, std::ios::binary);
@@ -51,6 +91,7 @@ public:
             throw std::runtime_error("Cannot open file");
 
         buffer.clear();
+        offset = 0;
 
         std::byte byte;
         while (file.read(reinterpret_cast<char*>(&byte), sizeof(byte)))
@@ -98,34 +139,6 @@ public:
         return value;
     }
 
-    std::string ReadString()
-    {
-        std::uint32_t length = ReadU32(); 
-        if (length > buffer.size() - offset){throw std::out_of_range("EOF / Corrupted length");}
-            
-
-        std::string result;
-        result.reserve(length);
-        for (std::uint32_t i = 0; i < length; ++i)
-        {
-            result.push_back(static_cast<char>(ReadU8()));
-        }
-        return result;
-    }
-
-    template <typename T>
-    std::vector<T> ReadVector()
-    {
-        std::uint32_t length = ReadU32();
-        if (length > buffer.size() - offset){throw std::out_of_range("EOF / Corrupted length");}
-        std::vector<T> result;
-        result.reserve(length);
-        for (std::uint32_t i = 0; i < length; ++i)
-        {
-            result.push_back(Read<T>());
-        }
-        return result;
-    }
 
     bool ReadBool()
     {
@@ -153,6 +166,11 @@ public:
         offset += count;
         return result;
     }
+    
+    std::int8_t  ReadI8()  { return static_cast<std::int8_t>(ReadU8()); }
+    std::int16_t ReadI16() { return static_cast<std::int16_t>(ReadU16()); }
+    std::int32_t ReadI32() { return static_cast<std::int32_t>(ReadU32()); }
+    std::int64_t ReadI64() { return static_cast<std::int64_t>(ReadU64()); }
     
     void clear()
     {
