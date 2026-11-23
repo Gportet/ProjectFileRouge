@@ -20,7 +20,7 @@ private:
     Bytes buffer;
 
 public:
-    // #TODO : integers, booleans, floating-point values, UTF-8 strings, variable-length sequences and composite structures.
+
     Bytes getBuffer() const
     {
         return buffer;
@@ -31,9 +31,9 @@ public:
         buffer.insert(buffer.end(), data.begin(), data.end());
     }
 
-    
+    // Entiers non signés (Little-Endian)
     // U64
-    void Write(std::uint64_t value) // Little endian
+    void Write(std::uint64_t value) 
     {
         for (int i = 0; i < 8; ++i)
         {
@@ -44,7 +44,7 @@ public:
     }
 
     // U32
-    void Write(std::uint32_t value) // Little endian
+    void Write(std::uint32_t value) 
     {
             for (int i = 0; i < 4; ++i)
             {
@@ -55,7 +55,7 @@ public:
     }
 
     // U16
-    void Write(std::uint16_t value) // Little endian
+    void Write(std::uint16_t value) 
     {
         for (int i = 0; i < 2; ++i)
         {
@@ -70,19 +70,23 @@ public:
     {
         buffer.push_back(std::byte{value});
     }
+    
+    //Entier signés
+    void Write(std::int64_t value) { Write(static_cast<std::uint64_t>(value)); }
+    void Write(std::int32_t value) { Write(static_cast<std::uint32_t>(value)); }
+    void Write(std::int16_t value) { Write(static_cast<std::uint16_t>(value)); }
+    void Write(std::int8_t value)  { Write(static_cast<std::uint8_t>(value)); }
 
     // Float
     void Write(float value)
     {
-        std::uint32_t rawValue = std::bit_cast<std::uint32_t>(value);
-        Write(rawValue);
+        Write(std::bit_cast<std::uint32_t>(value));
     }
 
     // Double
     void Write(double value)
     {
-        std::uint64_t rawValue = std::bit_cast<std::uint64_t>(value);
-        Write(rawValue);
+        Write(std::bit_cast<std::uint64_t>(value));
     }
 
     // Boolean
@@ -94,11 +98,14 @@ public:
     // String (UTF-8)
     void Write(std::string_view text)
     {
-        if (text.size() > std::numeric_limits<std::uint32_t>::max()){throw std::length_error("String too large");}
+        if (text.size() > std::numeric_limits<std::uint32_t>::max())
+        {
+            throw std::length_error("String too large");
+        }
             
         Write(static_cast<std::uint32_t>(text.size()));
 
-        const auto *data = reinterpret_cast<const std::byte*>(text.data());
+        const auto* data = reinterpret_cast<const std::byte*>(text.data());
         buffer.insert(buffer.end(), data, data + text.size());
     }
 
@@ -116,24 +123,26 @@ public:
         }
     }
     
-    void Write(std::int64_t value) { Write(static_cast<std::uint64_t>(value)); }
-    void Write(std::int32_t value) { Write(static_cast<std::uint32_t>(value)); }
-    void Write(std::int16_t value) { Write(static_cast<std::uint16_t>(value)); }
-    void Write(std::int8_t value)  { Write(static_cast<std::uint8_t>(value)); }
-
     void Save(const std::string& path) const
     {
         std::ofstream file(path, std::ios::binary | std::ios::trunc);
+        
         if (!file)
+        {
             throw std::runtime_error("Cannot open file");
-
+        }
+        
         if (!buffer.empty())
         {
             file.write(reinterpret_cast<const char*>(buffer.data()), static_cast<std::streamsize>(buffer.size()));
         }
+        
         file.flush();
-        if (!file)
+        if (!file || file.fail() || file.bad())
+        {
             throw std::runtime_error("Failed to write all bytes to file");
+        }
+            
     }
     
     void clear()

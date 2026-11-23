@@ -265,6 +265,7 @@ add_executable(AssetEngine
         include/AssetEngine/BinaryWriter.h
 
         include/AssetEngine/Roundtrip.h
+        include/AssetEngine/ArchiveValidator.h
 )
 
 # ------------------------------------------------------------------------------
