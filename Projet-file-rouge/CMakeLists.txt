@@ -257,15 +257,78 @@ target_link_libraries(ViewerApp PRIVATE
 
 
 
+
 add_executable(AssetEngine
 
+        # Main
         include/AssetEngine/main.cpp
-        
-        include/AssetEngine/BinaryReader.h
-        include/AssetEngine/BinaryWriter.h
 
+        # Asset Engine - Binary
+        include/AssetEngine/Binary/BinaryReader.h
+        include/AssetEngine/Binary/BinaryWriter.h
+        include/AssetEngine/Binary/BinaryTypes.h
+
+        # Asset Engine - Header
+        include/AssetEngine/HeaderInit/AssetHeader.h
+        src/AssetEngine/HeaderInit/AssetHeader.cpp
+
+        # Asset Engine - Roundtrip
         include/AssetEngine/Roundtrip.h
+
+        # Asset Engine - Asset File
+        include/AssetEngine/AssetFile/AssetFileWriter.h
+        src/AssetEngine/AssetFile/AssetFileWriter.cpp
+        include/AssetEngine/AssetFile/AssetFileReader.h
+        src/AssetEngine/AssetFile/AssetFileReader.cpp
+
+        # Asset Engine - Utils
+        include/AssetEngine/Utils/CheckSum.h
+        src/AssetEngine/Utils/CheckSum.cpp
+
+        # Asset Engine - Types
+        include/AssetEngine/AssetType/AssetType.h
+        include/AssetEngine/AssetType/PixelFormat.h
+
+        # Asset Engine - Serializers
+        include/AssetEngine/Serializer/TextureSerializer.h
+        src/AssetEngine/Serializer/TextureSerializer.cpp
+        include/AssetEngine/Serializer/MaterialSerializer.h
+        src/AssetEngine/Serializer/MaterialSerializer.cpp
+
+        # Engine - Utilities
+        include/Engine/utils/Filepath.h
+        src/Engine/utils/Filepath.cpp
+
+        # Engine - Resources
+        include/Engine/Ressources/Texture.h
+        src/Engine/Ressources/Texture.cpp
+        include/Engine/Ressources/Material.h
+        src/Engine/Ressources/Material.cpp
+
+        
+        # MathLib - Headers
+        include/MathLib/MathLib_SIMD/Matrix3x3_SIMD.h
+        include/MathLib/MathLib_SIMD/Matrix4x4_SIMD.h
+        include/MathLib/MathLib_SIMD/Vec3_ASM.h
+        include/MathLib/MathLib_SIMD/Vec3_SIMD.h
+        include/MathLib/MathLib_SIMD/Vec4_SIMD.h
+        include/AssetEngine/Utils/ArchiveValidator.h
+        include/AssetEngine/Utils/AssetDirectory.h
+        include/AssetEngine/Utils/AssetToWrite.h
+        include/AssetEngine/Serializer/MeshSerializer.h
+        src/AssetEngine/Serializer/MeshSerializer.cpp
 )
+
+target_include_directories(AssetEngine PRIVATE
+        ${stb_SOURCE_DIR}
+        include
+)
+
+target_link_libraries(AssetEngine PRIVATE
+        MathLib
+)
+
+
 
 # ------------------------------------------------------------------------------
 # Affichage_test
@@ -365,19 +428,53 @@ add_executable(Affichage_test
 
         include/ECS/System/CameraMovementSystem.h
         src/System/CameraMovementSystem.cpp
+        
         # MathLib - Headers
         include/MathLib/MathLib_SIMD/Matrix3x3_SIMD.h
         include/MathLib/MathLib_SIMD/Matrix4x4_SIMD.h
         include/MathLib/MathLib_SIMD/Vec3_ASM.h
         include/MathLib/MathLib_SIMD/Vec3_SIMD.h
         include/MathLib/MathLib_SIMD/Vec4_SIMD.h
+
+        include/AssetEngine/Binary/BinaryReader.h
+        include/AssetEngine/Binary/BinaryWriter.h
+        include/AssetEngine/Binary/BinaryTypes.h
         
+        include/AssetEngine/HeaderInit/AssetHeader.h
+        src/AssetEngine/HeaderInit/AssetHeader.cpp
+        
+        include/AssetEngine/AssetFile/AssetFileWriter.h
+        src/AssetEngine/AssetFile/AssetFileWriter.cpp
+        
+        include/AssetEngine/AssetFile/AssetFileReader.h
+        src/AssetEngine/AssetFile/AssetFileReader.cpp
+        src/AssetEngine/Utils/CheckSum.cpp
+        include/AssetEngine/Utils/CheckSum.h
+        include/AssetEngine/AssetType/AssetType.h
+        include/AssetEngine/Serializer/TextureSerializer.h
+        src/AssetEngine/Serializer/TextureSerializer.cpp
+        include/AssetEngine/AssetType/PixelFormat.h
+        include/AssetEngine/Serializer/MaterialSerializer.h
+        src/AssetEngine/Serializer/MaterialSerializer.cpp
+        include/AssetEngine/Utils/ArchiveValidator.h
+        include/AssetEngine/Utils/AssetDirectory.h
+        include/AssetEngine/Utils/AssetToWrite.h
+        include/AssetEngine/Serializer/MeshSerializer.h
+        src/AssetEngine/Serializer/MeshSerializer.cpp
+)
+
+add_custom_command(TARGET Affichage_test POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${CMAKE_SOURCE_DIR}/assets"
+        "$<TARGET_FILE_DIR:Affichage_test>/assets"
+        COMMENT "Copie des assets vers le dossier de compilation..."
 )
 
 target_include_directories(Affichage_test PRIVATE
         ${stb_SOURCE_DIR}
         include
 )
+
 
 target_link_libraries(Affichage_test PRIVATE
         MathLib

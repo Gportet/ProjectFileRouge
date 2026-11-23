@@ -133,3 +133,19 @@ uint32_t Texture::SampleBilinear(float u, float v) const
     return result;
 }
 
+
+void Texture::SetData(int width, int height, std::vector<uint32_t> pixels)
+{
+    if (width <= 0 || height <= 0)
+        throw std::invalid_argument("Invalid texture dimensions");
+
+    const size_t expectedSize =
+        static_cast<size_t>(width) * static_cast<size_t>(height);
+
+    if (pixels.size() != expectedSize)
+        throw std::invalid_argument("Invalid texture pixel count");
+
+    this->width = width;
+    this->height = height;
+    this->pixels = std::move(pixels); 
+}

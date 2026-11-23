@@ -48,15 +48,15 @@ Le fichier binaire est découpé en **trois sections contiguës** :
 
 L'en-tête permet d'identifier le fichier et de valider son intégrité globale avant toute lecture ou allocation lourde.
 
-| Offset | Champ | Type | Taille | Description | 
-| ----- | ----- | ----- | ----- | ----- | 
-| `0` | **Magic Number** | `char[4]` | 4 octets | Signature fixe identifiant le format (`SINGE`). | 
-| `4` | **Format Version** | `uint32` | 4 octets | Version de la structure de l'archive. | 
-| `8` | **Flags** | `uint32` | 4 octets | Options globales de l'archive (`0` par défaut, bits réservés pour extensions). | 
-| `12` | **Total File Size** | `uint64` | 8 octets | Taille totale attendue du fichier en octets. | 
-| `20` | **Checksum (CRC-32)** | `uint32` | 4 octets | Empreinte CRC-32 couvrant l'intégralité du fichier (avec ce champ mis à `0` lors du calcul). | 
-| `24` | **Asset Count** | `uint32` | 4 octets | Nombre total d'assets ($N$) enregistrés dans l'archive. | 
-| `28` | **Directory Offset** | `uint32` | 4 octets | Position du début de l'Asset Directory (valeur fixe : `32`). | 
+| Offset | Champ | Type      | Taille   | Description | 
+| ----- | ----- |-----------|----------| ----- | 
+| `0` | **Magic Number** | `char[4]` | 5 octets | Signature fixe identifiant le format (`SINGE`). | 
+| `4` | **Format Version** | `uint32`  | 4 octets | Version de la structure de l'archive. | 
+| `8` | **Flags** | `uint32`  | 4 octets | Options globales de l'archive (`0` par défaut, bits réservés pour extensions). | 
+| `12` | **Total File Size** | `uint64`  | 8 octets | Taille totale attendue du fichier en octets. | 
+| `20` | **Checksum (CRC-32)** | `uint32`  | 4 octets | Empreinte CRC-32 couvrant l'intégralité du fichier (avec ce champ mis à `0` lors du calcul). | 
+| `24` | **Asset Count** | `uint32`  | 4 octets | Nombre total d'assets ($N$) enregistrés dans l'archive. | 
+| `28` | **Directory Offset** | `uint32`  | 4 octets | Position du début de l'Asset Directory (valeur fixe : `32`). | 
 
 > **Note sur le Checksum :** Le CRC-32 protège à la fois les métadonnées (Header + Asset Directory) et l'ensemble des Payloads contre les corruptions accidentelles.
 
