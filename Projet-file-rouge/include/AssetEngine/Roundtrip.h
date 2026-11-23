@@ -1,13 +1,30 @@
 #pragma once
-#include "ArchiveValidator.h"
-#include "BinaryReader.h"
-#include "BinaryWriter.h"
+#include "Utils/ArchiveValidator.h"
+#include "Binary/BinaryReader.h"
+#include "Binary/BinaryWriter.h"
 #include <cstdint>
 #include <limits>
 #include <stdexcept>
 #include <string>
 #include <unordered_set>
 #include <vector>
+
+#include "AssetEngine/AssetFile/AssetFileWriter.h"
+#include "AssetEngine/AssetFile/AssetFileReader.h"
+
+#include <filesystem>
+#include <fstream>
+
+
+#include "AssetEngine/Serializer/TextureSerializer.h"
+#include "AssetEngine/Serializer/MaterialSerializer.h"
+
+#include "Engine/Ressources/Texture.h"
+#include "Engine/Ressources/Material.h"
+
+#include <memory>
+#include <iostream>
+#include <array>
 
 class Roundtrip
 {
@@ -317,4 +334,6 @@ private:
             throw std::runtime_error("Robustness failed: state was partially modified after error");
         }
     }
+    
+    
 };

@@ -20,9 +20,9 @@ int main()
     Roundtrip roundtrip;
     roundtrip.verifyAll();
     std::cout << "Roundtrip verification completed successfully." << std::endl;
-    
-    return 0;
+    std::cout << "Program is about to exit." << std::endl;
 
+    return 0;
 }
 
 

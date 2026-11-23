@@ -209,4 +209,8 @@ public:
         return offset == buffer.size();
     }
     
+    [[nodiscard]] std::size_t getRemainingSize() const
+    {
+        return buffer.size() - offset;
+    }
 };

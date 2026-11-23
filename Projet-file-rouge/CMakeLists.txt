@@ -305,13 +305,18 @@ add_executable(AssetEngine
         include/Engine/Ressources/Material.h
         src/Engine/Ressources/Material.cpp
 
+        
         # MathLib - Headers
         include/MathLib/MathLib_SIMD/Matrix3x3_SIMD.h
         include/MathLib/MathLib_SIMD/Matrix4x4_SIMD.h
         include/MathLib/MathLib_SIMD/Vec3_ASM.h
         include/MathLib/MathLib_SIMD/Vec3_SIMD.h
         include/MathLib/MathLib_SIMD/Vec4_SIMD.h
-        include/AssetEngine/ArchiveValidator.h
+        include/AssetEngine/Utils/ArchiveValidator.h
+        include/AssetEngine/Utils/AssetDirectory.h
+        include/AssetEngine/Utils/AssetToWrite.h
+        include/AssetEngine/Serializer/MeshSerializer.h
+        src/AssetEngine/Serializer/MeshSerializer.cpp
 )
 
 target_include_directories(AssetEngine PRIVATE
@@ -451,6 +456,11 @@ add_executable(Affichage_test
         include/AssetEngine/AssetType/PixelFormat.h
         include/AssetEngine/Serializer/MaterialSerializer.h
         src/AssetEngine/Serializer/MaterialSerializer.cpp
+        include/AssetEngine/Utils/ArchiveValidator.h
+        include/AssetEngine/Utils/AssetDirectory.h
+        include/AssetEngine/Utils/AssetToWrite.h
+        include/AssetEngine/Serializer/MeshSerializer.h
+        src/AssetEngine/Serializer/MeshSerializer.cpp
 )
 
 add_custom_command(TARGET Affichage_test POST_BUILD

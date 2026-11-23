@@ -1,5 +1,5 @@
 #pragma once
-#include "BinaryReader.h"
+#include "Binary/BinaryReader.h"
 #include <cstdint>
 #include <stdexcept>
 #include <unordered_map>
